@@ -1,0 +1,23 @@
+{
+  "name": "@f1/worker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/main.js",
+  "types": "dist/main.d.ts",
+  "scripts": {
+    "pretest": "pnpm --filter @f1/shared build",
+    "dev": "pnpm exec tsx watch src/main.ts",
+    "build": "pnpm exec tsc -p tsconfig.json",
+    "start": "pnpm node dist/main.js",
+    "test": "pnpm exec vitest run",
+    "typecheck": "pnpm exec tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@f1/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.9",
+    "tsx": "^4.19.3"
+  }
+}

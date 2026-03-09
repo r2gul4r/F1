@@ -1,0 +1,21 @@
+{
+  "name": "f1-pulse",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@10.6.0",
+  "scripts": {
+    "dev": "pnpm --filter @f1/shared build && concurrently \"pnpm --filter @f1/realtime dev\" \"pnpm --filter @f1/worker dev\" \"pnpm --filter @f1/web dev\"",
+    "build": "pnpm -r build",
+    "test": "pnpm -r test",
+    "typecheck": "pnpm -r typecheck",
+    "autonomous:inspect": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/autonomous/inspect-repo.ps1",
+    "autonomous:start": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/autonomous/start-workday.ps1",
+    "autonomous:security": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/autonomous/security-check.ps1 -StagedOnly",
+    "autonomous:eod": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/autonomous/end-of-day.ps1 -SkipPush"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "typescript": "^5.8.2",
+    "vitest": "^2.1.8"
+  }
+}

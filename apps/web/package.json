@@ -1,0 +1,31 @@
+{
+  "name": "@f1/web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "pretest": "pnpm --filter @f1/shared build",
+    "dev": "pnpm exec next dev -p 3000",
+    "build": "pnpm exec next build",
+    "start": "pnpm exec next start -p 3000",
+    "test": "pnpm exec vitest run",
+    "typecheck": "pnpm exec tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@f1/shared": "workspace:*",
+    "next": "15.2.2",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
+    "three": "^0.175.0",
+    "zustand": "^5.0.3"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.2.0",
+    "@types/node": "^22.13.9",
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4",
+    "@types/three": "^0.175.0",
+    "jsdom": "^26.0.0"
+  }
+}
