@@ -7,7 +7,7 @@
     "dev": "pnpm --filter @f1/shared build && concurrently \"pnpm --filter @f1/realtime dev\" \"pnpm --filter @f1/worker dev\" \"pnpm --filter @f1/web dev\"",
     "build": "pnpm -r build",
     "test": "pnpm -r test",
-    "typecheck": "pnpm -r typecheck",
+    "typecheck": "pnpm --filter @f1/shared build && pnpm -r typecheck",
     "autonomous:inspect": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/autonomous/inspect-repo.ps1",
     "autonomous:start": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/autonomous/start-workday.ps1",
     "autonomous:security": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/autonomous/security-check.ps1 -StagedOnly",
