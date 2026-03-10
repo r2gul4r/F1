@@ -9,6 +9,7 @@ Rules:
 - Use OAuth as the authentication approach when auth work is involved
 - Keep changes incremental and safe
 - Never use destructive commands
+- Use Korean for all conversation, status updates, and reports
 
 Loop:
 1. Run `pnpm autonomous:start:suggest`

@@ -3,7 +3,11 @@ param(
     [ValidateSet("feat", "fix", "refactor", "docs")]
     [string]$CommitType = "docs",
     [switch]$SkipPush,
-    [switch]$Shutdown
+    [switch]$Shutdown,
+    [ValidateRange(1, 10)]
+    [int]$PushRetryCount = 3,
+    [ValidateRange(1, 300)]
+    [int]$PushRetryDelaySeconds = 5
 )
 
 Set-StrictMode -Version Latest
@@ -24,6 +28,35 @@ function Invoke-GitChecked {
     & git @Arguments
     if ($LASTEXITCODE -ne 0) {
         throw $FailureMessage
+    }
+}
+
+function Invoke-GitCheckedWithRetry {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string[]]$Arguments,
+        [Parameter(Mandatory = $true)]
+        [string]$FailureMessage,
+        [Parameter(Mandatory = $true)]
+        [int]$MaxAttempts,
+        [Parameter(Mandatory = $true)]
+        [int]$DelaySeconds
+    )
+
+    $attempt = 1
+    while ($attempt -le $MaxAttempts) {
+        & git @Arguments
+        if ($LASTEXITCODE -eq 0) {
+            return
+        }
+
+        if ($attempt -eq $MaxAttempts) {
+            throw "$FailureMessage after $MaxAttempts attempts"
+        }
+
+        Write-Warning "git $($Arguments -join ' ') failed (attempt $attempt/$MaxAttempts), retrying in $DelaySeconds seconds"
+        Start-Sleep -Seconds $DelaySeconds
+        $attempt++
     }
 }
 
@@ -68,7 +101,11 @@ $commitMessage = "${CommitType}: end-of-day sync $today"
 Invoke-GitChecked -Arguments @("commit", "-m", $commitMessage) -FailureMessage "git commit failed"
 
 if (-not $SkipPush) {
-    Invoke-GitChecked -Arguments @("push") -FailureMessage "git push failed"
+    Invoke-GitCheckedWithRetry `
+        -Arguments @("push") `
+        -FailureMessage "git push failed" `
+        -MaxAttempts $PushRetryCount `
+        -DelaySeconds $PushRetryDelaySeconds
 }
 
 if ($Shutdown) {
