@@ -9,7 +9,7 @@
 [x] setup project structure
 [x] create database connection module
 [x] implement user model for OAuth identity mapping
-[ ] implement OAuth login API
+[x] implement OAuth login API
 
 [ ] investigate technical debt at apps\realtime\src\services\ai-service.ts:90
 [ ] investigate technical debt at apps\web\app\watch\[sessionId]\page.tsx:26

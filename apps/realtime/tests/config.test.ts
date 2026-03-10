@@ -6,6 +6,7 @@ describe("realtime config", () => {
     process.env.POSTGRES_URL = "postgresql://postgres:postgres@localhost:5432/f1pulse";
     process.env.REDIS_URL = "redis://localhost:6379";
     process.env.INTERNAL_API_TOKEN = "internal-token-for-test-123456";
+    process.env.OAUTH_PROXY_TOKEN = "oauth-proxy-token-for-test-123456";
     process.env.WATCH_TOKEN_SECRET = "watch-token-secret-for-test-123456";
     process.env.ALLOWED_ORIGINS = "http://localhost:3000";
     process.env.REALTIME_PORT = "4001";

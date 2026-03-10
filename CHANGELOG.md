@@ -20,3 +20,4 @@
 - feat: add workspace project structure validator with RED-GREEN test coverage
 - feat: add reusable realtime database connection module and startup wiring
 - feat: add OAuth user identity repository model with sanitized upsert flow
+- feat: add OAuth login API with proxy token verification and watch token issuance

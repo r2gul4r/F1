@@ -1,12 +1,29 @@
-import { createWatchToken } from "@f1/shared/watch-token";
+import { createWatchToken, verifyWatchToken } from "@f1/shared/watch-token";
 import { describe, expect, it } from "vitest";
 import { buildServer } from "../src/server.js";
 import { MemoryRepository } from "../src/store/memory-repository.js";
 
 describe("realtime api", () => {
   const internalApiToken = "internal-token-for-test-123456";
+  const oauthProxyToken = "oauth-proxy-token-for-test-123456";
   const watchTokenSecret = "watch-token-secret-for-test-123456";
   const watchToken = createWatchToken(watchTokenSecret, 60 * 60);
+  const oauthUserRepository = {
+    upsertIdentity: async (input: {
+      provider: string;
+      providerUserId: string;
+      displayName: string;
+      email?: string;
+      avatarUrl?: string;
+    }) => ({
+      userId: `${input.provider}-${input.providerUserId}`,
+      provider: input.provider,
+      providerUserId: input.providerUserId,
+      displayName: input.displayName,
+      email: input.email ?? null,
+      avatarUrl: input.avatarUrl ?? null
+    })
+  };
 
   it("세션과 드라이버 조회 API가 동작함", async () => {
     const repository = new MemoryRepository();
@@ -29,8 +46,11 @@ describe("realtime api", () => {
 
     const { app } = await buildServer({
       repository,
+      oauthUserRepository,
       internalApiToken,
+      oauthProxyToken,
       watchTokenSecret,
+      watchTokenTtlSec: 3600,
       allowedOrigins: ["http://localhost:3000"],
       wsBufferSize: 100,
       ollamaBaseUrl: "http://localhost:11434",
@@ -61,8 +81,11 @@ describe("realtime api", () => {
     const repository = new MemoryRepository();
     const { app } = await buildServer({
       repository,
+      oauthUserRepository,
       internalApiToken,
+      oauthProxyToken,
       watchTokenSecret,
+      watchTokenTtlSec: 3600,
       allowedOrigins: ["http://localhost:3000"],
       wsBufferSize: 100,
       ollamaBaseUrl: "http://localhost:11434",
@@ -77,8 +100,11 @@ describe("realtime api", () => {
     const repository = new MemoryRepository();
     const { app } = await buildServer({
       repository,
+      oauthUserRepository,
       internalApiToken,
+      oauthProxyToken,
       watchTokenSecret,
+      watchTokenTtlSec: 3600,
       allowedOrigins: ["http://localhost:3000"],
       wsBufferSize: 100,
       ollamaBaseUrl: "http://localhost:11434",
@@ -103,8 +129,11 @@ describe("realtime api", () => {
     const repository = new MemoryRepository();
     const { app } = await buildServer({
       repository,
+      oauthUserRepository,
       internalApiToken,
+      oauthProxyToken,
       watchTokenSecret,
+      watchTokenTtlSec: 3600,
       allowedOrigins: ["http://localhost:3000"],
       wsBufferSize: 100,
       ollamaBaseUrl: "http://localhost:11434",
@@ -122,5 +151,58 @@ describe("realtime api", () => {
       }
     });
     expect(allowed.statusCode).toBe(200);
+  });
+
+  it("OAuth 로그인 API는 토큰 검증 후 watch 토큰을 발급함", async () => {
+    const repository = new MemoryRepository();
+    const { app } = await buildServer({
+      repository,
+      oauthUserRepository,
+      internalApiToken,
+      oauthProxyToken,
+      watchTokenSecret,
+      watchTokenTtlSec: 120,
+      allowedOrigins: ["http://localhost:3000"],
+      wsBufferSize: 100,
+      ollamaBaseUrl: "http://localhost:11434",
+      ollamaModel: "gemma3:12b"
+    });
+
+    const denied = await app.inject({
+      method: "POST",
+      url: "/api/v1/auth/oauth/login",
+      payload: {
+        provider: "github",
+        providerUserId: "1234",
+        displayName: "Ray"
+      }
+    });
+    expect(denied.statusCode).toBe(403);
+
+    const allowed = await app.inject({
+      method: "POST",
+      url: "/api/v1/auth/oauth/login",
+      headers: {
+        "x-oauth-token": oauthProxyToken
+      },
+      payload: {
+        provider: "github",
+        providerUserId: "1234",
+        displayName: "Ray",
+        email: "ray@example.com"
+      }
+    });
+
+    expect(allowed.statusCode).toBe(200);
+    const body = allowed.json() as {
+      accessToken: string;
+      tokenType: string;
+      expiresInSec: number;
+      user: { displayName: string };
+    };
+    expect(body.tokenType).toBe("Bearer");
+    expect(body.expiresInSec).toBe(120);
+    expect(verifyWatchToken(body.accessToken, watchTokenSecret)).toBe(true);
+    expect(body.user.displayName).toBe("Ray");
   });
 });

@@ -31,7 +31,31 @@ export const aiPredictRequestSchema = z.object({
   })
 });
 
+export const oauthLoginRequestSchema = z.object({
+  provider: z.string().min(1).max(50),
+  providerUserId: z.string().min(1).max(200),
+  displayName: z.string().min(1).max(200),
+  email: z.string().email().max(320).optional(),
+  avatarUrl: z.string().url().max(2000).optional()
+});
+
+export const oauthLoginResponseSchema = z.object({
+  accessToken: z.string().min(10),
+  tokenType: z.literal("Bearer"),
+  expiresInSec: z.number().int().positive(),
+  user: z.object({
+    userId: z.string().min(1),
+    provider: z.string().min(1),
+    providerUserId: z.string().min(1),
+    displayName: z.string().min(1),
+    email: z.string().email().max(320).nullable(),
+    avatarUrl: z.string().url().max(2000).nullable()
+  })
+});
+
 export type Session = z.infer<typeof sessionSchema>;
 export type Driver = z.infer<typeof driverSchema>;
 export type TelemetryRecentQuery = z.infer<typeof telemetryRecentQuerySchema>;
 export type AiPredictRequest = z.infer<typeof aiPredictRequestSchema>;
+export type OAuthLoginRequest = z.infer<typeof oauthLoginRequestSchema>;
+export type OAuthLoginResponse = z.infer<typeof oauthLoginResponseSchema>;

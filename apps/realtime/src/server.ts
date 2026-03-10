@@ -2,25 +2,34 @@ import { Server } from "http";
 import {
   aiPredictRequestSchema,
   driverSchema,
+  oauthLoginRequestSchema,
   raceFlagSchema,
   sessionSchema,
   telemetryRecentQuerySchema,
   telemetryTickSchema,
   toOpaqueError
 } from "@f1/shared";
-import { verifyWatchToken } from "@f1/shared/watch-token";
+import { createWatchToken, verifyWatchToken } from "@f1/shared/watch-token";
 import cors from "@fastify/cors";
 import Fastify from "fastify";
 import { createMetrics } from "./metrics.js";
 import { AiService } from "./services/ai-service.js";
 import { TriggerTracker } from "./services/trigger-tracker.js";
+import { OAuthUser, UpsertOAuthIdentityInput } from "./store/oauth-user-repository.js";
 import { Repository } from "./store/repository.js";
 import { WsHub } from "./ws/hub.js";
 
+type OAuthUserRepository = {
+  upsertIdentity(input: UpsertOAuthIdentityInput): Promise<OAuthUser>;
+};
+
 export type BuildServerInput = {
   repository: Repository;
+  oauthUserRepository: OAuthUserRepository;
   internalApiToken: string;
+  oauthProxyToken: string;
   watchTokenSecret: string;
+  watchTokenTtlSec: number;
   allowedOrigins: string[];
   wsBufferSize: number;
   ollamaBaseUrl: string;
@@ -32,6 +41,7 @@ const internalUnauthorized = {
 };
 
 const checkInternalToken = (token: string, expected: string): boolean => token.length > 0 && token === expected;
+const checkOAuthToken = (token: string, expected: string): boolean => token.length > 0 && token === expected;
 const checkWatchToken = (token: string, secret: string): boolean => token.length > 0 && verifyWatchToken(token, secret);
 const isAllowedOrigin = (origin: string | undefined, allowedOrigins: string[]): boolean =>
   !origin || allowedOrigins.includes(origin);
@@ -65,6 +75,24 @@ export const buildServer = async (input: BuildServerInput): Promise<{
   });
 
   app.get("/healthz", async () => ({ status: "ok" }));
+
+  app.post("/api/v1/auth/oauth/login", async (request, reply) => {
+    const token = String(request.headers["x-oauth-token"] ?? "");
+    if (!checkOAuthToken(token, input.oauthProxyToken)) {
+      return reply.status(403).send(internalUnauthorized);
+    }
+
+    const payload = oauthLoginRequestSchema.parse(request.body);
+    const user = await input.oauthUserRepository.upsertIdentity(payload);
+    const accessToken = createWatchToken(input.watchTokenSecret, input.watchTokenTtlSec);
+
+    return {
+      accessToken,
+      tokenType: "Bearer" as const,
+      expiresInSec: input.watchTokenTtlSec,
+      user
+    };
+  });
 
   app.get("/metrics", async (_request, reply) => {
     const token = String(_request.headers["x-internal-token"] ?? "");

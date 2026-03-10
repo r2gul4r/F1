@@ -7,7 +7,9 @@ export type RealtimeConfig = {
   ollamaBaseUrl: string;
   ollamaModel: string;
   internalApiToken: string;
+  oauthProxyToken: string;
   watchTokenSecret: string;
+  watchTokenTtlSec: number;
   allowedOrigins: string[];
   wsBufferSize: number;
 };
@@ -51,10 +53,11 @@ export const readConfig = (): RealtimeConfig => {
   const postgresUrl = process.env.POSTGRES_URL;
   const redisUrl = process.env.REDIS_URL;
   const internalApiToken = assertStrongSecret(process.env.INTERNAL_API_TOKEN);
+  const oauthProxyToken = assertStrongSecret(process.env.OAUTH_PROXY_TOKEN);
   const watchTokenSecret = assertStrongSecret(process.env.WATCH_TOKEN_SECRET);
   const allowedOrigins = parseAllowedOrigins(process.env.ALLOWED_ORIGINS);
 
-  if (!postgresUrl || !redisUrl || !internalApiToken || !watchTokenSecret) {
+  if (!postgresUrl || !redisUrl || !internalApiToken || !oauthProxyToken || !watchTokenSecret) {
     throw new OpaqueError("설정값 누락");
   }
 
@@ -65,7 +68,9 @@ export const readConfig = (): RealtimeConfig => {
     ollamaBaseUrl: process.env.OLLAMA_BASE_URL ?? "http://localhost:11434",
     ollamaModel: process.env.OLLAMA_MODEL ?? "gemma3:12b",
     internalApiToken,
+    oauthProxyToken,
     watchTokenSecret,
+    watchTokenTtlSec: asNumber(process.env.WATCH_TOKEN_TTL_SEC, 3600),
     allowedOrigins,
     wsBufferSize: asNumber(process.env.WS_BUFFER_SIZE, 2048)
   };
