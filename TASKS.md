@@ -7,7 +7,7 @@
 
 ## Queue
 [x] setup project structure
-[ ] create database connection module
+[x] create database connection module
 [ ] implement user model for OAuth identity mapping
 [ ] implement OAuth login API
 

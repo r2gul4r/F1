@@ -1,15 +1,17 @@
-import { Pool } from "pg";
 import { createClient } from "redis";
 import { readConfig } from "./config.js";
 import { buildServer } from "./server.js";
+import { createDatabaseConnection } from "./store/database-connection.js";
 import { PostgresRepository } from "./store/postgres-repository.js";
 
 const start = async (): Promise<void> => {
   const config = readConfig();
-  const pool = new Pool({ connectionString: config.postgresUrl });
+  const databaseConnection = createDatabaseConnection({
+    connectionString: config.postgresUrl
+  });
   const redis = createClient({ url: config.redisUrl });
   await redis.connect();
-  const repository = new PostgresRepository(pool, redis);
+  const repository = new PostgresRepository(databaseConnection.pool, redis);
 
   const { app } = await buildServer({
     repository,
@@ -30,7 +32,7 @@ const start = async (): Promise<void> => {
   const shutdown = async (): Promise<void> => {
     await app.close();
     await redis.disconnect();
-    await pool.end();
+    await databaseConnection.close();
     process.exit(0);
   };
 
