@@ -22,3 +22,4 @@
 - feat: add OAuth user identity repository model with sanitized upsert flow
 - feat: add OAuth login API with proxy token verification and watch token issuance
 - fix: fallback immediately on AI model non-ok response and clear timeout safely
+- fix: replace watch page secret misconfig throw with non-crashing fallback render

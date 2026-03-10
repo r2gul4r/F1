@@ -2,6 +2,7 @@ import { createWatchToken } from "@f1/shared/watch-token";
 import { WatchClient } from "@/src/components/watch-client";
 
 export const dynamic = "force-dynamic";
+const fallbackMessage = "요청 처리 실패";
 
 const hasStrongSecret = (value: string | undefined): value is string =>
   Boolean(
@@ -23,7 +24,7 @@ export default async function WatchPage({
   const watchTokenSecret = process.env.WATCH_TOKEN_SECRET;
 
   if (!hasStrongSecret(watchTokenSecret)) {
-    throw new Error("요청 처리 실패");
+    return fallbackMessage;
   }
 
   const watchToken = createWatchToken(watchTokenSecret, 60 * 60 * 3);
