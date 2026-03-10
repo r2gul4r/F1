@@ -14,6 +14,6 @@
 [x] investigate technical debt at apps\realtime\src\services\ai-service.ts:90
 [x] investigate technical debt at apps\web\app\watch\[sessionId]\page.tsx:26
 [x] investigate technical debt at apps\web\src\lib\api.ts:6
-[ ] investigate technical debt at apps\web\src\lib\api.ts:17
+[x] investigate technical debt at apps\web\src\lib\api.ts:17
 [ ] investigate technical debt at apps\worker\src\realtime-client.ts:17
 

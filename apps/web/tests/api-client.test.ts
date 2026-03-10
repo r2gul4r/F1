@@ -26,4 +26,19 @@ describe("api client", () => {
       expect(error).toBeInstanceOf(ApiClientError);
     }
   });
+
+  it("HTTP 실패는 REQUEST_FAILED 코드로 전달함", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: false,
+        status: 503
+      })
+    );
+
+    await expect(apiClient.getCurrentSession("watch-token")).rejects.toMatchObject({
+      code: "REQUEST_FAILED",
+      status: 503
+    });
+  });
 });

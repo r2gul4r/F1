@@ -2,10 +2,13 @@ const realtimeHttp = process.env.NEXT_PUBLIC_REALTIME_HTTP_BASE ?? "http://local
 const hasWatchToken = (token: string): boolean => token.trim().length > 0;
 const opaqueMessage = "요청 처리 실패";
 
-export type ApiClientErrorCode = "WATCH_TOKEN_MISSING";
+export type ApiClientErrorCode = "WATCH_TOKEN_MISSING" | "REQUEST_FAILED";
 
 export class ApiClientError extends Error {
-  constructor(public readonly code: ApiClientErrorCode) {
+  constructor(
+    public readonly code: ApiClientErrorCode,
+    public readonly status?: number
+  ) {
     super(opaqueMessage);
     this.name = "ApiClientError";
   }
@@ -24,7 +27,7 @@ const safeFetch = async <T>(path: string, watchToken: string): Promise<T> => {
   });
 
   if (!response.ok) {
-    throw new Error(opaqueMessage);
+    throw new ApiClientError("REQUEST_FAILED", response.status);
   }
 
   return (await response.json()) as T;

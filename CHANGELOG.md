@@ -24,3 +24,4 @@
 - fix: fallback immediately on AI model non-ok response and clear timeout safely
 - fix: replace watch page secret misconfig throw with non-crashing fallback render
 - fix: add typed watch-token-missing API client error for safer caller handling
+- fix: classify realtime HTTP failures as typed API errors with status metadata
