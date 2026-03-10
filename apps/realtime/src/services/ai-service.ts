@@ -67,11 +67,10 @@ export class AiService {
 
   async predict(request: AiPredictRequest): Promise<AiPrediction> {
     const startedAt = Date.now();
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 5000);
 
     try {
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 5000);
-
       const response = await fetch(`${this.config.baseUrl}/api/generate`, {
         method: "POST",
         headers: { "content-type": "application/json" },
@@ -84,10 +83,8 @@ export class AiService {
         signal: controller.signal
       });
 
-      clearTimeout(timer);
-
       if (!response.ok) {
-        throw new Error("model request failed");
+        return fallbackPrediction(request, Date.now() - startedAt);
       }
 
       const data = (await response.json()) as { response?: string };
@@ -114,6 +111,8 @@ export class AiService {
         ...fallbackPrediction(request, Date.now() - startedAt),
         reasoningSummary: sanitizeUserHtml(opaque.publicMessage)
       };
+    } finally {
+      clearTimeout(timer);
     }
   }
 }
