@@ -49,3 +49,24 @@ create table if not exists ai_predictions (
   model_latency_ms int not null,
   timestamp_ms bigint not null
 );
+
+create table if not exists app_users (
+  id text primary key,
+  display_name text not null,
+  avatar_url text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists oauth_identities (
+  provider text not null,
+  provider_user_id text not null,
+  user_id text not null references app_users(id) on delete cascade,
+  email text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  primary key (provider, provider_user_id)
+);
+
+create unique index if not exists idx_oauth_identity_user_provider
+  on oauth_identities(user_id, provider);
