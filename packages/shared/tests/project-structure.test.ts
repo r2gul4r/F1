@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { assertProjectStructure } from "../src/project-structure.js";
+import { assertProjectStructure, ProjectStructureError } from "../src/project-structure.js";
 
 const currentDir = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(currentDir, "../../..");
@@ -28,6 +28,15 @@ describe("project structure", () => {
       "utf8"
     );
 
-    expect(() => assertProjectStructure(tempRoot)).toThrow("PROJECT_STRUCTURE_INVALID");
+    expect(() => assertProjectStructure(tempRoot)).toThrow(ProjectStructureError);
+
+    try {
+      assertProjectStructure(tempRoot);
+      expect.fail("실패가 필요함");
+    } catch (error) {
+      const typedError = error as ProjectStructureError;
+      expect(typedError.code).toBe("PROJECT_STRUCTURE_INVALID");
+      expect(typedError.result.missingPaths).toContain("apps/realtime/package.json");
+    }
   });
 });

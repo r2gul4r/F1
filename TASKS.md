@@ -16,4 +16,5 @@
 [x] investigate technical debt at apps\web\src\lib\api.ts:6
 [x] investigate technical debt at apps\web\src\lib\api.ts:17
 [x] investigate technical debt at apps\worker\src\realtime-client.ts:17
+[x] investigate technical debt at packages\shared\src\project-structure.ts:81
 

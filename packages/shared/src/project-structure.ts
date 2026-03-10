@@ -17,6 +17,15 @@ export type ProjectStructureResult = {
   readonly workspaceNameMismatches: readonly WorkspaceNameMismatch[];
 };
 
+export class ProjectStructureError extends Error {
+  readonly code = "PROJECT_STRUCTURE_INVALID";
+
+  constructor(public readonly result: ProjectStructureResult) {
+    super("PROJECT_STRUCTURE_INVALID");
+    this.name = "ProjectStructureError";
+  }
+}
+
 const requiredRootPaths = [
   "package.json",
   "pnpm-workspace.yaml",
@@ -78,6 +87,6 @@ export const inspectProjectStructure = (repoRoot: string): ProjectStructureResul
 export const assertProjectStructure = (repoRoot: string): void => {
   const result = inspectProjectStructure(repoRoot);
   if (result.missingPaths.length > 0 || result.workspaceNameMismatches.length > 0) {
-    throw new Error("PROJECT_STRUCTURE_INVALID");
+    throw new ProjectStructureError(result);
   }
 };
