@@ -1,4 +1,17 @@
 import { Driver, RaceFlag, Session, TelemetryTick, toOpaqueError } from "@f1/shared";
+const opaqueMessage = "요청 처리 실패";
+
+export type RealtimeClientErrorCode = "REQUEST_FAILED";
+
+export class RealtimeClientError extends Error {
+  constructor(
+    public readonly code: RealtimeClientErrorCode,
+    public readonly status: number
+  ) {
+    super(opaqueMessage);
+    this.name = "RealtimeClientError";
+  }
+}
 
 export class RealtimeClient {
   constructor(private readonly baseUrl: string, private readonly token: string) {}
@@ -14,7 +27,7 @@ export class RealtimeClient {
     });
 
     if (!response.ok) {
-      throw new Error(`post failed ${response.status}`);
+      throw new RealtimeClientError("REQUEST_FAILED", response.status);
     }
   }
 
