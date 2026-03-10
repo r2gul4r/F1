@@ -11,12 +11,12 @@ Rules:
 - Never use destructive commands
 
 Loop:
-1. Read `TASKS.md`
-2. Implement first unfinished task with tests
-3. Run `pnpm typecheck` and `pnpm test`
-4. Mark completed task as `[x]`
-5. Update `CHANGELOG.md`
-6. Run `pnpm autonomous:security` before commit
+1. Run `pnpm autonomous:start:suggest`
+2. Read `TASKS.md`
+3. Implement first unfinished task with tests
+4. Run `pnpm autonomous:quality`
+5. Mark completed task as `[x]`
+6. Update `CHANGELOG.md`
 7. Commit with one of: `feat`, `fix`, `refactor`, `docs`
 8. Push changes
 9. Repeat until 17:00 KST

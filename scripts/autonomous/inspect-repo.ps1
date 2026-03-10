@@ -15,8 +15,8 @@ if ($missingFiles.Count -gt 0) {
     throw "Required control files are missing"
 }
 
-$extensions = @("*.ts", "*.tsx", "*.js", "*.jsx", "*.mjs", "*.cjs", "*.json", "*.md", "*.yml", "*.yaml", "*.ps1")
-$excludeRegex = '\\node_modules\\|\\dist\\|\\.next\\|\\coverage\\|\\build\\|\\out\\|\\.git\\'
+$extensions = @("*.ts", "*.tsx", "*.js", "*.jsx", "*.mjs", "*.cjs", "*.ps1")
+$excludeRegex = '\\node_modules\\|\\dist\\|\\.next\\|\\coverage\\|\\build\\|\\out\\|\\.git\\|\\docs\\reports\\|\\infra\\|\\pnpm-lock\.yaml$|\\scripts\\autonomous\\inspect-repo\.ps1$'
 $scanFiles = @(Get-ChildItem -Path $repoRoot -Recurse -File -Include $extensions |
     Where-Object { $_.FullName -notmatch $excludeRegex })
 

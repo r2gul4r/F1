@@ -23,7 +23,22 @@ pnpm autonomous:start
 
 With automatic task suggestion insertion from inspection:
 ```powershell
-pnpm autonomous:start -- -ApplyTaskSuggestions
+pnpm autonomous:start:suggest
+```
+
+`autonomous:start` now enforces:
+- Node and pnpm readiness
+- dependency sync via `pnpm install --frozen-lockfile`
+- timeout-based failure instead of indefinite waiting
+
+## Toolchain Recovery Command
+```powershell
+pnpm autonomous:ensure-toolchain
+```
+
+## Dependency Recovery Command
+```powershell
+pnpm autonomous:ensure-deps
 ```
 
 ## Inspection Command
@@ -36,6 +51,11 @@ Inspection reports are saved into `docs/reports/`.
 ## Security Gate Command
 ```powershell
 pnpm autonomous:security
+```
+
+## Quality Gate Command
+```powershell
+pnpm autonomous:quality
 ```
 
 ## End-of-Day Command
@@ -52,10 +72,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/autonomous/end-of-
 1. Read `ARCHITECTURE.md`, `PLAN.md`, `TASKS.md`, `CHANGELOG.md`
 2. Pick the first unfinished task in `TASKS.md`
 3. Implement with tests
-4. Run validation (`pnpm typecheck`, `pnpm test`)
+4. Run validation (`pnpm autonomous:quality`)
 5. Mark task complete in `TASKS.md`
 6. Append changelog item
-7. Run `pnpm autonomous:security` before commit
-8. Commit using `feat|fix|refactor|docs` prefix
-9. Push
-10. Repeat until 17:00 KST
+7. Commit using `feat|fix|refactor|docs` prefix
+8. Push
+9. Repeat until 17:00 KST

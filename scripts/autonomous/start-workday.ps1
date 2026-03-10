@@ -1,7 +1,8 @@
 [CmdletBinding()]
 param(
     [switch]$IgnoreSchedule,
-    [switch]$ApplyTaskSuggestions
+    [switch]$ApplyTaskSuggestions,
+    [int]$DependencyInstallTimeoutSeconds = 300
 )
 
 Set-StrictMode -Version Latest
@@ -10,6 +11,7 @@ $ErrorActionPreference = "Stop"
 $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
 $taskPath = Join-Path $repoRoot "TASKS.md"
 $inspectScriptPath = Join-Path $PSScriptRoot "inspect-repo.ps1"
+$ensureDependenciesScriptPath = Join-Path $PSScriptRoot "ensure-project-dependencies.ps1"
 
 $kstZone = [System.TimeZoneInfo]::FindSystemTimeZoneById("Korea Standard Time")
 $kstNow = [System.TimeZoneInfo]::ConvertTime([System.DateTimeOffset]::UtcNow, $kstZone)
@@ -33,6 +35,8 @@ if (-not $IgnoreSchedule) {
         throw "Outside configured working hours"
     }
 }
+
+& $ensureDependenciesScriptPath -InstallTimeoutSeconds $DependencyInstallTimeoutSeconds
 
 if ($ApplyTaskSuggestions) {
     & $inspectScriptPath -ApplyTaskSuggestions
