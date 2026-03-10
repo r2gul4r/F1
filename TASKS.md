@@ -6,7 +6,7 @@
 - After completion, change `[ ]` to `[x]`, update `CHANGELOG.md`, commit, and push
 
 ## Queue
-[ ] setup project structure
+[x] setup project structure
 [ ] create database connection module
 [ ] implement user model for OAuth identity mapping
 [ ] implement OAuth login API
