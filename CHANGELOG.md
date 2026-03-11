@@ -29,3 +29,9 @@
 - fix: replace generic project-structure failure throw with typed error carrying details
 - docs: end-of-day summary at 2026-03-11 17:01:33
 - docs: end-of-day summary at 2026-03-11 18:54:03
+- chore: remove computer shutdown behavior from end-of-day automation and script
+- chore: enforce plan-seeded continuous work mode until 17:00 KST
+- chore: add blocker report flow for tasks stalled over 60 minutes
+- fix: add offline fallback toolchain mode for autonomous scripts when pnpm install is blocked
+- test: add pester journey tests for fallback mode command selection and opaque failure behavior
+- chore: route autonomous quality gate fallback tests through pester with explicit exit code

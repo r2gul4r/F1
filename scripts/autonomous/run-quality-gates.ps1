@@ -8,6 +8,9 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
+$toolchainFallbackScriptPath = Join-Path $PSScriptRoot "toolchain-fallback.ps1"
+. $toolchainFallbackScriptPath
+
 function Invoke-CmdWithTimeout {
     param(
         [Parameter(Mandatory = $true)]
@@ -52,15 +55,38 @@ $securityScriptPath = Join-Path $PSScriptRoot "security-check.ps1"
 
 Set-Location $repoRoot
 
-Invoke-CmdWithTimeout `
-    -CommandLine "pnpm typecheck" `
-    -TimeoutSeconds $TypecheckTimeoutSeconds `
-    -FailureMessage "Typecheck gate failed"
+$hasPnpm = [bool](Get-Command pnpm -ErrorAction SilentlyContinue)
+$hasNodeModules = Test-Path (Join-Path $repoRoot "node_modules")
+$toolchainMode = Get-ToolchainMode -HasPnpm $hasPnpm -HasNodeModules $hasNodeModules
 
-Invoke-CmdWithTimeout `
-    -CommandLine "pnpm test" `
-    -TimeoutSeconds $TestTimeoutSeconds `
-    -FailureMessage "Test gate failed"
+if ($toolchainMode.Mode -eq "pnpm") {
+    Invoke-CmdWithTimeout `
+        -CommandLine "pnpm typecheck" `
+        -TimeoutSeconds $TypecheckTimeoutSeconds `
+        -FailureMessage "Typecheck gate failed"
+
+    Invoke-CmdWithTimeout `
+        -CommandLine "pnpm test" `
+        -TimeoutSeconds $TestTimeoutSeconds `
+        -FailureMessage "Test gate failed"
+}
+else {
+    $typecheckCommands = @(Get-FallbackTypecheckCommands)
+    foreach ($command in $typecheckCommands) {
+        Invoke-CmdWithTimeout `
+            -CommandLine $command `
+            -TimeoutSeconds $TypecheckTimeoutSeconds `
+            -FailureMessage "Typecheck gate failed"
+    }
+
+    $testCommands = @(Get-FallbackTestCommands)
+    foreach ($command in $testCommands) {
+        Invoke-CmdWithTimeout `
+            -CommandLine $command `
+            -TimeoutSeconds $TestTimeoutSeconds `
+            -FailureMessage "Test gate failed"
+    }
+}
 
 $securityCommand = "powershell -NoProfile -ExecutionPolicy Bypass -File `"$securityScriptPath`" -StagedOnly"
 Invoke-CmdWithTimeout `
@@ -69,3 +95,4 @@ Invoke-CmdWithTimeout `
     -FailureMessage "Security gate failed"
 
 Write-Output "All quality gates passed"
+Write-Output "Quality mode: $($toolchainMode.Mode)"

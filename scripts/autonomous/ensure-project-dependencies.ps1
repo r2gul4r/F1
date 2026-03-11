@@ -6,6 +6,9 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
+$toolchainFallbackScriptPath = Join-Path $PSScriptRoot "toolchain-fallback.ps1"
+. $toolchainFallbackScriptPath
+
 function Invoke-CmdWithTimeout {
     param(
         [Parameter(Mandatory = $true)]
@@ -49,6 +52,20 @@ $ensureToolchainScriptPath = Join-Path $PSScriptRoot "ensure-node-toolchain.ps1"
 
 Set-Location $repoRoot
 
+$hasPnpm = [bool](Get-Command pnpm -ErrorAction SilentlyContinue)
+$hasNodeModules = Test-Path (Join-Path $repoRoot "node_modules")
+$toolchainMode = Get-ToolchainMode -HasPnpm $hasPnpm -HasNodeModules $hasNodeModules
+
+if ($toolchainMode.Mode -eq "fallback") {
+    if (-not $hasNodeModules) {
+        throw "Dependency state is unavailable"
+    }
+
+    Write-Output "Project dependencies ready"
+    Write-Output "Dependency mode: fallback"
+    exit 0
+}
+
 $installCommand = "pnpm install --frozen-lockfile --prefer-offline --reporter=append-only"
 Invoke-CmdWithTimeout `
     -CommandLine $installCommand `
@@ -56,3 +73,4 @@ Invoke-CmdWithTimeout `
     -FailureMessage "Dependency install failed"
 
 Write-Output "Project dependencies ready"
+Write-Output "Dependency mode: pnpm"

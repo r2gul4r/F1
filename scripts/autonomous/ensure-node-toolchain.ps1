@@ -7,6 +7,10 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
+$repoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
+$toolchainFallbackScriptPath = Join-Path $PSScriptRoot "toolchain-fallback.ps1"
+. $toolchainFallbackScriptPath
+
 function Add-PathSegmentIfMissing {
     param(
         [Parameter(Mandatory = $true)]
@@ -86,33 +90,52 @@ foreach ($segment in $commonPathSegments) {
 
 $nodeCommand = Get-Command node -ErrorAction SilentlyContinue
 if (-not $nodeCommand) {
-    throw "Node.js is missing. Install Node.js LTS and rerun automation"
+    throw "Toolchain is unavailable"
 }
 
 $pnpmCommand = Get-Command pnpm -ErrorAction SilentlyContinue
+$installAttemptFailed = $false
 if (-not $pnpmCommand) {
     $npmCommand = Get-Command npm -ErrorAction SilentlyContinue
     if (-not $npmCommand) {
-        throw "npm is missing. Node.js installation is incomplete"
+        throw "Toolchain is unavailable"
     }
 
     $installCommand = "npm install -g pnpm@$RequiredPnpmVersion --no-fund --no-audit --loglevel=error --fetch-timeout=20000"
-    Invoke-CmdWithTimeout `
-        -CommandLine $installCommand `
-        -TimeoutSeconds $InstallTimeoutSeconds `
-        -FailureMessage "Automatic pnpm installation failed"
+    try {
+        Invoke-CmdWithTimeout `
+            -CommandLine $installCommand `
+            -TimeoutSeconds $InstallTimeoutSeconds `
+            -FailureMessage "Automatic pnpm installation failed"
+    }
+    catch {
+        $installAttemptFailed = $true
+    }
+
+    $pnpmCommand = Get-Command pnpm -ErrorAction SilentlyContinue
 }
 
-$pnpmCommand = Get-Command pnpm -ErrorAction SilentlyContinue
-if (-not $pnpmCommand) {
-    throw "pnpm is still unavailable after install attempt"
-}
+$hasNodeModules = Test-Path (Join-Path $repoRoot "node_modules")
+$toolchainMode = Get-ToolchainMode -HasPnpm ([bool]$pnpmCommand) -HasNodeModules $hasNodeModules
+$env:F1_TOOLCHAIN_MODE = $toolchainMode.Mode
 
 $nodeVersion = (& node -v).Trim()
 Assert-NativeCommandSuccess -FailureMessage "Node version check failed"
-$pnpmVersion = (& pnpm -v).Trim()
-Assert-NativeCommandSuccess -FailureMessage "pnpm version check failed"
+
+if ($toolchainMode.Mode -eq "pnpm") {
+    $pnpmVersion = (& pnpm -v).Trim()
+    Assert-NativeCommandSuccess -FailureMessage "pnpm version check failed"
+
+    Write-Output "Node toolchain ready"
+    Write-Output "Node version: $nodeVersion"
+    Write-Output "pnpm version: $pnpmVersion"
+    exit 0
+}
+
+if ($installAttemptFailed) {
+    Write-Warning "Automatic pnpm installation was skipped. Fallback mode enabled"
+}
 
 Write-Output "Node toolchain ready"
 Write-Output "Node version: $nodeVersion"
-Write-Output "pnpm version: $pnpmVersion"
+Write-Output "Toolchain mode: fallback"
