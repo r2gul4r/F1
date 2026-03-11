@@ -8,13 +8,13 @@ This repository is prepared for an autonomous Codex workday loop with OAuth-base
 - `TASKS.md`
 - `ARCHITECTURE.md`
 - `CHANGELOG.md`
+- `TEAM_GUIDE.md`
 
 ## Daily Schedule (KST)
 - 08:10 start workday and run repository inspection
 - 08:15 review queue and lock first unfinished task
 - 08:20 begin implementation loop
-- 17:00 stop loop, summarize, commit, push
-- 17:01 optional shutdown via script flag
+- 17:00 stop loop, summarize, commit
 
 ## Start-of-Day Commands
 ```powershell
@@ -41,6 +41,16 @@ pnpm autonomous:ensure-toolchain
 pnpm autonomous:ensure-deps
 ```
 
+## Plan Seeding Command
+```powershell
+pnpm autonomous:seed-plan
+```
+
+## Blocker Report Command
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/autonomous/create-blocker-report.ps1 -TaskTitle "<task>" -Reason "<reason>" -StalledMinutes 60
+```
+
 ## Inspection Command
 ```powershell
 pnpm autonomous:inspect
@@ -63,18 +73,23 @@ pnpm autonomous:quality
 pnpm autonomous:eod
 ```
 
-Commit with push and optional shutdown:
+Commit only:
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/autonomous/end-of-day.ps1 -CommitType docs -Shutdown
+powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/autonomous/end-of-day.ps1 -CommitType docs
 ```
 
 ## Codex Task Loop Contract
-1. Read `ARCHITECTURE.md`, `PLAN.md`, `TASKS.md`, `CHANGELOG.md`
-2. Pick the first unfinished task in `TASKS.md`
-3. Implement with tests
-4. Run validation (`pnpm autonomous:quality`)
-5. Mark task complete in `TASKS.md`
-6. Append changelog item
-7. Commit using `feat|fix|refactor|docs` prefix
-8. Push
-9. Repeat until 17:00 KST
+1. Read `ARCHITECTURE.md`, `PLAN.md`, `TEAM_GUIDE.md`, `TASKS.md`, `CHANGELOG.md`
+2. If no unfinished task exists, run `pnpm autonomous:seed-plan` and continue
+3. Pick the first unfinished task in `TASKS.md`
+4. Let the parent session define a dynamic slice for the current task
+5. Use multi-agent execution only when the slice spans multiple subsystems or clearly benefits from ownership separation
+6. Lock shared contracts first when payload or schema changes are involved
+7. Run implementation with tests when appropriate
+8. Run validation (`pnpm autonomous:quality`)
+9. Mark task complete in `TASKS.md`
+10. Append changelog item
+11. Create split commits using `feat|fix|refactor|docs` prefix
+12. Do not push during autonomous runs
+13. If a task is stalled for 60+ minutes, create blocker report and switch tasks
+14. Continue until 17:00 KST even when original queue is exhausted

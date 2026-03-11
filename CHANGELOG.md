@@ -32,6 +32,9 @@
 - chore: remove computer shutdown behavior from end-of-day automation and script
 - chore: enforce plan-seeded continuous work mode until 17:00 KST
 - chore: add blocker report flow for tasks stalled over 60 minutes
+- fix: harden end-of-day push with HTTP/1.1 force and origin connectivity precheck
 - fix: add offline fallback toolchain mode for autonomous scripts when pnpm install is blocked
 - test: add pester journey tests for fallback mode command selection and opaque failure behavior
 - chore: route autonomous quality gate fallback tests through pester with explicit exit code
+- chore: remove push from autonomous loops and end-of-day automation
+- chore: switch autonomous workflow to split-commit strategy

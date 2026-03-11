@@ -11,11 +11,13 @@
     "autonomous:ensure-toolchain": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/autonomous/ensure-node-toolchain.ps1",
     "autonomous:ensure-deps": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/autonomous/ensure-project-dependencies.ps1",
     "autonomous:inspect": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/autonomous/inspect-repo.ps1",
+    "autonomous:seed-plan": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/autonomous/seed-plan-tasks.ps1",
+    "autonomous:blocker-report": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/autonomous/create-blocker-report.ps1",
     "autonomous:start": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/autonomous/start-workday.ps1",
     "autonomous:start:suggest": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/autonomous/start-workday.ps1 -ApplyTaskSuggestions",
     "autonomous:quality": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/autonomous/run-quality-gates.ps1",
     "autonomous:security": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/autonomous/security-check.ps1 -StagedOnly",
-    "autonomous:eod": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/autonomous/end-of-day.ps1 -SkipPush"
+    "autonomous:eod": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/autonomous/end-of-day.ps1"
   },
   "devDependencies": {
     "concurrently": "^9.1.2",

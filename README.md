@@ -41,6 +41,18 @@ F1 시청 보조 웹앱 초기 구현
 - `apps/worker`: OpenF1 수집 파이프라인
 - `packages/shared`: 스키마/보안/규칙 엔진
 
+## 멀티 에이전트 워크플로우
+
+- 메인 스레드 시작 명령: `!출근`
+- 상세 운영 규칙: `TEAM_GUIDE.md`
+- 실행 계획: `PLAN.md`
+- 부모 모델 내부용 슬라이스 기준: `docs/parent-slice-template.md`
+- Phase 1 예시 실행 패킷: `docs/phase1-slice1-orchestration.md`
+- 원칙:
+- `packages/shared` 계약은 먼저 잠그고 구현 에이전트를 병렬 실행
+- `frontend_ui`와 `threejs_map`은 파일 충돌이 없을 때만 병렬 실행
+- `reviewer`는 항상 read-only로 마지막 검수만 수행
+
 ## 운영 원칙 반영 사항
 
 - 비밀값은 모두 `process.env` 사용
