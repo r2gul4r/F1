@@ -27,3 +27,4 @@
 - fix: classify realtime HTTP failures as typed API errors with status metadata
 - fix: add typed worker realtime client error for non-ok internal post responses
 - fix: replace generic project-structure failure throw with typed error carrying details
+- docs: end-of-day summary at 2026-03-11 17:01:33
