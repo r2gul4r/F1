@@ -430,6 +430,7 @@ describe("realtime api", () => {
 
     expect(metrics.statusCode).toBe(200);
     expect(metrics.body).toContain("ai_inference_ms_count{status=\"fallback\"} 1");
+    expect(metrics.body).toContain("ai_fallback_count{reason=\"http_error\"} 1");
   });
 
   it("OAuth 로그인 API는 토큰 검증 후 watch 토큰을 발급함", async () => {

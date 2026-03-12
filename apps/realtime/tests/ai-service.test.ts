@@ -75,7 +75,30 @@ describe("ai service", () => {
     const prediction = result.prediction;
 
     expect(result.status).toBe("fallback");
+    expect(result.reason).toBe("http_error");
     expect(prediction.reasoningSummary).toBe("모델 응답 실패로 보수적 추정 사용");
+  });
+
+  it("확률 파싱이 불가능하면 invalid_payload reason으로 fallback함", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          response: "invalid output without probabilities"
+        })
+      })
+    );
+
+    const service = new AiService({
+      baseUrl: "http://localhost:11434",
+      model: "gemma3:12b"
+    });
+
+    const result = await service.predictWithStatus(request);
+
+    expect(result.status).toBe("fallback");
+    expect(result.reason).toBe("invalid_payload");
   });
 
   it("gemini provider 요청은 공식 REST shape를 사용함", async () => {
@@ -134,5 +157,22 @@ describe("ai service", () => {
     expect(prediction.podiumProb[0]).toBeCloseTo(0.6, 6);
     expect(prediction.podiumProb[1]).toBeCloseTo(0.3, 6);
     expect(prediction.podiumProb[2]).toBeCloseTo(0.1, 6);
+  });
+
+  it("예외가 발생하면 exception reason으로 fallback함", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockRejectedValue(new Error("network down"))
+    );
+
+    const service = new AiService({
+      baseUrl: "http://localhost:11434",
+      model: "gemma3:12b"
+    });
+
+    const result = await service.predictWithStatus(request);
+
+    expect(result.status).toBe("fallback");
+    expect(result.reason).toBe("exception");
   });
 });

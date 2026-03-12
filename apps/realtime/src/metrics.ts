@@ -4,6 +4,7 @@ export type Metrics = {
   registry: Registry;
   telemetryLagMs: Histogram<"source">;
   aiInferenceMs: Histogram<"status">;
+  aiFallbacks: Counter<"reason">;
   wsBroadcasts: Counter;
   wsConnections: Counter;
   wsRejects: Counter;
@@ -28,6 +29,13 @@ export const createMetrics = (): Metrics => {
     labelNames: ["status"],
     registers: [registry],
     buckets: [200, 500, 1000, 2000, 5000, 10000]
+  });
+
+  const aiFallbacks = new Counter({
+    name: "ai_fallback_count",
+    help: "AI fallback count by reason",
+    labelNames: ["reason"],
+    registers: [registry]
   });
 
   const wsBroadcasts = new Counter({
@@ -58,6 +66,7 @@ export const createMetrics = (): Metrics => {
     registry,
     telemetryLagMs,
     aiInferenceMs,
+    aiFallbacks,
     wsBroadcasts,
     wsConnections,
     wsRejects,

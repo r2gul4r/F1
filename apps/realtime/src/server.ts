@@ -175,6 +175,9 @@ export const buildServer = async (input: BuildServerInput): Promise<{
     await input.repository.savePrediction(prediction);
     hub.broadcast({ type: "ai.prediction", payload: prediction });
     metrics.aiInferenceMs.labels(result.status).observe(prediction.modelLatencyMs);
+    if (result.status === "fallback" && result.reason) {
+      metrics.aiFallbacks.labels(result.reason).inc();
+    }
     metrics.wsBroadcasts.inc();
 
     return prediction;
@@ -227,6 +230,9 @@ export const buildServer = async (input: BuildServerInput): Promise<{
       await input.repository.savePrediction(prediction);
       hub.broadcast({ type: "ai.prediction", payload: prediction });
       metrics.aiInferenceMs.labels(result.status).observe(prediction.modelLatencyMs);
+      if (result.status === "fallback" && result.reason) {
+        metrics.aiFallbacks.labels(result.reason).inc();
+      }
       metrics.wsBroadcasts.inc();
     });
 

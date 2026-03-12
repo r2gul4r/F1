@@ -94,3 +94,4 @@
 - chore: add validate:preflight command that chains structure and env checks
 - test: expose ws_connection_count and ws_reject_count through realtime metrics endpoint
 - feat: sort driver list by live rank while preserving team and selected context
+- feat: classify AI fallback results by reason and expose reason-specific metrics

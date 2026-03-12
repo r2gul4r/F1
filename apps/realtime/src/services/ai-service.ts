@@ -14,10 +14,12 @@ export type AiServiceConfig = {
 };
 
 export type AiPredictionStatus = "ok" | "fallback";
+export type AiFallbackReason = "http_error" | "invalid_payload" | "exception";
 
 export type AiPredictionResult = {
   prediction: AiPrediction;
   status: AiPredictionStatus;
+  reason?: AiFallbackReason;
 };
 
 type OllamaGenerateResponse = {
@@ -131,7 +133,8 @@ export class AiService {
       if (!response.ok) {
         return {
           prediction: fallbackPrediction(request, Date.now() - startedAt),
-          status: "fallback"
+          status: "fallback",
+          reason: "http_error"
         };
       }
 
@@ -148,7 +151,8 @@ export class AiService {
       if (!probabilities) {
         return {
           prediction: fallbackPrediction(request, Date.now() - startedAt),
-          status: "fallback"
+          status: "fallback",
+          reason: "invalid_payload"
         };
       }
 
@@ -171,7 +175,8 @@ export class AiService {
           ...fallbackPrediction(request, Date.now() - startedAt),
           reasoningSummary: sanitizeUserHtml(opaque.publicMessage)
         },
-        status: "fallback"
+        status: "fallback",
+        reason: "exception"
       };
     } finally {
       clearTimeout(timer);
