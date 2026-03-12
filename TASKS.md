@@ -82,3 +82,4 @@
 [x] plan-driven task: 이중 배포 경로와 운영 준비를 마무리한다 [slice 12]
 [x] plan-driven task: 이중 배포 경로와 운영 준비를 마무리한다 [slice 13]
 [x] plan-driven task: 이중 배포 경로와 운영 준비를 마무리한다 [slice 14]
+[x] plan-driven task: 수집과 실시간 전달 경로를 안정화한다 [slice 9]

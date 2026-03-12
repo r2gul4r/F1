@@ -127,3 +127,7 @@
 - docs: document env bootstrap helper in local setup flow
 - fix: suggest local env bootstrap helper when preflight hits placeholder secrets
 - docs: end-of-day summary at 2026-03-12 18:45:36
+
+## 2026-03-13
+- feat: add client-scoped realtime websocket reconnect and replay-buffer overflow suspicion metrics
+- test: cover client-scoped reconnect metrics and stable websocket clientId reuse through realtime and web journeys

@@ -5,8 +5,11 @@ export class WsRingBuffer {
 
   constructor(private readonly capacity: number) {}
 
-  push(event: WsEvent): void {
-    this.events = [...this.events, event].slice(-this.capacity);
+  push(event: WsEvent): boolean {
+    const nextEvents = [...this.events, event];
+    const overflowed = nextEvents.length > this.capacity;
+    this.events = nextEvents.slice(-this.capacity);
+    return overflowed;
   }
 
   snapshot(): WsEvent[] {

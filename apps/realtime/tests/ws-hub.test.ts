@@ -9,15 +9,19 @@ const openServer = async (bufferSize: number) => {
   const server = createServer();
   const tokenSecret = "watch-token-secret-for-test-123456";
   const onConnected = vi.fn();
+  const onReconnected = vi.fn();
   const onRejected = vi.fn();
   const onReplayDelivered = vi.fn();
+  const onDroppedEventSuspected = vi.fn();
   const hub = new WsHub(server, {
     bufferSize,
     watchTokenSecret: tokenSecret,
     allowedOrigins: ["http://localhost:3000"],
     onConnected,
+    onReconnected,
     onRejected,
-    onReplayDelivered
+    onReplayDelivered,
+    onDroppedEventSuspected
   });
 
   await new Promise<void>((resolve) => {
@@ -27,8 +31,10 @@ const openServer = async (bufferSize: number) => {
   return {
     hub,
     onConnected,
+    onReconnected,
     onRejected,
     onReplayDelivered,
+    onDroppedEventSuspected,
     tokenSecret,
     server,
     port: (server.address() as AddressInfo).port
@@ -149,6 +155,38 @@ describe("ws hub", () => {
     });
   });
 
+  it("같은 session이 다시 붙으면 reconnect callback을 호출함", async () => {
+    const runtime = await openServer(10);
+    servers.push(runtime.server);
+    const token = createWatchToken(runtime.tokenSecret, 60);
+    const clientId = "client-1";
+
+    const connectAndClose = async (): Promise<void> =>
+      new Promise<void>((resolve, reject) => {
+        const socket = new WebSocket(
+          `ws://127.0.0.1:${runtime.port}/ws?sessionId=session-1&token=${encodeURIComponent(token)}&clientId=${clientId}`,
+          {
+            headers: {
+              origin: "http://localhost:3000"
+            }
+          }
+        );
+
+        socket.on("open", () => {
+          socket.close();
+        });
+
+        socket.on("close", () => resolve());
+        socket.on("error", (error) => reject(error));
+      });
+
+    await connectAndClose();
+    await connectAndClose();
+
+    expect(runtime.onConnected).toHaveBeenCalledTimes(2);
+    expect(runtime.onReconnected).toHaveBeenCalledTimes(1);
+  });
+
   it("reconnect replay는 buffer capacity 안의 최신 이벤트만 유지함", async () => {
     const runtime = await openServer(2);
     servers.push(runtime.server);
@@ -200,6 +238,50 @@ describe("ws hub", () => {
     const parsed = messages.map((message) => JSON.parse(message));
     expect(runtime.onReplayDelivered).toHaveBeenCalledTimes(2);
     expect(parsed.map((item) => item.payload.timestampMs)).toEqual([1001, 1002]);
+  });
+
+  it("buffer capacity를 넘기면 dropped-event suspicion callback을 호출함", async () => {
+    const runtime = await openServer(2);
+    servers.push(runtime.server);
+
+    runtime.hub.broadcast({
+      type: "telemetry.tick",
+      payload: {
+        sessionId: "session-1",
+        driverId: "VER",
+        position: { x: 1, y: 2, z: 0 },
+        speedKph: 300,
+        lap: 5,
+        rank: 3,
+        timestampMs: 1000
+      }
+    });
+    runtime.hub.broadcast({
+      type: "telemetry.tick",
+      payload: {
+        sessionId: "session-1",
+        driverId: "VER",
+        position: { x: 2, y: 3, z: 0 },
+        speedKph: 305,
+        lap: 5,
+        rank: 2,
+        timestampMs: 1001
+      }
+    });
+    runtime.hub.broadcast({
+      type: "telemetry.tick",
+      payload: {
+        sessionId: "session-1",
+        driverId: "VER",
+        position: { x: 3, y: 4, z: 0 },
+        speedKph: 310,
+        lap: 5,
+        rank: 1,
+        timestampMs: 1002
+      }
+    });
+
+    expect(runtime.onDroppedEventSuspected).toHaveBeenCalledTimes(1);
   });
 
   it("인증 실패 websocket은 reject callback을 호출함", async () => {

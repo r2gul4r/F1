@@ -447,6 +447,214 @@ describe("realtime api", () => {
     }
   });
 
+  it("metrics는 같은 session 재연결 count를 노출함", async () => {
+    const repository = new MemoryRepository();
+    const { app } = await buildServer({
+      repository,
+      oauthUserRepository,
+      internalApiToken,
+      oauthProxyToken,
+      watchTokenSecret,
+      watchTokenTtlSec: 3600,
+      allowedOrigins: ["http://localhost:3000"],
+      wsBufferSize: 100,
+      ollamaBaseUrl: "http://localhost:11434",
+      ollamaModel: "gemma3:12b"
+    });
+
+    await app.listen({
+      port: 0,
+      host: "127.0.0.1"
+    });
+
+    try {
+      const port = (app.server.address() as AddressInfo).port;
+      const validToken = createWatchToken(watchTokenSecret, 60);
+      const clientId = "client-reconnect-1";
+
+      await new Promise<void>((resolve) => {
+        const socket = new WebSocket(
+          `ws://127.0.0.1:${port}/ws?sessionId=session-reconnect&token=${validToken}&clientId=${clientId}`,
+          {
+            headers: {
+              origin: "http://localhost:3000"
+            }
+          }
+        );
+
+        socket.on("open", () => {
+          socket.close();
+        });
+
+        socket.on("close", () => resolve());
+      });
+
+      await new Promise<void>((resolve) => {
+        const socket = new WebSocket(
+          `ws://127.0.0.1:${port}/ws?sessionId=session-reconnect&token=${validToken}&clientId=${clientId}`,
+          {
+            headers: {
+              origin: "http://localhost:3000"
+            }
+          }
+        );
+
+        socket.on("open", () => {
+          socket.close();
+        });
+
+        socket.on("close", () => resolve());
+      });
+
+      const metricsResponse = await fetch(`http://127.0.0.1:${port}/metrics`, {
+        headers: {
+          "x-internal-token": internalApiToken
+        }
+      });
+      const metricsBody = await metricsResponse.text();
+
+      expect(metricsResponse.status).toBe(200);
+      expect(metricsBody).toContain("ws_reconnect_count 1");
+    } finally {
+      await app.close();
+    }
+  });
+
+  it("metrics는 다른 client의 같은 session 첫 연결을 reconnect로 세지 않음", async () => {
+    const repository = new MemoryRepository();
+    const { app } = await buildServer({
+      repository,
+      oauthUserRepository,
+      internalApiToken,
+      oauthProxyToken,
+      watchTokenSecret,
+      watchTokenTtlSec: 3600,
+      allowedOrigins: ["http://localhost:3000"],
+      wsBufferSize: 100,
+      ollamaBaseUrl: "http://localhost:11434",
+      ollamaModel: "gemma3:12b"
+    });
+
+    await app.listen({
+      port: 0,
+      host: "127.0.0.1"
+    });
+
+    try {
+      const port = (app.server.address() as AddressInfo).port;
+      const validToken = createWatchToken(watchTokenSecret, 60);
+
+      await new Promise<void>((resolve) => {
+        const socket = new WebSocket(
+          `ws://127.0.0.1:${port}/ws?sessionId=session-reconnect&token=${validToken}&clientId=client-a`,
+          {
+            headers: {
+              origin: "http://localhost:3000"
+            }
+          }
+        );
+
+        socket.on("open", () => {
+          socket.close();
+        });
+
+        socket.on("close", () => resolve());
+      });
+
+      await new Promise<void>((resolve) => {
+        const socket = new WebSocket(
+          `ws://127.0.0.1:${port}/ws?sessionId=session-reconnect&token=${validToken}&clientId=client-b`,
+          {
+            headers: {
+              origin: "http://localhost:3000"
+            }
+          }
+        );
+
+        socket.on("open", () => {
+          socket.close();
+        });
+
+        socket.on("close", () => resolve());
+      });
+
+      const metricsResponse = await fetch(`http://127.0.0.1:${port}/metrics`, {
+        headers: {
+          "x-internal-token": internalApiToken
+        }
+      });
+      const metricsBody = await metricsResponse.text();
+
+      expect(metricsResponse.status).toBe(200);
+      expect(metricsBody).toContain("ws_reconnect_count 0");
+    } finally {
+      await app.close();
+    }
+  });
+
+  it("metrics는 websocket buffer overflow를 dropped-event suspicion으로 노출함", async () => {
+    const repository = new MemoryRepository();
+    const { app } = await buildServer({
+      repository,
+      oauthUserRepository,
+      internalApiToken,
+      oauthProxyToken,
+      watchTokenSecret,
+      watchTokenTtlSec: 3600,
+      allowedOrigins: ["http://localhost:3000"],
+      wsBufferSize: 1,
+      ollamaBaseUrl: "http://localhost:11434",
+      ollamaModel: "gemma3:12b"
+    });
+
+    const firstTick = await app.inject({
+      method: "POST",
+      url: "/internal/events/telemetry",
+      headers: {
+        "x-internal-token": internalApiToken
+      },
+      payload: {
+        sessionId: "session-overflow",
+        driverId: "VER",
+        position: { x: 1, y: 2, z: 0 },
+        speedKph: 312,
+        lap: 8,
+        rank: 1,
+        timestampMs: 1000
+      }
+    });
+    expect(firstTick.statusCode).toBe(202);
+
+    const secondTick = await app.inject({
+      method: "POST",
+      url: "/internal/events/telemetry",
+      headers: {
+        "x-internal-token": internalApiToken
+      },
+      payload: {
+        sessionId: "session-overflow",
+        driverId: "VER",
+        position: { x: 2, y: 3, z: 0 },
+        speedKph: 314,
+        lap: 8,
+        rank: 1,
+        timestampMs: 1100
+      }
+    });
+    expect(secondTick.statusCode).toBe(202);
+
+    const metrics = await app.inject({
+      method: "GET",
+      url: "/metrics",
+      headers: {
+        "x-internal-token": internalApiToken
+      }
+    });
+
+    expect(metrics.statusCode).toBe(200);
+    expect(metrics.body).toContain("ws_dropped_event_suspect_count 1");
+  });
+
   it("metrics는 ai fallback inference를 별도 status로 노출함", async () => {
     vi.stubGlobal(
       "fetch",

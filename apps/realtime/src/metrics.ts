@@ -7,8 +7,10 @@ export type Metrics = {
   aiFallbacks: Counter<"reason" | "provider">;
   wsBroadcasts: Counter;
   wsConnections: Counter;
+  wsReconnects: Counter;
   wsRejects: Counter;
   wsReplayDeliveries: Counter;
+  wsDroppedEventSuspects: Counter;
   sessionSyncs: Counter;
 };
 
@@ -51,6 +53,12 @@ export const createMetrics = (): Metrics => {
     registers: [registry]
   });
 
+  const wsReconnects = new Counter({
+    name: "ws_reconnect_count",
+    help: "Accepted WebSocket reconnect count",
+    registers: [registry]
+  });
+
   const wsRejects = new Counter({
     name: "ws_reject_count",
     help: "Rejected WebSocket connection count",
@@ -60,6 +68,12 @@ export const createMetrics = (): Metrics => {
   const wsReplayDeliveries = new Counter({
     name: "ws_replay_delivery_count",
     help: "Replayed WebSocket event delivery count",
+    registers: [registry]
+  });
+
+  const wsDroppedEventSuspects = new Counter({
+    name: "ws_dropped_event_suspect_count",
+    help: "Suspected dropped WebSocket event count from replay buffer overflow",
     registers: [registry]
   });
 
@@ -76,8 +90,10 @@ export const createMetrics = (): Metrics => {
     aiFallbacks,
     wsBroadcasts,
     wsConnections,
+    wsReconnects,
     wsRejects,
     wsReplayDeliveries,
+    wsDroppedEventSuspects,
     sessionSyncs
   };
 };

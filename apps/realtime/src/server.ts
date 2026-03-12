@@ -76,8 +76,10 @@ export const buildServer = async (input: BuildServerInput): Promise<{
     watchTokenSecret: input.watchTokenSecret,
     allowedOrigins: input.allowedOrigins,
     onConnected: () => metrics.wsConnections.inc(),
+    onReconnected: () => metrics.wsReconnects.inc(),
     onRejected: () => metrics.wsRejects.inc(),
-    onReplayDelivered: () => metrics.wsReplayDeliveries.inc()
+    onReplayDelivered: () => metrics.wsReplayDeliveries.inc(),
+    onDroppedEventSuspected: () => metrics.wsDroppedEventSuspects.inc()
   });
 
   app.setErrorHandler((error, _request, reply) => {

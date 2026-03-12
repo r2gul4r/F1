@@ -9,6 +9,13 @@ type SocketStatus = "idle" | "connecting" | "connected" | "reconnecting";
 
 const wsBase = process.env.NEXT_PUBLIC_REALTIME_WS_BASE ?? "ws://localhost:4001";
 const hasWatchToken = (token: string): boolean => token.trim().length > 0;
+const createSocketClientId = (): string => {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+
+  return `socket-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+};
 
 export const useRaceSocket = (sessionId: string, watchToken: string): { status: SocketStatus; reconnectInMs: number } => {
   const setDrivers = useRaceStore((state) => state.setDrivers);
@@ -16,6 +23,7 @@ export const useRaceSocket = (sessionId: string, watchToken: string): { status: 
   const setFlag = useRaceStore((state) => state.setFlag);
   const addPrediction = useRaceStore((state) => state.addPrediction);
   const socketRef = useRef<WebSocket | null>(null);
+  const clientIdRef = useRef(createSocketClientId());
   const reconnectAttempt = useRef(0);
   const reconnectTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [status, setStatus] = useState<SocketStatus>("idle");
@@ -54,8 +62,12 @@ export const useRaceSocket = (sessionId: string, watchToken: string): { status: 
 
     const connect = (targetSessionId: string): void => {
       setStatus(reconnectAttempt.current > 0 ? "reconnecting" : "connecting");
+      const socketUrl = new URL(`${wsBase.replace(/\/$/, "")}/ws`);
+      socketUrl.searchParams.set("sessionId", targetSessionId);
+      socketUrl.searchParams.set("token", watchToken);
+      socketUrl.searchParams.set("clientId", clientIdRef.current);
       const socket = new WebSocket(
-        `${wsBase.replace(/\/$/, "")}/ws?sessionId=${encodeURIComponent(targetSessionId)}&token=${encodeURIComponent(watchToken)}`
+        socketUrl.toString()
       );
       socketRef.current = socket;
 

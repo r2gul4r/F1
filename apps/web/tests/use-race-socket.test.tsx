@@ -147,6 +147,41 @@ describe("useRaceSocket", () => {
     expect(FakeWebSocket.instances[1]?.url).toContain("sessionId=session-2");
   });
 
+  it("재연결 중에도 같은 websocket clientId를 유지함", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn()
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => []
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => []
+        })
+    );
+
+    render(<Probe sessionId="session-1" />);
+
+    await flushAsync();
+    await flushAsync();
+    const firstUrl = new URL(FakeWebSocket.instances[0]?.url ?? "ws://localhost");
+    const firstClientId = firstUrl.searchParams.get("clientId");
+
+    FakeWebSocket.instances[0]?.close();
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(500);
+    });
+
+    await flushAsync();
+    await flushAsync();
+    const secondUrl = new URL(FakeWebSocket.instances[1]?.url ?? "ws://localhost");
+    const secondClientId = secondUrl.searchParams.get("clientId");
+
+    expect(firstClientId).toBeTruthy();
+    expect(secondClientId).toBe(firstClientId);
+  });
+
   it("current session이 null이면 재시도 후 연결함", async () => {
     vi.stubGlobal(
       "fetch",
