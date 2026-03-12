@@ -5,22 +5,26 @@ F1 시청 보조 웹앱 초기 구현
 ## 빠른 시작
 
 1. `cp .env.example .env`
-2. `.env`에서 `OPENF1_API_KEY`, `INTERNAL_API_TOKEN`, `WATCH_TOKEN_SECRET` 값을 실제 값으로 변경
-3. Gemini를 사용할 경우 `AI_PROVIDER=gemini` 와 `GEMINI_API_KEY`를 함께 설정
-4. `pnpm install`
-5. `pnpm validate:env`
-6. 전체 사전 점검은 `pnpm validate:preflight`
-7. `docker compose up --build`
+2. `.env`에서 `INTERNAL_API_TOKEN`, `OAUTH_PROXY_TOKEN`, `WATCH_TOKEN_SECRET` 값을 실제 값으로 변경
+3. OpenF1 없이 로컬로만 볼 경우 `DATA_SOURCE=mock` 으로 바꾸고, AI 없이 개발할 경우 `AI_PROVIDER=disabled` 로 둔다
+4. OpenF1 실데이터를 쓸 경우 `OPENF1_API_KEY`를 실제 값으로 변경한다
+5. Gemini를 사용할 경우 `AI_PROVIDER=gemini` 와 `GEMINI_API_KEY`를 함께 설정한다
+6. `pnpm install`
+7. `pnpm validate:env`
+8. 전체 사전 점검은 `pnpm validate:preflight`
+9. `docker compose up --build`
 
 ## 로컬 개발
 
 1. `cp .env.example .env`
-2. `.env`에서 `OPENF1_API_KEY`, `INTERNAL_API_TOKEN`, `WATCH_TOKEN_SECRET` 값을 실제 값으로 변경
-3. Gemini를 사용할 경우 `AI_PROVIDER=gemini` 와 `GEMINI_API_KEY`를 함께 설정
-4. `pnpm install`
-5. `pnpm validate:env`
-6. 전체 사전 점검은 `pnpm validate:preflight`
-7. `pnpm dev`
+2. `.env`에서 `INTERNAL_API_TOKEN`, `OAUTH_PROXY_TOKEN`, `WATCH_TOKEN_SECRET` 값을 실제 값으로 변경
+3. OpenF1 없이 로컬로만 볼 경우 `DATA_SOURCE=mock` 으로 바꾸고, AI 없이 개발할 경우 `AI_PROVIDER=disabled` 로 둔다
+4. OpenF1 실데이터를 쓸 경우 `OPENF1_API_KEY`를 실제 값으로 변경한다
+5. Gemini를 사용할 경우 `AI_PROVIDER=gemini` 와 `GEMINI_API_KEY`를 함께 설정한다
+6. `pnpm install`
+7. `pnpm validate:env`
+8. 전체 사전 점검은 `pnpm validate:preflight`
+9. `pnpm dev`
 
 기본 접속 경로
 
@@ -39,7 +43,9 @@ F1 시청 보조 웹앱 초기 구현
 참고
 
 - OpenF1 응답이 일시 실패하면 워커가 mock 데이터로 자동 fallback
-- AI provider 기본값은 `ollama`이고, Gemini 사용 시 `AI_PROVIDER=gemini` 와 `GEMINI_API_KEY`가 모두 필요
+- 로컬 개발에서 외부 데이터 없이 보려면 `DATA_SOURCE=mock` 을 쓴다
+- 로컬 AI나 Gemini API가 없으면 `AI_PROVIDER=disabled` 로 두고 fallback 예측만 확인할 수 있다
+- 로컬 Ollama를 쓸 경우 `AI_PROVIDER=ollama`, Gemini를 쓸 경우 `AI_PROVIDER=gemini` 와 `GEMINI_API_KEY`를 함께 설정한다
 - 자동 근무 시작 전 점검은 `pnpm autonomous:preflight`
 - 수동 점검은 `pnpm install` 이후 `pnpm validate:preflight`
 

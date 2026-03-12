@@ -120,3 +120,4 @@
 - test: cover null current-session response before reconnect recovery
 - feat: add disabled AI provider mode for local fallback-only development
 - test: cover disabled provider fallback metrics through direct and trigger-driven server paths
+- docs: document mock datasource and disabled AI provider path for local fallback-only development
