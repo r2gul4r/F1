@@ -56,6 +56,40 @@ describe("ai service", () => {
     expect(prediction.podiumProb[2]).toBeCloseTo(0.1625, 6);
   });
 
+  it("fallback 확률은 고속 입력에서도 합계 1을 유지함", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: false,
+        status: 500,
+        json: async () => ({})
+      })
+    );
+
+    const service = new AiService({
+      baseUrl: "http://localhost:11434",
+      model: "gemma3:12b"
+    });
+
+    const prediction = await service.predict({
+      ...request,
+      snapshot: {
+        ticks: [
+          { ...request.snapshot.ticks[0], speedKph: 1000 },
+          { ...request.snapshot.ticks[0], speedKph: 1000, timestampMs: request.snapshot.ticks[0].timestampMs + 1 },
+          { ...request.snapshot.ticks[0], speedKph: 1000, timestampMs: request.snapshot.ticks[0].timestampMs + 2 }
+        ]
+      }
+    });
+
+    const total = prediction.podiumProb.reduce((sum, value) => sum + value, 0);
+
+    expect(total).toBeCloseTo(1, 6);
+    expect(prediction.podiumProb[0]).toBeLessThanOrEqual(1);
+    expect(prediction.podiumProb[1]).toBeGreaterThanOrEqual(0);
+    expect(prediction.podiumProb[2]).toBeGreaterThanOrEqual(0);
+  });
+
   it("모델 응답이 실패여도 보수적 fallback 메시지를 유지함", async () => {
     vi.stubGlobal(
       "fetch",

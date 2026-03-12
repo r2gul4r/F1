@@ -38,18 +38,30 @@ type GeminiGenerateResponse = {
 
 const clamp = (value: number): number => Math.min(1, Math.max(0, value));
 
+const normalizeProbabilities = (values: number[]): number[] | null => {
+  const sanitized = values.map((value) => clamp(value));
+  const total = sanitized.reduce((sum, value) => sum + value, 0);
+
+  if (total <= 0) {
+    return null;
+  }
+
+  return sanitized.map((value) => value / total);
+};
+
 const fallbackPrediction = (request: AiPredictRequest, latencyMs: number): AiPrediction => {
   const latest = request.snapshot.ticks.slice(-3);
   const base = latest.length > 0 ? latest.reduce((sum, tick) => sum + tick.speedKph, 0) / latest.length : 0;
   const p1 = clamp(0.25 + base / 1200);
   const p2 = clamp(0.45 - base / 2400);
   const p3 = clamp(1 - p1 - p2);
+  const normalized = normalizeProbabilities([p1, p2, p3]) ?? [1 / 3, 1 / 3, 1 / 3];
 
   return {
     sessionId: request.sessionId,
     lap: request.lap,
     triggerDriverId: request.triggerDriverId,
-    podiumProb: [p1, p2, p3],
+    podiumProb: [normalized[0] ?? 0, normalized[1] ?? 0, normalized[2] ?? 0],
     reasoningSummary: sanitizeUserHtml("모델 응답 실패로 보수적 추정 사용"),
     modelLatencyMs: latencyMs,
     timestampMs: Date.now()
@@ -62,14 +74,7 @@ const extractProbabilities = (text: string): number[] | null => {
     return null;
   }
 
-  const selected = matches.slice(0, 3).map((item) => clamp(Number(item)));
-  const total = selected.reduce((sum, value) => sum + value, 0);
-
-  if (total <= 0) {
-    return null;
-  }
-
-  return selected.map((value) => value / total);
+  return normalizeProbabilities(matches.slice(0, 3).map((item) => Number(item)));
 };
 
 const toPrompt = (request: AiPredictRequest): string => {
