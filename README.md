@@ -59,6 +59,11 @@ F1 시청 보조 웹앱 초기 구현
 - `apps/worker`: OpenF1 수집 파이프라인
 - `packages/shared`: 스키마/보안/규칙 엔진
 
+## 배포와 운영
+
+- public 과 developer 모드는 `.env` 값만 바꿔서 전환한다
+- 배포 전 점검, smoke check, rollback 시작점은 `docs/deployment-runbook.md` 를 따른다
+
 ## 멀티 에이전트 워크플로우
 
 - 메인 스레드 시작 명령: `!출근`

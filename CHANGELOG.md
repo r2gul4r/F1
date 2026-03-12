@@ -139,3 +139,4 @@
 - test: cover prediction card selection context against newer overall predictions
 - test: cover AI fallback probability normalization under high-speed inputs
 - test: cover HUD recovery when the selected driver disappears from the live list
+- docs: add deployment runbook for mode switching, smoke checks, and rollback starting points
