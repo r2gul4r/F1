@@ -83,6 +83,11 @@ main {
   font-weight: 700;
 }
 
+.selected-hud-team,
+.selected-hud-update {
+  font-size: 0.82rem;
+}
+
 .selected-hud-stats {
   display: flex;
   gap: 10px;

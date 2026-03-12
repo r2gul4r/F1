@@ -63,5 +63,5 @@
 [x] plan-driven task: 수집과 실시간 전달 경로를 안정화한다 [slice 6]
 [x] plan-driven task: 전략 대시보드 MVP를 완성한다 [slice 6]
 [x] plan-driven task: 하이브리드 AI 전략 엔진을 단단하게 만든다 [slice 6]
-[ ] plan-driven task: 핵심 대시보드가 신뢰 가능해진 뒤 고임팩트 연출을 추가한다 [slice 6]
+[x] plan-driven task: 핵심 대시보드가 신뢰 가능해진 뒤 고임팩트 연출을 추가한다 [slice 6]
 [ ] plan-driven task: 이중 배포 경로와 운영 준비를 마무리한다 [slice 6]

@@ -60,13 +60,16 @@ describe("selected driver hud", () => {
     render(<SelectedDriverHud />);
 
     expect(screen.getByText("#1 Max Verstappen")).toBeTruthy();
+    expect(screen.getByText("Red Bull")).toBeTruthy();
     expect(screen.getByText("R1")).toBeTruthy();
+    expect(screen.getByText(/업데이트 \d{2}:\d{2}:\d{2}/)).toBeTruthy();
 
     act(() => {
       useRaceStore.getState().setSelectedDriverId("NOR");
     });
 
     expect(screen.getByText("#4 Lando Norris")).toBeTruthy();
+    expect(screen.getByText("McLaren")).toBeTruthy();
     expect(screen.getByText("R2")).toBeTruthy();
     expect(screen.getByText("309 kph")).toBeTruthy();
   });

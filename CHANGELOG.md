@@ -100,3 +100,4 @@
 - feat: expose websocket replay delivery count through realtime metrics
 - feat: add live rank and speed chips to the dashboard driver list
 - feat: classify AI fallback results by reason and expose reason-specific metrics
+- feat: enrich selected-driver HUD with team name and last update time

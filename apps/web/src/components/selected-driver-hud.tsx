@@ -3,6 +3,14 @@
 import React, { useMemo } from "react";
 import { useRaceStore } from "@/src/store/use-race-store";
 
+const formatLastUpdate = (timestampMs: number): string =>
+  new Date(timestampMs).toLocaleTimeString("ko-KR", {
+    hour12: false,
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit"
+  });
+
 export const SelectedDriverHud = () => {
   const drivers = useRaceStore((state) => state.drivers);
   const selectedDriverId = useRaceStore((state) => state.selectedDriverId);
@@ -27,11 +35,13 @@ export const SelectedDriverHud = () => {
       <div className="selected-hud-name">
         #{selected.number} {selected.fullName}
       </div>
+      <div className="selected-hud-team muted">{selected.teamName}</div>
       <div className="selected-hud-stats">
         <span>R{tick.rank}</span>
         <span>L{tick.lap}</span>
         <span>{tick.speedKph.toFixed(0)} kph</span>
       </div>
+      <div className="selected-hud-update muted">업데이트 {formatLastUpdate(tick.timestampMs)}</div>
     </section>
   );
 };
