@@ -95,3 +95,4 @@
 - test: expose ws_connection_count and ws_reject_count through realtime metrics endpoint
 - feat: sort driver list by live rank while preserving team and selected context
 - feat: classify AI fallback results by reason and expose reason-specific metrics
+- feat: add selected-driver spotlight rules for race canvas rendering

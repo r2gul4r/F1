@@ -3,6 +3,7 @@
 import React from "react";
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
+import { getDriverVisualState } from "@/src/components/race-canvas-visuals";
 import { useRaceStore } from "@/src/store/use-race-store";
 
 const DRIVER_COLORS = [0x22d3ee, 0xfb7185, 0xfacc15, 0x4ade80, 0xc084fc, 0xf97316, 0x60a5fa];
@@ -10,12 +11,18 @@ const DRIVER_COLORS = [0x22d3ee, 0xfb7185, 0xfacc15, 0x4ade80, 0xc084fc, 0xf9731
 export const RaceCanvas = () => {
   const canvasRef = useRef<HTMLDivElement | null>(null);
   const ticksRef = useRef(useRaceStore.getState().ticksByDriver);
+  const selectedDriverIdRef = useRef(useRaceStore.getState().selectedDriverId);
   const ticksByDriver = useRaceStore((state) => state.ticksByDriver);
+  const selectedDriverId = useRaceStore((state) => state.selectedDriverId);
   const setFps = useRaceStore((state) => state.setFps);
 
   useEffect(() => {
     ticksRef.current = ticksByDriver;
   }, [ticksByDriver]);
+
+  useEffect(() => {
+    selectedDriverIdRef.current = selectedDriverId;
+  }, [selectedDriverId]);
 
   useEffect(() => {
     const container = canvasRef.current;
@@ -64,16 +71,27 @@ export const RaceCanvas = () => {
 
       const ticks = Object.values(ticksRef.current);
       ticks.forEach((tick, index) => {
+        const visualState = getDriverVisualState({
+          driverId: tick.driverId,
+          selectedDriverId: selectedDriverIdRef.current
+        });
         const existing = meshes[tick.driverId];
         if (existing) {
           existing.position.lerp(new THREE.Vector3(tick.position.x, tick.position.y, 0), 0.22);
+          existing.scale.lerp(new THREE.Vector3(visualState.scale, visualState.scale, 1), 0.24);
+          (existing.material as THREE.MeshBasicMaterial).opacity = visualState.opacity;
           return;
         }
 
         const geometry = new THREE.CircleGeometry(4.6, 24);
-        const material = new THREE.MeshBasicMaterial({ color: DRIVER_COLORS[index % DRIVER_COLORS.length] });
+        const material = new THREE.MeshBasicMaterial({
+          color: DRIVER_COLORS[index % DRIVER_COLORS.length],
+          transparent: true,
+          opacity: visualState.opacity
+        });
         const mesh = new THREE.Mesh(geometry, material);
         mesh.position.set(tick.position.x, tick.position.y, 0);
+        mesh.scale.set(visualState.scale, visualState.scale, 1);
         meshes[tick.driverId] = mesh;
         scene.add(mesh);
       });
@@ -96,7 +114,7 @@ export const RaceCanvas = () => {
       trackGeometry.dispose();
       trackMaterial.dispose();
     };
-  }, [setFps]);
+  }, [selectedDriverId, setFps]);
 
   return <div ref={canvasRef} style={{ width: "100%", height: "100%", minHeight: 520 }} />;
 };
