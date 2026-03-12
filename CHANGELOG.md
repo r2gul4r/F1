@@ -122,3 +122,5 @@
 - test: cover disabled provider fallback metrics through direct and trigger-driven server paths
 - docs: document mock datasource and disabled AI provider path for local fallback-only development
 - fix: stabilize shared workspace scripts for recursive pnpm test execution
+- feat: add local env bootstrap helper for generating strong dev-only secrets
+- test: cover local env bootstrap create, preserve, and missing-key append journeys

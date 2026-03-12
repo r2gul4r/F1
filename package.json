@@ -9,6 +9,7 @@
     "validate:structure": "pnpm --filter @f1/shared build && node ./scripts/validate-project-structure.mjs",
     "validate:env": "pnpm --filter @f1/realtime env:validate && pnpm --filter @f1/worker env:validate",
     "validate:preflight": "pnpm validate:structure && pnpm validate:env",
+    "env:bootstrap:local": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/bootstrap-local-env.ps1",
     "test": "pnpm -r test",
     "typecheck": "pnpm --filter @f1/shared build && pnpm -r typecheck",
     "autonomous:ensure-toolchain": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/autonomous/ensure-node-toolchain.ps1",
