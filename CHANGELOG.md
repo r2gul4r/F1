@@ -109,4 +109,6 @@
 - feat: add official onboard link to selected-driver HUD for focus mode continuity
 - test: cover selected-driver HUD onboard link rendering and driver switch updates
 - docs: fix README install and preflight validation order for fresh environments
+- fix: remove worker-only OPENF1 key requirement from realtime env validation
+- test: cover ollama realtime env validation without OPENF1_API_KEY
 - test: cover trigger-driven provider-labelled AI fallback metrics through telemetry events

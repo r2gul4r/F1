@@ -1,4 +1,3 @@
-import { OpaqueError } from "@f1/shared";
 import { existsSync, readFileSync } from "node:fs";
 import { readConfig, RealtimeConfig } from "./config.js";
 
@@ -31,11 +30,5 @@ export const loadDotEnvFile = (envFilePath: string): void => {
 
 export const runRealtimeEnvValidation = (envFilePath: string): RealtimeConfig => {
   loadDotEnvFile(envFilePath);
-  const config = readConfig();
-
-  if (config.aiProvider === "ollama" && (process.env.OPENF1_API_KEY ?? "").trim().length === 0) {
-    throw new OpaqueError("설정값 누락");
-  }
-
-  return config;
+  return readConfig();
 };

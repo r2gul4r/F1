@@ -52,4 +52,18 @@ describe("realtime env validation", () => {
 
     expect(() => runRealtimeEnvValidation(envPath)).toThrow();
   });
+
+  it("ollama realtime 검증은 OPENF1_API_KEY 없이 통과함", () => {
+    const envPath = createEnvFile([
+      "POSTGRES_URL=postgresql://postgres:postgres@localhost:5432/f1pulse",
+      "REDIS_URL=redis://localhost:6379",
+      "INTERNAL_API_TOKEN=internal-token-for-test-123456",
+      "OAUTH_PROXY_TOKEN=oauth-proxy-token-for-test-123456",
+      "WATCH_TOKEN_SECRET=watch-token-secret-for-test-123456",
+      "ALLOWED_ORIGINS=http://localhost:3000",
+      "AI_PROVIDER=ollama"
+    ].join("\n"));
+
+    expect(() => runRealtimeEnvValidation(envPath)).not.toThrow();
+  });
 });
