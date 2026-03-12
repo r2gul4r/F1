@@ -114,3 +114,5 @@
 - test: cover trigger-driven provider-labelled AI fallback metrics through telemetry events
 - feat: add worker env validation entrypoint script
 - test: cover worker mock-mode validation without OPENF1_API_KEY
+- feat: load .env inside worker env validation and chain root validate:env across services
+- test: cover worker env validation env-file loading for openf1 and mock modes
