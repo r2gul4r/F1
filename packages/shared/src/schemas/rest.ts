@@ -53,9 +53,35 @@ export const oauthLoginResponseSchema = z.object({
   })
 });
 
+export const authSessionSchema = z.discriminatedUnion("kind", [
+  z.object({
+    kind: z.literal("anonymous")
+  }),
+  z.object({
+    kind: z.literal("oauth"),
+    userId: z.string().min(1),
+    displayName: z.string().min(1)
+  })
+]);
+
+export const authSessionResponseSchema = z.object({
+  tokenType: z.literal("Bearer"),
+  issuedAtMs: z.number().int().nonnegative(),
+  expiresAtMs: z.number().int().positive(),
+  authSession: authSessionSchema
+});
+
+export const internalSessionSyncRequestSchema = z.object({
+  session: sessionSchema,
+  drivers: z.array(driverSchema)
+});
+
 export type Session = z.infer<typeof sessionSchema>;
 export type Driver = z.infer<typeof driverSchema>;
 export type TelemetryRecentQuery = z.infer<typeof telemetryRecentQuerySchema>;
 export type AiPredictRequest = z.infer<typeof aiPredictRequestSchema>;
 export type OAuthLoginRequest = z.infer<typeof oauthLoginRequestSchema>;
 export type OAuthLoginResponse = z.infer<typeof oauthLoginResponseSchema>;
+export type AuthSession = z.infer<typeof authSessionSchema>;
+export type AuthSessionResponse = z.infer<typeof authSessionResponseSchema>;
+export type InternalSessionSyncRequest = z.infer<typeof internalSessionSyncRequestSchema>;

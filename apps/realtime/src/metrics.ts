@@ -5,6 +5,9 @@ export type Metrics = {
   telemetryLagMs: Histogram<"source">;
   aiInferenceMs: Histogram<"status">;
   wsBroadcasts: Counter;
+  wsConnections: Counter;
+  wsRejects: Counter;
+  sessionSyncs: Counter;
 };
 
 export const createMetrics = (): Metrics => {
@@ -33,10 +36,31 @@ export const createMetrics = (): Metrics => {
     registers: [registry]
   });
 
+  const wsConnections = new Counter({
+    name: "ws_connection_count",
+    help: "Accepted WebSocket connection count",
+    registers: [registry]
+  });
+
+  const wsRejects = new Counter({
+    name: "ws_reject_count",
+    help: "Rejected WebSocket connection count",
+    registers: [registry]
+  });
+
+  const sessionSyncs = new Counter({
+    name: "session_sync_count",
+    help: "Accepted internal session sync count",
+    registers: [registry]
+  });
+
   return {
     registry,
     telemetryLagMs,
     aiInferenceMs,
-    wsBroadcasts
+    wsBroadcasts,
+    wsConnections,
+    wsRejects,
+    sessionSyncs
   };
 };

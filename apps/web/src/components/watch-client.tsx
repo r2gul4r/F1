@@ -1,9 +1,12 @@
 "use client";
 
-import { useEffect } from "react";
+import React from "react";
+import { useEffect, useState } from "react";
 import { DriverPanel } from "@/src/components/driver-panel";
+import { HudErrorBoundary } from "@/src/components/hud-error-boundary";
 import { PredictionCard } from "@/src/components/prediction-card";
 import { RaceCanvas } from "@/src/components/race-canvas";
+import { SelectedDriverHud } from "@/src/components/selected-driver-hud";
 import { useRaceSocket } from "@/src/lib/use-race-socket";
 import { useRaceStore } from "@/src/store/use-race-store";
 
@@ -15,6 +18,8 @@ export const WatchClient = ({
   watchToken: string;
 }) => {
   const { status, reconnectInMs } = useRaceSocket(sessionId, watchToken);
+  const [hudEnabled, setHudEnabled] = useState(true);
+  const [focusModeEnabled, setFocusModeEnabled] = useState(false);
   const drivers = useRaceStore((state) => state.drivers);
   const selectedDriverId = useRaceStore((state) => state.selectedDriverId);
   const setSelectedDriverId = useRaceStore((state) => state.setSelectedDriverId);
@@ -27,8 +32,10 @@ export const WatchClient = ({
     }
   }, [drivers, selectedDriverId, setSelectedDriverId]);
 
+  const selectedDriver = drivers.find((driver) => driver.id === selectedDriverId) ?? null;
+
   return (
-    <main className="dashboard">
+    <main className={focusModeEnabled ? "dashboard dashboard-focus" : "dashboard"}>
       <section className="panel canvas-wrap">
         <div className="kpis">
           <div className="kpi">
@@ -43,12 +50,41 @@ export const WatchClient = ({
             <div className="muted">플래그</div>
             <div>{flag?.flagType ?? "GREEN"}</div>
           </div>
+          <div className="kpi">
+            <div className="muted">선택 드라이버</div>
+            <div>{selectedDriver ? `#${selectedDriver.number} ${selectedDriver.id}` : "-"}</div>
+          </div>
+          <div className="kpi">
+            <div className="muted">드라이버 수</div>
+            <div>{drivers.length}</div>
+          </div>
+          <button className="kpi hud-toggle" data-testid="hud-toggle" onClick={() => setHudEnabled((value) => !value)} type="button">
+            <div className="muted">HUD</div>
+            <div>{hudEnabled ? "HUD 끄기" : "HUD 켜기"}</div>
+          </button>
+          <button
+            className="kpi hud-toggle"
+            data-testid="focus-toggle"
+            onClick={() => setFocusModeEnabled((value) => !value)}
+            type="button"
+          >
+            <div className="muted">집중 모드</div>
+            <div>{focusModeEnabled ? "집중 모드 끄기" : "집중 모드 켜기"}</div>
+          </button>
         </div>
         {status !== "connected" ? <p className="muted">재연결 예정: {Math.ceil(reconnectInMs / 1000)}초</p> : null}
-        <RaceCanvas />
+        <div className="hud-shell">
+          {hudEnabled ? (
+            <HudErrorBoundary>
+              <SelectedDriverHud />
+            </HudErrorBoundary>
+          ) : null}
+          <RaceCanvas />
+        </div>
       </section>
 
-      <aside className="panel">
+      {focusModeEnabled ? null : (
+        <aside className="panel">
         <h2>드라이버</h2>
         <div className="driver-list">
           {drivers.map((driver) => (
@@ -58,14 +94,21 @@ export const WatchClient = ({
               onClick={() => setSelectedDriverId(driver.id)}
               type="button"
             >
-              #{driver.number} {driver.fullName}
+              <div className="driver-item-top">
+                <span>
+                  #{driver.number} {driver.fullName}
+                </span>
+                <span className="muted">{driver.id === selectedDriverId ? "선택됨" : ""}</span>
+              </div>
+              <div className="driver-item-meta muted">{driver.teamName}</div>
             </button>
           ))}
         </div>
 
         <DriverPanel />
         <PredictionCard />
-      </aside>
+        </aside>
+      )}
     </main>
   );
 };

@@ -36,6 +36,23 @@ function Get-FallbackTypecheckCommands {
     )
 }
 
+function Get-StructureValidationCommand {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Mode
+    )
+
+    if ($Mode -eq "pnpm") {
+        return "pnpm validate:structure"
+    }
+
+    if ($Mode -eq "fallback") {
+        return "node_modules\\.bin\\tsc.cmd -p packages/shared/tsconfig.json && node .\\scripts\\validate-project-structure.mjs"
+    }
+
+    throw "Unknown toolchain mode"
+}
+
 function Get-FallbackTestCommands {
     return ,('powershell -NoProfile -ExecutionPolicy Bypass -Command "Invoke-Pester -Path ./scripts/autonomous/tests -EnableExit"')
 }

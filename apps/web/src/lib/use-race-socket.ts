@@ -1,7 +1,7 @@
 "use client";
 
 import { Driver, Session, wsEventSchema } from "@f1/shared";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { apiClient } from "./api";
 import { useRaceStore } from "@/src/store/use-race-store";
 
@@ -15,38 +15,11 @@ export const useRaceSocket = (sessionId: string, watchToken: string): { status: 
   const upsertTick = useRaceStore((state) => state.upsertTick);
   const setFlag = useRaceStore((state) => state.setFlag);
   const addPrediction = useRaceStore((state) => state.addPrediction);
-  const [resolvedSessionId, setResolvedSessionId] = useState(sessionId);
   const socketRef = useRef<WebSocket | null>(null);
   const reconnectAttempt = useRef(0);
   const reconnectTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [status, setStatus] = useState<SocketStatus>("idle");
   const [reconnectInMs, setReconnectInMs] = useState(0);
-
-  useEffect(() => {
-    const resolveSessionId = async (): Promise<void> => {
-      if (sessionId !== "current") {
-        setResolvedSessionId(sessionId);
-        return;
-      }
-
-      try {
-        const current = await apiClient.getCurrentSession<Session | null>(watchToken);
-        setResolvedSessionId(current?.id ?? "mock-session");
-      } catch {
-        setResolvedSessionId("mock-session");
-      }
-    };
-
-    resolveSessionId().catch(() => {
-      setResolvedSessionId("mock-session");
-    });
-  }, [sessionId]);
-
-  const wsUrl = useMemo(
-    () =>
-      `${wsBase.replace(/\/$/, "")}/ws?sessionId=${encodeURIComponent(resolvedSessionId)}&token=${encodeURIComponent(watchToken)}`,
-    [resolvedSessionId, watchToken]
-  );
 
   useEffect(() => {
     let closedByUser = false;
@@ -56,18 +29,43 @@ export const useRaceSocket = (sessionId: string, watchToken: string): { status: 
       return;
     }
 
-    const loadDrivers = async (): Promise<void> => {
-      const drivers = await apiClient.getDrivers<Driver[]>(resolvedSessionId, watchToken);
-      setDrivers(drivers);
+    const scheduleReconnect = (): void => {
+      if (closedByUser) {
+        return;
+      }
+
+      reconnectAttempt.current += 1;
+      const delay = Math.min(3000, reconnectAttempt.current * 500);
+      setReconnectInMs(delay);
+      setStatus("reconnecting");
+      reconnectTimer.current = setTimeout(() => {
+        void startCycle();
+      }, delay);
     };
 
-    const connect = (): void => {
+    const resolveTargetSessionId = async (): Promise<string> => {
+      if (sessionId !== "current") {
+        return sessionId;
+      }
+
+      const current = await apiClient.getCurrentSession<Session | null>(watchToken);
+      if (!current?.id) {
+        throw new Error("CURRENT_SESSION_UNAVAILABLE");
+      }
+
+      return current.id;
+    };
+
+    const connect = (targetSessionId: string): void => {
       setStatus(reconnectAttempt.current > 0 ? "reconnecting" : "connecting");
-      const socket = new WebSocket(wsUrl);
+      const socket = new WebSocket(
+        `${wsBase.replace(/\/$/, "")}/ws?sessionId=${encodeURIComponent(targetSessionId)}&token=${encodeURIComponent(watchToken)}`
+      );
       socketRef.current = socket;
 
       socket.onopen = () => {
         reconnectAttempt.current = 0;
+        setReconnectInMs(0);
         setStatus("connected");
       };
 
@@ -95,18 +93,30 @@ export const useRaceSocket = (sessionId: string, watchToken: string): { status: 
           return;
         }
 
-        reconnectAttempt.current += 1;
-        const delay = Math.min(3000, reconnectAttempt.current * 500);
-        setReconnectInMs(delay);
-        setStatus("reconnecting");
-        reconnectTimer.current = setTimeout(connect, delay);
+        scheduleReconnect();
       };
     };
 
-    loadDrivers().catch(() => {
-      setStatus("reconnecting");
-    });
-    connect();
+    const startCycle = async (): Promise<void> => {
+      try {
+        const targetSessionId = await resolveTargetSessionId();
+        if (closedByUser) {
+          return;
+        }
+
+        const drivers = await apiClient.getDrivers<Driver[]>(targetSessionId, watchToken);
+        if (closedByUser) {
+          return;
+        }
+
+        setDrivers(drivers);
+        connect(targetSessionId);
+      } catch {
+        scheduleReconnect();
+      }
+    };
+
+    void startCycle();
 
     return () => {
       closedByUser = true;
@@ -115,7 +125,7 @@ export const useRaceSocket = (sessionId: string, watchToken: string): { status: 
       }
       socketRef.current?.close();
     };
-  }, [addPrediction, resolvedSessionId, setDrivers, setFlag, upsertTick, watchToken, wsUrl]);
+  }, [addPrediction, sessionId, setDrivers, setFlag, upsertTick, watchToken]);
 
   return { status, reconnectInMs };
 };

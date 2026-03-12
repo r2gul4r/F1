@@ -58,6 +58,12 @@ Set-Location $repoRoot
 $hasPnpm = [bool](Get-Command pnpm -ErrorAction SilentlyContinue)
 $hasNodeModules = Test-Path (Join-Path $repoRoot "node_modules")
 $toolchainMode = Get-ToolchainMode -HasPnpm $hasPnpm -HasNodeModules $hasNodeModules
+$structureCommand = Get-StructureValidationCommand -Mode $toolchainMode.Mode
+
+Invoke-CmdWithTimeout `
+    -CommandLine $structureCommand `
+    -TimeoutSeconds $TypecheckTimeoutSeconds `
+    -FailureMessage "Project structure gate failed"
 
 if ($toolchainMode.Mode -eq "pnpm") {
     Invoke-CmdWithTimeout `

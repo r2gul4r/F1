@@ -38,3 +38,57 @@
 - chore: route autonomous quality gate fallback tests through pester with explicit exit code
 - chore: remove push from autonomous loops and end-of-day automation
 - chore: switch autonomous workflow to split-commit strategy
+
+## 2026-03-12
+- feat: add stateless auth session introspection endpoint backed by watch token session claims
+- feat: preserve anonymous or OAuth session metadata inside issued watch tokens
+- test: cover watch token session claims and auth session login-to-read journey
+- feat: add web watch-session bridge route that stores upstream login into httpOnly cookie
+- fix: require watch page to consume cookie-backed watch session instead of minting watch token directly
+- test: cover web watch-session cookie issuance and watch page fallback journey
+- feat: add realtime baseline migration helpers and ordered SQL migration runner
+- fix: run database migrations before realtime server bootstraps repositories
+- test: cover baseline SQL execution, connection cleanup, and pending migration replay
+- feat: lock internal session sync request schema across shared, realtime, and worker
+- fix: reject malformed internal session payloads instead of silently treating drivers as empty
+- test: cover worker syncSession request contract and internal session sync-to-read journey
+- feat: add shared OpenF1 telemetry normalization rule for latest-row selection and rank derivation
+- fix: normalize OpenF1 worker ticks by driver identity instead of relying on trailing location rows
+- test: cover shared OpenF1 normalization and worker pull journey with duplicate driver rows
+- feat: extend project structure validation with realtime migration entrypoint and db:migrate script checks
+- feat: add structure validation CLI and wire it into autonomous quality gates
+- test: cover structure validation commands in fallback automation tests
+- feat: add web auth session read and logout routes on top of cookie-backed watch sessions
+- test: cover login, auth session read, and logout lifecycle through watch-session route
+- test: add TriggerTracker business-rule coverage for single-fire top5 entry and session isolation
+- test: lock AiService fallback podium probability formula against recent speed average
+- test: add realtime ws replay coverage for session-scoped reconnect recovery and buffer capacity
+- feat: upgrade selected driver panel into readable telemetry cards with explicit empty state
+- test: cover selected driver telemetry panel metrics and waiting state
+- feat: add AI provider selection plumbing for ollama and gemini in realtime config and service
+- test: cover gemini provider config validation and REST request shape
+- feat: isolate selected-driver HUD from the main canvas with sibling overlay and error boundary
+- test: cover HUD failure isolation so main canvas survives overlay errors
+- feat: add realtime env validation entrypoint and root validate:env command
+- fix: re-resolve current session on reconnect instead of falling back permanently to mock-session
+- test: cover current-session retry and reconnect resolution in web socket hook
+- feat: improve prediction card readability with probability, latency, and generated-time stats
+- test: cover prediction card waiting state and rendered stats
+- test: cover gemini provider wiring through realtime /api/v1/ai/predict server boundary
+- feat: add HUD toggle so overlay can be disabled without affecting the main canvas
+- test: cover HUD toggle path and fallback isolation together
+- feat: add start-of-day env preflight helper that runs validate:env only when .env exists
+- test: cover autonomous env preflight helper behavior
+- feat: add internal session sync counter to realtime metrics
+- test: expose session_sync_count through metrics endpoint after sync
+- feat: expand dashboard KPIs with selected driver and active driver count
+- feat: classify AI inference metrics by success vs fallback status
+- test: expose fallback ai_inference_ms metrics through realtime server
+- test: cover selected-driver HUD following store selection changes
+- test: add realtime env validation helper coverage for placeholder failure path
+- feat: add ws connection and reject callbacks for realtime connection metrics
+- test: cover ws connection accept and reject callbacks in hub replay flow
+- feat: improve driver list readability with team metadata and selected-state context
+- docs: document gemini provider setup and validate:env preflight in README
+- feat: add focus mode toggle so the dashboard can collapse into a canvas-first layout
+- chore: add validate:preflight command that chains structure and env checks

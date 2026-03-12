@@ -1,5 +1,15 @@
-import { render, screen } from "@testing-library/react";
+import React from "react";
+import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
+
+const { cookiesMock } = vi.hoisted(() => ({
+  cookiesMock: vi.fn()
+}));
+
+vi.mock("next/headers", () => ({
+  cookies: cookiesMock
+}));
+
 import WatchPage from "../app/watch/[sessionId]/page";
 
 vi.mock("@/src/components/watch-client", () => ({
@@ -10,11 +20,27 @@ vi.mock("@/src/components/watch-client", () => ({
 
 describe("watch page", () => {
   afterEach(() => {
-    delete process.env.WATCH_TOKEN_SECRET;
+    cleanup();
+    cookiesMock.mockReset();
   });
 
-  it("시크릿이 약하면 fallback을 렌더링함", async () => {
-    process.env.WATCH_TOKEN_SECRET = "token";
+  it("watch 세션 쿠키가 있으면 watch client를 렌더링함", async () => {
+    cookiesMock.mockResolvedValue({
+      get: (name: string) => (name === "f1_watch_session" ? { name, value: "watch-cookie-token" } : undefined)
+    });
+
+    const page = await WatchPage({
+      params: Promise.resolve({ sessionId: "current" })
+    });
+    render(page);
+
+    expect(screen.getByTestId("watch-client").textContent).toBe("current:watch-cookie-token");
+  });
+
+  it("watch 세션 쿠키가 없으면 fallback을 렌더링함", async () => {
+    cookiesMock.mockResolvedValue({
+      get: () => undefined
+    });
 
     const page = await WatchPage({
       params: Promise.resolve({ sessionId: "current" })

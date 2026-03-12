@@ -1,7 +1,18 @@
 "use client";
 
+import React from "react";
 import { useMemo, useState } from "react";
 import { useRaceStore } from "@/src/store/use-race-store";
+
+const formatTelemetryTime = (timestampMs: number | undefined): string =>
+  typeof timestampMs === "number"
+    ? new Date(timestampMs).toLocaleTimeString("ko-KR", {
+        hour12: false,
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit"
+      })
+    : "-";
 
 export const DriverPanel = () => {
   const [linkError, setLinkError] = useState<string | null>(null);
@@ -32,9 +43,30 @@ export const DriverPanel = () => {
     <section style={{ marginTop: 14 }}>
       <h3>{selected.fullName}</h3>
       <p className="muted">{selected.teamName}</p>
-      <p>랩: {tick?.lap ?? "-"}</p>
-      <p>속도: {tick ? `${tick.speedKph.toFixed(1)} kph` : "-"}</p>
-      <p>순위: {tick?.rank ?? "-"}</p>
+
+      {tick ? (
+        <div className="telemetry-grid">
+          <article className="telemetry-card">
+            <div className="muted">순위</div>
+            <div className="telemetry-value">{tick.rank}</div>
+          </article>
+          <article className="telemetry-card">
+            <div className="muted">랩</div>
+            <div className="telemetry-value">{tick.lap}</div>
+          </article>
+          <article className="telemetry-card">
+            <div className="muted">속도</div>
+            <div className="telemetry-value">{tick.speedKph.toFixed(1)} kph</div>
+          </article>
+          <article className="telemetry-card">
+            <div className="muted">마지막 수신</div>
+            <div className="telemetry-value">{formatTelemetryTime(tick.timestampMs)}</div>
+          </article>
+        </div>
+      ) : (
+        <div className="telemetry-empty muted">텔레메트리 대기 중</div>
+      )}
+
       <button className="driver-item" onClick={openDeepLink} style={{ marginTop: 8 }} type="button">
         공식 온보드 열기
       </button>

@@ -6,6 +6,9 @@
   "scripts": {
     "dev": "pnpm --filter @f1/shared build && concurrently \"pnpm --filter @f1/realtime dev\" \"pnpm --filter @f1/worker dev\" \"pnpm --filter @f1/web dev\"",
     "build": "pnpm -r build",
+    "validate:structure": "pnpm --filter @f1/shared build && node ./scripts/validate-project-structure.mjs",
+    "validate:env": "pnpm --filter @f1/realtime env:validate",
+    "validate:preflight": "pnpm validate:structure && pnpm validate:env",
     "test": "pnpm -r test",
     "typecheck": "pnpm --filter @f1/shared build && pnpm -r typecheck",
     "autonomous:ensure-toolchain": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/autonomous/ensure-node-toolchain.ps1",

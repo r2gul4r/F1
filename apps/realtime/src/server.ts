@@ -1,7 +1,9 @@
 import { Server } from "http";
 import {
   aiPredictRequestSchema,
+  authSessionResponseSchema,
   driverSchema,
+  internalSessionSyncRequestSchema,
   oauthLoginRequestSchema,
   raceFlagSchema,
   sessionSchema,
@@ -9,7 +11,7 @@ import {
   telemetryTickSchema,
   toOpaqueError
 } from "@f1/shared";
-import { createWatchToken, verifyWatchToken } from "@f1/shared/watch-token";
+import { createWatchToken, readWatchToken, verifyWatchToken } from "@f1/shared/watch-token";
 import cors from "@fastify/cors";
 import Fastify from "fastify";
 import { createMetrics } from "./metrics.js";
@@ -32,8 +34,11 @@ export type BuildServerInput = {
   watchTokenTtlSec: number;
   allowedOrigins: string[];
   wsBufferSize: number;
+  aiProvider?: "ollama" | "gemini";
   ollamaBaseUrl: string;
   ollamaModel: string;
+  geminiApiKey?: string;
+  geminiModel?: string;
 };
 
 const internalUnauthorized = {
@@ -54,8 +59,10 @@ export const buildServer = async (input: BuildServerInput): Promise<{
   const metrics = createMetrics();
   const tracker = new TriggerTracker();
   const aiService = new AiService({
+    provider: input.aiProvider ?? "ollama",
     baseUrl: input.ollamaBaseUrl,
-    model: input.ollamaModel
+    model: input.aiProvider === "gemini" ? input.geminiModel ?? "gemini-2.5-flash" : input.ollamaModel,
+    apiKey: input.geminiApiKey
   });
 
   await app.register(cors, {
@@ -66,7 +73,9 @@ export const buildServer = async (input: BuildServerInput): Promise<{
   const hub = new WsHub(app.server, {
     bufferSize: input.wsBufferSize,
     watchTokenSecret: input.watchTokenSecret,
-    allowedOrigins: input.allowedOrigins
+    allowedOrigins: input.allowedOrigins,
+    onConnected: () => metrics.wsConnections.inc(),
+    onRejected: () => metrics.wsRejects.inc()
   });
 
   app.setErrorHandler((error, _request, reply) => {
@@ -84,7 +93,11 @@ export const buildServer = async (input: BuildServerInput): Promise<{
 
     const payload = oauthLoginRequestSchema.parse(request.body);
     const user = await input.oauthUserRepository.upsertIdentity(payload);
-    const accessToken = createWatchToken(input.watchTokenSecret, input.watchTokenTtlSec);
+    const accessToken = createWatchToken(input.watchTokenSecret, input.watchTokenTtlSec, {
+      kind: "oauth",
+      userId: user.userId,
+      displayName: user.displayName
+    });
 
     return {
       accessToken,
@@ -92,6 +105,21 @@ export const buildServer = async (input: BuildServerInput): Promise<{
       expiresInSec: input.watchTokenTtlSec,
       user
     };
+  });
+
+  app.get("/api/v1/auth/session", async (request, reply) => {
+    const token = String(request.headers["x-watch-token"] ?? "");
+    const watchSession = readWatchToken(token, input.watchTokenSecret);
+    if (!watchSession) {
+      return reply.status(403).send(internalUnauthorized);
+    }
+
+    return authSessionResponseSchema.parse({
+      tokenType: "Bearer",
+      issuedAtMs: watchSession.iat,
+      expiresAtMs: watchSession.exp,
+      authSession: watchSession.session
+    });
   });
 
   app.get("/metrics", async (_request, reply) => {
@@ -142,10 +170,11 @@ export const buildServer = async (input: BuildServerInput): Promise<{
     }
 
     const body = aiPredictRequestSchema.parse(request.body);
-    const prediction = await aiService.predict(body);
+    const result = await aiService.predictWithStatus(body);
+    const prediction = result.prediction;
     await input.repository.savePrediction(prediction);
     hub.broadcast({ type: "ai.prediction", payload: prediction });
-    metrics.aiInferenceMs.labels("ok").observe(prediction.modelLatencyMs);
+    metrics.aiInferenceMs.labels(result.status).observe(prediction.modelLatencyMs);
     metrics.wsBroadcasts.inc();
 
     return prediction;
@@ -157,12 +186,13 @@ export const buildServer = async (input: BuildServerInput): Promise<{
       return reply.status(403).send(internalUnauthorized);
     }
 
-    const raw = request.body as { session: unknown; drivers: unknown };
-    const session = sessionSchema.parse(raw.session);
-    const drivers = (Array.isArray(raw.drivers) ? raw.drivers : []).map((driver) => driverSchema.parse(driver));
+    const payload = internalSessionSyncRequestSchema.parse(request.body);
+    const session = sessionSchema.parse(payload.session);
+    const drivers = payload.drivers.map((driver) => driverSchema.parse(driver));
 
     await input.repository.upsertSession(session);
     await input.repository.upsertDrivers(drivers);
+    metrics.sessionSyncs.inc();
 
     return { ok: true };
   });
@@ -183,7 +213,7 @@ export const buildServer = async (input: BuildServerInput): Promise<{
 
     const tasks = triggers.map(async (trigger) => {
       const ticks = await input.repository.getRecentSessionTicks(trigger.sessionId, 80);
-      const prediction = await aiService.predict({
+      const result = await aiService.predictWithStatus({
         sessionId: trigger.sessionId,
         lap: trigger.lap,
         triggerDriverId: trigger.triggerDriverId,
@@ -192,10 +222,11 @@ export const buildServer = async (input: BuildServerInput): Promise<{
           note: `rank ${trigger.beforeRank} -> ${trigger.afterRank}`
         }
       });
+      const prediction = result.prediction;
 
       await input.repository.savePrediction(prediction);
       hub.broadcast({ type: "ai.prediction", payload: prediction });
-      metrics.aiInferenceMs.labels("ok").observe(prediction.modelLatencyMs);
+      metrics.aiInferenceMs.labels(result.status).observe(prediction.modelLatencyMs);
       metrics.wsBroadcasts.inc();
     });
 

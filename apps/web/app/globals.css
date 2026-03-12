@@ -37,6 +37,14 @@ main {
   padding: 16px;
 }
 
+.dashboard-focus {
+  grid-template-columns: 1fr;
+}
+
+.dashboard-focus .canvas-wrap {
+  min-height: calc(100vh - 32px);
+}
+
 .panel {
   background: var(--panel-bg);
   border: 1px solid rgba(148, 163, 184, 0.18);
@@ -49,6 +57,48 @@ main {
   min-height: 70vh;
   border-radius: 16px;
   overflow: hidden;
+}
+
+.hud-shell {
+  position: relative;
+  min-height: 520px;
+}
+
+.selected-hud {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 2;
+  display: grid;
+  gap: 4px;
+  min-width: 180px;
+  padding: 10px 12px;
+  border: 1px solid rgba(34, 211, 238, 0.3);
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.78);
+  backdrop-filter: blur(10px);
+}
+
+.selected-hud-name {
+  font-weight: 700;
+}
+
+.selected-hud-stats {
+  display: flex;
+  gap: 10px;
+  color: var(--text-muted);
+  font-size: 0.92rem;
+}
+
+.hud-fallback {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 2;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgba(15, 23, 42, 0.78);
+  border: 1px dashed rgba(148, 163, 184, 0.3);
 }
 
 .driver-list {
@@ -66,13 +116,24 @@ main {
   cursor: pointer;
 }
 
+.driver-item-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.driver-item-meta {
+  margin-top: 4px;
+  font-size: 0.9rem;
+}
+
 .driver-item.active {
   border-color: var(--accent);
 }
 
 .kpis {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
   gap: 8px;
   margin-bottom: 10px;
 }
@@ -90,6 +151,60 @@ main {
   padding: 10px;
   margin-top: 10px;
   background: rgba(6, 95, 70, 0.2);
+}
+
+.prediction-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 10px 0;
+}
+
+.prediction-stat {
+  border: 1px solid rgba(34, 211, 238, 0.18);
+  border-radius: 10px;
+  background: rgba(15, 23, 42, 0.45);
+  padding: 8px;
+}
+
+.prediction-value {
+  margin-top: 4px;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.prediction-empty {
+  border: 1px dashed rgba(34, 211, 238, 0.2);
+  border-radius: 12px;
+  margin-top: 10px;
+  padding: 12px;
+}
+
+.telemetry-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.telemetry-card {
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.55);
+  padding: 10px;
+}
+
+.telemetry-value {
+  margin-top: 4px;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.telemetry-empty {
+  border: 1px dashed rgba(148, 163, 184, 0.35);
+  border-radius: 12px;
+  margin-top: 12px;
+  padding: 12px;
 }
 
 .muted {

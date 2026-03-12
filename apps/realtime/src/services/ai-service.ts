@@ -7,8 +7,31 @@ import {
 } from "@f1/shared";
 
 export type AiServiceConfig = {
-  baseUrl: string;
+  provider: "ollama" | "gemini";
   model: string;
+  baseUrl?: string;
+  apiKey?: string;
+};
+
+export type AiPredictionStatus = "ok" | "fallback";
+
+export type AiPredictionResult = {
+  prediction: AiPrediction;
+  status: AiPredictionStatus;
+};
+
+type OllamaGenerateResponse = {
+  response?: string;
+};
+
+type GeminiGenerateResponse = {
+  candidates?: Array<{
+    content?: {
+      parts?: Array<{
+        text?: string;
+      }>;
+    };
+  }>;
 };
 
 const clamp = (value: number): number => Math.min(1, Math.max(0, value));
@@ -65,54 +88,98 @@ const toPrompt = (request: AiPredictRequest): string => {
 export class AiService {
   constructor(private readonly config: AiServiceConfig) {}
 
-  async predict(request: AiPredictRequest): Promise<AiPrediction> {
+  async predictWithStatus(request: AiPredictRequest): Promise<AiPredictionResult> {
     const startedAt = Date.now();
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 5000);
 
     try {
-      const response = await fetch(`${this.config.baseUrl}/api/generate`, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          model: this.config.model,
-          prompt: toPrompt(request),
-          stream: false,
-          options: { temperature: 0.2 }
-        }),
-        signal: controller.signal
-      });
+      const prompt = toPrompt(request);
+      const response = this.config.provider === "gemini"
+        ? await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${this.config.model}:generateContent`, {
+            method: "POST",
+            headers: {
+              "content-type": "application/json",
+              "x-goog-api-key": this.config.apiKey ?? ""
+            },
+            body: JSON.stringify({
+              contents: [
+                {
+                  role: "user",
+                  parts: [
+                    {
+                      text: prompt
+                    }
+                  ]
+                }
+              ]
+            }),
+            signal: controller.signal
+          })
+        : await fetch(`${this.config.baseUrl}/api/generate`, {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({
+              model: this.config.model,
+              prompt,
+              stream: false,
+              options: { temperature: 0.2 }
+            }),
+            signal: controller.signal
+          });
 
       if (!response.ok) {
-        return fallbackPrediction(request, Date.now() - startedAt);
+        return {
+          prediction: fallbackPrediction(request, Date.now() - startedAt),
+          status: "fallback"
+        };
       }
 
-      const data = (await response.json()) as { response?: string };
-      const raw = data.response ?? "";
+      const raw = this.config.provider === "gemini"
+        ? ((await response.json()) as GeminiGenerateResponse)
+          .candidates?.[0]?.content?.parts
+          ?.map((part) => part.text ?? "")
+          .join(" ")
+          .trim() ?? ""
+        : ((await response.json()) as OllamaGenerateResponse).response ?? "";
       const probabilities = extractProbabilities(raw);
       const summary = sanitizeUserHtml(raw.split("\n").slice(1).join(" ").slice(0, 200) || "보수적 추정");
 
       if (!probabilities) {
-        return fallbackPrediction(request, Date.now() - startedAt);
+        return {
+          prediction: fallbackPrediction(request, Date.now() - startedAt),
+          status: "fallback"
+        };
       }
 
       return {
-        sessionId: request.sessionId,
-        lap: request.lap,
-        triggerDriverId: request.triggerDriverId,
-        podiumProb: probabilities,
-        reasoningSummary: summary,
-        modelLatencyMs: Date.now() - startedAt,
-        timestampMs: Date.now()
+        prediction: {
+          sessionId: request.sessionId,
+          lap: request.lap,
+          triggerDriverId: request.triggerDriverId,
+          podiumProb: probabilities,
+          reasoningSummary: summary,
+          modelLatencyMs: Date.now() - startedAt,
+          timestampMs: Date.now()
+        },
+        status: "ok"
       };
     } catch (error) {
       const opaque = toOpaqueError(error);
       return {
-        ...fallbackPrediction(request, Date.now() - startedAt),
-        reasoningSummary: sanitizeUserHtml(opaque.publicMessage)
+        prediction: {
+          ...fallbackPrediction(request, Date.now() - startedAt),
+          reasoningSummary: sanitizeUserHtml(opaque.publicMessage)
+        },
+        status: "fallback"
       };
     } finally {
       clearTimeout(timer);
     }
+  }
+
+  async predict(request: AiPredictRequest): Promise<AiPrediction> {
+    const result = await this.predictWithStatus(request);
+    return result.prediction;
   }
 }

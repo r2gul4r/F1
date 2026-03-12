@@ -1,4 +1,4 @@
-import { Driver, RaceFlag, Session, TelemetryTick, toOpaqueError } from "@f1/shared";
+import { Driver, InternalSessionSyncRequest, RaceFlag, Session, TelemetryTick, toOpaqueError } from "@f1/shared";
 const opaqueMessage = "요청 처리 실패";
 
 export type RealtimeClientErrorCode = "REQUEST_FAILED";
@@ -32,7 +32,11 @@ export class RealtimeClient {
   }
 
   async syncSession(session: Session, drivers: Driver[]): Promise<void> {
-    await this.post("/internal/session", { session, drivers });
+    const payload: InternalSessionSyncRequest = {
+      session,
+      drivers
+    };
+    await this.post("/internal/session", payload);
   }
 
   async sendTelemetry(tick: TelemetryTick): Promise<void> {

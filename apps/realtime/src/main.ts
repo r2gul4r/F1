@@ -2,6 +2,7 @@ import { createClient } from "redis";
 import { readConfig } from "./config.js";
 import { buildServer } from "./server.js";
 import { createDatabaseConnection } from "./store/database-connection.js";
+import { runDatabaseMigrations } from "./store/migration-runner.js";
 import { OAuthUserRepository } from "./store/oauth-user-repository.js";
 import { PostgresRepository } from "./store/postgres-repository.js";
 
@@ -9,6 +10,9 @@ const start = async (): Promise<void> => {
   const config = readConfig();
   const databaseConnection = createDatabaseConnection({
     connectionString: config.postgresUrl
+  });
+  await runDatabaseMigrations({
+    pool: databaseConnection.pool
   });
   const redis = createClient({ url: config.redisUrl });
   await redis.connect();
@@ -24,8 +28,11 @@ const start = async (): Promise<void> => {
     watchTokenTtlSec: config.watchTokenTtlSec,
     allowedOrigins: config.allowedOrigins,
     wsBufferSize: config.wsBufferSize,
+    aiProvider: config.aiProvider,
     ollamaBaseUrl: config.ollamaBaseUrl,
-    ollamaModel: config.ollamaModel
+    ollamaModel: config.ollamaModel,
+    geminiApiKey: config.geminiApiKey,
+    geminiModel: config.geminiModel
   });
 
   await app.listen({

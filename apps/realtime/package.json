@@ -8,6 +8,8 @@
   "scripts": {
     "pretest": "pnpm --filter @f1/shared build",
     "dev": "pnpm exec tsx watch src/main.ts",
+    "db:migrate": "pnpm exec tsx src/migrate.ts",
+    "env:validate": "pnpm exec tsx src/validate-env.ts",
     "build": "pnpm exec tsc -p tsconfig.json",
     "start": "pnpm node dist/main.js",
     "test": "pnpm exec vitest run",

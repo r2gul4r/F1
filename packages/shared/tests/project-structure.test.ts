@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { assertProjectStructure, ProjectStructureError } from "../src/project-structure.js";
+import { assertProjectStructure, inspectProjectStructure, ProjectStructureError } from "../src/project-structure.js";
 
 const currentDir = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(currentDir, "../../..");
@@ -38,5 +38,37 @@ describe("project structure", () => {
       expect(typedError.code).toBe("PROJECT_STRUCTURE_INVALID");
       expect(typedError.result.missingPaths).toContain("apps/realtime/package.json");
     }
+  });
+
+  it("realtime migration 진입점이 없으면 실패함", () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), "f1-structure-"));
+    mkdirSync(join(tempRoot, "apps", "web"), { recursive: true });
+    mkdirSync(join(tempRoot, "apps", "realtime", "src"), { recursive: true });
+    mkdirSync(join(tempRoot, "apps", "worker"), { recursive: true });
+    mkdirSync(join(tempRoot, "packages", "shared"), { recursive: true });
+
+    writeFileSync(join(tempRoot, "package.json"), JSON.stringify({ scripts: { test: "pnpm -r test" } }), "utf8");
+    writeFileSync(join(tempRoot, "pnpm-workspace.yaml"), "packages:\n  - apps/*\n  - packages/*\n", "utf8");
+    writeFileSync(join(tempRoot, "ARCHITECTURE.md"), "# Architecture\n", "utf8");
+    writeFileSync(join(tempRoot, "PLAN.md"), "# Plan\n", "utf8");
+    writeFileSync(join(tempRoot, "TASKS.md"), "# Tasks\n", "utf8");
+    writeFileSync(join(tempRoot, "CHANGELOG.md"), "# Changelog\n", "utf8");
+    writeFileSync(join(tempRoot, "apps", "web", "package.json"), JSON.stringify({ name: "@f1/web" }), "utf8");
+    writeFileSync(
+      join(tempRoot, "apps", "realtime", "package.json"),
+      JSON.stringify({ name: "@f1/realtime", scripts: { build: "pnpm exec tsc -p tsconfig.json" } }),
+      "utf8"
+    );
+    writeFileSync(join(tempRoot, "apps", "worker", "package.json"), JSON.stringify({ name: "@f1/worker" }), "utf8");
+    writeFileSync(join(tempRoot, "packages", "shared", "package.json"), JSON.stringify({ name: "@f1/shared" }), "utf8");
+
+    const result = inspectProjectStructure(tempRoot);
+
+    expect(result.missingPaths).toContain("apps/realtime/src/migrate.ts");
+    expect(result.missingWorkspaceScripts).toContainEqual({
+      packageJsonPath: "apps/realtime/package.json",
+      missingScripts: ["db:migrate"]
+    });
+    expect(() => assertProjectStructure(tempRoot)).toThrow(ProjectStructureError);
   });
 });

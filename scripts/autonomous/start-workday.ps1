@@ -12,6 +12,8 @@ $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
 $taskPath = Join-Path $repoRoot "TASKS.md"
 $inspectScriptPath = Join-Path $PSScriptRoot "inspect-repo.ps1"
 $ensureDependenciesScriptPath = Join-Path $PSScriptRoot "ensure-project-dependencies.ps1"
+$environmentValidationScriptPath = Join-Path $PSScriptRoot "environment-validation.ps1"
+. $environmentValidationScriptPath
 
 $kstZone = [System.TimeZoneInfo]::FindSystemTimeZoneById("Korea Standard Time")
 $kstNow = [System.TimeZoneInfo]::ConvertTime([System.DateTimeOffset]::UtcNow, $kstZone)
@@ -37,6 +39,14 @@ if (-not $IgnoreSchedule) {
 }
 
 & $ensureDependenciesScriptPath -InstallTimeoutSeconds $DependencyInstallTimeoutSeconds
+
+if (Test-ShouldRunEnvValidation -RepoRoot $repoRoot) {
+    $envValidationCommand = Get-EnvironmentValidationCommand
+    cmd.exe /d /c $envValidationCommand
+    if ($LASTEXITCODE -ne 0) {
+        throw "Environment validation failed"
+    }
+}
 
 if ($ApplyTaskSuggestions) {
     & $inspectScriptPath -ApplyTaskSuggestions

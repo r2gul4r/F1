@@ -13,6 +13,8 @@ type WsHubConfig = {
   bufferSize: number;
   watchTokenSecret: string;
   allowedOrigins: string[];
+  onConnected?: () => void;
+  onRejected?: () => void;
 };
 
 export class WsHub {
@@ -35,12 +37,14 @@ export class WsHub {
       const allowedOrigin = !origin || this.allowedOrigins.includes(origin);
 
       if (!authorized || !allowedOrigin) {
+        config.onRejected?.();
         socket.close(1008, "policy");
         return;
       }
 
       this.clients.add(socket);
       this.sessions.set(socket, query.sessionId);
+      config.onConnected?.();
       this.buffer.snapshot().forEach((event) => {
         if (event.payload.sessionId === query.sessionId) {
           socket.send(JSON.stringify(event));

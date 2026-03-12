@@ -17,6 +17,11 @@ Describe "Toolchain fallback journey" {
         $commands[3] | Should Be "node_modules\\.bin\\tsc.cmd -p apps/web/tsconfig.json --noEmit"
     }
 
+    It "provides structure validation command for both toolchain modes" {
+        (Get-StructureValidationCommand -Mode "pnpm") | Should Be "pnpm validate:structure"
+        (Get-StructureValidationCommand -Mode "fallback") | Should Be "node_modules\\.bin\\tsc.cmd -p packages/shared/tsconfig.json && node .\\scripts\\validate-project-structure.mjs"
+    }
+
     It "uses pester-based test command in fallback mode" {
         $commands = Get-FallbackTestCommands
         @($commands).Count | Should Be 1

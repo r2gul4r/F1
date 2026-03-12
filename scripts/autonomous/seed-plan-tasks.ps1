@@ -1,13 +1,19 @@
 [CmdletBinding()]
 param(
     [int]$MaxNewTasks = 5,
-    [switch]$Force
+    [switch]$Force,
+    [string]$RepoRoot
 )
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
-$repoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
+$repoRoot = if ($RepoRoot) {
+    (Resolve-Path $RepoRoot).Path
+}
+else {
+    (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
+}
 $planPath = Join-Path $repoRoot "PLAN.md"
 $taskPath = Join-Path $repoRoot "TASKS.md"
 
@@ -26,11 +32,25 @@ if ($hasOpenTask -and -not $Force) {
 }
 
 $planLines = Get-Content -Path $planPath
-$milestones = @(
-    $planLines |
-        Where-Object { $_ -match '^\s*-\s.+' } |
-        ForEach-Object { $_.Trim() -replace '^\-\s+', '' }
-)
+$milestones = @()
+$insideStage = $false
+
+foreach ($line in $planLines) {
+    if ($line -match '^##\s+\d+단계\s*$') {
+        $insideStage = $true
+        continue
+    }
+
+    if ($line -match '^##\s+') {
+        $insideStage = $false
+        continue
+    }
+
+    if ($insideStage -and $line -match '^\s*-\s+목표:\s+(.+?)\s*$') {
+        $milestones += $Matches[1].Trim()
+        $insideStage = $false
+    }
+}
 
 if ($milestones.Count -eq 0) {
     Write-Output "No plan milestones found. Plan seeding skipped"

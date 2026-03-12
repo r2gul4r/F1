@@ -1,5 +1,4 @@
-import { Driver, Session, TelemetryTick } from "@f1/shared";
-import { OpaqueError } from "@f1/shared";
+import { Driver, normalizeOpenF1TelemetryTicks, OpaqueError, OpenF1LocationRow, Session } from "@f1/shared";
 import { Snapshot, TelemetrySource } from "./types.js";
 
 type OpenF1SessionRow = {
@@ -13,16 +12,6 @@ type OpenF1DriverRow = {
   full_name: string;
   team_name: string;
   name_acronym: string;
-};
-
-type OpenF1LocationRow = {
-  date: string;
-  x: number;
-  y: number;
-  z: number;
-  speed: number;
-  n_gear?: number;
-  driver_number: number;
 };
 
 const toSession = (row: OpenF1SessionRow): Session => ({
@@ -41,14 +30,6 @@ const toDrivers = (sessionId: string, rows: OpenF1DriverRow[]): Driver[] =>
     teamName: row.team_name,
     deepLink: `https://f1tv.formula1.com/search?q=${encodeURIComponent(row.full_name)}`
   }));
-
-const buildRankMap = (ticks: TelemetryTick[]): Record<string, number> => {
-  const ordered = [...ticks].sort((left, right) => right.speedKph - left.speedKph);
-  return ordered.reduce<Record<string, number>>((acc, item, index) => ({
-    ...acc,
-    [item.driverId]: index + 1
-  }), {});
-};
 
 export const buildOpenF1Headers = (apiKey: string): Record<string, string> => ({
   authorization: `Bearer ${apiKey}`,
@@ -95,28 +76,11 @@ export class OpenF1Source implements TelemetrySource {
     ]);
 
     const drivers = toDrivers(session.id, driversRows);
-    const rankSeed = locationRows
-      .slice(-drivers.length)
-      .map((row) => ({
-        sessionId: session.id,
-        driverId: drivers.find((driver) => driver.number === row.driver_number)?.id ?? String(row.driver_number),
-        position: {
-          x: row.x,
-          y: row.y,
-          z: row.z
-        },
-        speedKph: row.speed,
-        lap: 0,
-        rank: 0,
-        timestampMs: new Date(row.date).getTime()
-      }));
-
-    const rankMap = buildRankMap(rankSeed);
-
-    const ticks = rankSeed.map((tick) => ({
-      ...tick,
-      rank: rankMap[tick.driverId] ?? 20
-    }));
+    const ticks = normalizeOpenF1TelemetryTicks({
+      sessionId: session.id,
+      drivers,
+      locationRows
+    });
 
     return {
       session,
