@@ -81,3 +81,4 @@
 [x] plan-driven task: Project structure and base toolchain stability [slice 3]
 [x] plan-driven task: 이중 배포 경로와 운영 준비를 마무리한다 [slice 12]
 [x] plan-driven task: 이중 배포 경로와 운영 준비를 마무리한다 [slice 13]
+[x] plan-driven task: 이중 배포 경로와 운영 준비를 마무리한다 [slice 14]

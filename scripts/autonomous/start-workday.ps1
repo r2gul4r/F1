@@ -44,7 +44,8 @@ if (Test-ShouldRunEnvValidation -RepoRoot $repoRoot) {
     $envValidationCommand = Get-EnvironmentValidationCommand
     cmd.exe /d /c $envValidationCommand
     if ($LASTEXITCODE -ne 0) {
-        throw "Environment validation failed"
+        $failureMessage = Get-EnvironmentValidationFailureMessage -RepoRoot $repoRoot -BaseMessage "Environment validation failed"
+        throw $failureMessage
     }
 }
 

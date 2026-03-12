@@ -43,4 +43,61 @@ Describe "Environment validation preflight" {
             Remove-Item -Path $tempRoot -Recurse -Force -ErrorAction SilentlyContinue
         }
     }
+
+    It "suggests local env bootstrap when placeholder secrets remain" {
+        $tempRoot = Join-Path ([System.IO.Path]::GetTempPath()) ([System.Guid]::NewGuid().ToString())
+        New-Item -ItemType Directory -Path $tempRoot | Out-Null
+
+        try {
+            Set-Content -Path (Join-Path $tempRoot ".env") -Value @(
+                "INTERNAL_API_TOKEN=replace-with-strong-internal-token-32chars"
+                "OAUTH_PROXY_TOKEN=oauth-proxy-token-for-test-123456"
+                "WATCH_TOKEN_SECRET=watch-token-secret-for-test-123456"
+            )
+
+            (Test-ShouldSuggestLocalEnvBootstrap -RepoRoot $tempRoot) | Should Be $true
+            (Get-EnvironmentValidationFailureMessage -RepoRoot $tempRoot -BaseMessage "Environment validation failed") |
+                Should Be "Environment validation failed. Try: pnpm env:bootstrap:local"
+        }
+        finally {
+            Remove-Item -Path $tempRoot -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    It "suggests local env bootstrap when one required secret key is missing" {
+        $tempRoot = Join-Path ([System.IO.Path]::GetTempPath()) ([System.Guid]::NewGuid().ToString())
+        New-Item -ItemType Directory -Path $tempRoot | Out-Null
+
+        try {
+            Set-Content -Path (Join-Path $tempRoot ".env") -Value @(
+                "INTERNAL_API_TOKEN=internal-token-for-test-123456"
+                "WATCH_TOKEN_SECRET=watch-token-secret-for-test-123456"
+            )
+
+            (Test-ShouldSuggestLocalEnvBootstrap -RepoRoot $tempRoot) | Should Be $true
+        }
+        finally {
+            Remove-Item -Path $tempRoot -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    It "does not suggest local env bootstrap when secrets are already valid" {
+        $tempRoot = Join-Path ([System.IO.Path]::GetTempPath()) ([System.Guid]::NewGuid().ToString())
+        New-Item -ItemType Directory -Path $tempRoot | Out-Null
+
+        try {
+            Set-Content -Path (Join-Path $tempRoot ".env") -Value @(
+                "INTERNAL_API_TOKEN=internal-token-for-test-123456"
+                "OAUTH_PROXY_TOKEN=oauth-proxy-token-for-test-123456"
+                "WATCH_TOKEN_SECRET=watch-token-secret-for-test-123456"
+            )
+
+            (Test-ShouldSuggestLocalEnvBootstrap -RepoRoot $tempRoot) | Should Be $false
+            (Get-EnvironmentValidationFailureMessage -RepoRoot $tempRoot -BaseMessage "Environment validation failed") |
+                Should Be "Environment validation failed"
+        }
+        finally {
+            Remove-Item -Path $tempRoot -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
 }

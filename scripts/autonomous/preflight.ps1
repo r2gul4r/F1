@@ -18,7 +18,8 @@ $preflightCommand = Get-PreflightValidationCommand -RepoRoot $repoRoot
 cmd.exe /d /c $preflightCommand
 
 if ($LASTEXITCODE -ne 0) {
-    throw "Preflight validation failed"
+    $failureMessage = Get-EnvironmentValidationFailureMessage -RepoRoot $repoRoot -BaseMessage "Preflight validation failed"
+    throw $failureMessage
 }
 
 Write-Output "Autonomous preflight passed"
