@@ -1,5 +1,5 @@
 import React from "react";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useRaceStore } from "../src/store/use-race-store";
 
@@ -125,6 +125,70 @@ describe("watch client HUD isolation", () => {
     expect(screen.getByText("집중 모드 끄기")).toBeTruthy();
     expect(screen.queryByText("드라이버")).toBeNull();
     expect(screen.getByTestId("race-canvas")).toBeTruthy();
+  });
+
+  it("선택 드라이버가 목록에서 사라지면 첫 유효 드라이버로 HUD 대상을 되돌림", async () => {
+    const { WatchClient } = await import("../src/components/watch-client");
+    const { useRaceStore: runtimeStore } = await import("../src/store/use-race-store");
+
+    runtimeStore.setState({
+      drivers: [
+        {
+          id: "VER",
+          sessionId: "session-1",
+          fullName: "Max Verstappen",
+          number: 1,
+          teamName: "Red Bull",
+          deepLink: "https://f1tv.formula1.com"
+        },
+        {
+          id: "NOR",
+          sessionId: "session-1",
+          fullName: "Lando Norris",
+          number: 4,
+          teamName: "McLaren",
+          deepLink: "https://f1tv.formula1.com"
+        }
+      ],
+      ticksByDriver: {
+        VER: {
+          sessionId: "session-1",
+          driverId: "VER",
+          position: { x: 1, y: 2, z: 0 },
+          speedKph: 320,
+          lap: 7,
+          rank: 2,
+          timestampMs: 1000
+        },
+        NOR: {
+          sessionId: "session-1",
+          driverId: "NOR",
+          position: { x: 3, y: 4, z: 0 },
+          speedKph: 325,
+          lap: 7,
+          rank: 1,
+          timestampMs: 1001
+        }
+      },
+      selectedDriverId: "VER",
+      flag: null,
+      predictions: [],
+      fps: 60
+    });
+
+    render(<WatchClient sessionId="session-1" watchToken="watch-token" />);
+
+    expect(screen.getByText("#1 VER")).toBeTruthy();
+
+    act(() => {
+      runtimeStore.setState((state) => ({
+        ...state,
+        drivers: state.drivers.filter((driver) => driver.id !== "VER")
+      }));
+    });
+
+    expect(screen.getByText("#4 NOR")).toBeTruthy();
+    expect(screen.getByText("#4 Lando Norris")).toBeTruthy();
   });
 
 });

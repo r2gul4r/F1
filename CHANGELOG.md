@@ -133,7 +133,9 @@
 - fix: isolate websocket replay buffers per session so noisy sessions do not evict quiet-session recovery state
 - feat: prefer selected-driver predictions in the dashboard card when available
 - fix: normalize AI fallback podium probabilities so high-speed fallback outputs remain valid
+- fix: retarget stale HUD selection to the first live driver when the selected entry disappears
 - test: cover client-scoped reconnect metrics and stable websocket clientId reuse through realtime and web journeys
 - test: cover cross-session replay recovery under noisy traffic
 - test: cover prediction card selection context against newer overall predictions
 - test: cover AI fallback probability normalization under high-speed inputs
+- test: cover HUD recovery when the selected driver disappears from the live list

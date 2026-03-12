@@ -28,9 +28,12 @@ export const WatchClient = ({
   const ticksByDriver = useRaceStore((state) => state.ticksByDriver);
 
   useEffect(() => {
-    if (!selectedDriverId && drivers[0]) {
-      setSelectedDriverId(drivers[0].id);
+    const selectedStillExists = selectedDriverId ? drivers.some((driver) => driver.id === selectedDriverId) : false;
+    if (selectedStillExists) {
+      return;
     }
+
+    setSelectedDriverId(drivers[0]?.id ?? null);
   }, [drivers, selectedDriverId, setSelectedDriverId]);
 
   const selectedDriver = drivers.find((driver) => driver.id === selectedDriverId) ?? null;

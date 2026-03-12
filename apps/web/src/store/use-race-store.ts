@@ -10,7 +10,7 @@ type RaceState = {
   fps: number;
   setDrivers: (drivers: Driver[]) => void;
   upsertTick: (tick: TelemetryTick) => void;
-  setSelectedDriverId: (driverId: string) => void;
+  setSelectedDriverId: (driverId: string | null) => void;
   setFlag: (flag: RaceFlag) => void;
   addPrediction: (prediction: AiPrediction) => void;
   setFps: (fps: number) => void;
