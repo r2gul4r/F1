@@ -124,3 +124,4 @@
 - fix: stabilize shared workspace scripts for recursive pnpm test execution
 - feat: add local env bootstrap helper for generating strong dev-only secrets
 - test: cover local env bootstrap create, preserve, and missing-key append journeys
+- docs: document env bootstrap helper in local setup flow
