@@ -447,6 +447,115 @@ describe("realtime api", () => {
     }
   });
 
+  it("reconnect replay는 다른 session 트래픽이 많아도 자기 session 최신 이벤트를 복구함", async () => {
+    const repository = new MemoryRepository();
+    const { app } = await buildServer({
+      repository,
+      oauthUserRepository,
+      internalApiToken,
+      oauthProxyToken,
+      watchTokenSecret,
+      watchTokenTtlSec: 3600,
+      allowedOrigins: ["http://localhost:3000"],
+      wsBufferSize: 2,
+      ollamaBaseUrl: "http://localhost:11434",
+      ollamaModel: "gemma3:12b"
+    });
+
+    await app.listen({
+      port: 0,
+      host: "127.0.0.1"
+    });
+
+    try {
+      const port = (app.server.address() as AddressInfo).port;
+      const validToken = createWatchToken(watchTokenSecret, 60);
+
+      await app.inject({
+        method: "POST",
+        url: "/internal/events/telemetry",
+        headers: {
+          "x-internal-token": internalApiToken
+        },
+        payload: {
+          sessionId: "session-quiet",
+          driverId: "VER",
+          position: { x: 1, y: 2, z: 0 },
+          speedKph: 312,
+          lap: 8,
+          rank: 1,
+          timestampMs: 1000
+        }
+      });
+
+      await app.inject({
+        method: "POST",
+        url: "/internal/events/telemetry",
+        headers: {
+          "x-internal-token": internalApiToken
+        },
+        payload: {
+          sessionId: "session-noisy",
+          driverId: "NOR",
+          position: { x: 2, y: 3, z: 0 },
+          speedKph: 314,
+          lap: 8,
+          rank: 2,
+          timestampMs: 1001
+        }
+      });
+
+      await app.inject({
+        method: "POST",
+        url: "/internal/events/telemetry",
+        headers: {
+          "x-internal-token": internalApiToken
+        },
+        payload: {
+          sessionId: "session-noisy",
+          driverId: "NOR",
+          position: { x: 3, y: 4, z: 0 },
+          speedKph: 316,
+          lap: 8,
+          rank: 2,
+          timestampMs: 1002
+        }
+      });
+
+      const replayedMessages = await new Promise<number>((resolve, reject) => {
+        let count = 0;
+        const socket = new WebSocket(`ws://127.0.0.1:${port}/ws?sessionId=session-quiet&token=${validToken}`, {
+          headers: {
+            origin: "http://localhost:3000"
+          }
+        });
+
+        const timer = setTimeout(() => {
+          socket.close();
+          resolve(count);
+        }, 200);
+
+        socket.on("message", () => {
+          count += 1;
+        });
+
+        socket.on("close", () => {
+          clearTimeout(timer);
+          resolve(count);
+        });
+
+        socket.on("error", (error) => {
+          clearTimeout(timer);
+          reject(error);
+        });
+      });
+
+      expect(replayedMessages).toBe(1);
+    } finally {
+      await app.close();
+    }
+  });
+
   it("metrics는 같은 session 재연결 count를 노출함", async () => {
     const repository = new MemoryRepository();
     const { app } = await buildServer({

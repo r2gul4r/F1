@@ -26,7 +26,8 @@ export class WsHub {
   private readonly sessions = new Map<WebSocket, string>();
   private readonly clientKeys = new Map<WebSocket, string>();
   private readonly seenClientKeys = new Set<string>();
-  private readonly buffer: WsRingBuffer;
+  private readonly buffers = new Map<string, WsRingBuffer>();
+  private readonly bufferSize: number;
   private readonly watchTokenSecret: string;
   private readonly allowedOrigins: string[];
   private readonly onConnected?: () => void;
@@ -36,7 +37,7 @@ export class WsHub {
   private readonly onDroppedEventSuspected?: () => void;
 
   constructor(server: Server, config: WsHubConfig) {
-    this.buffer = new WsRingBuffer(config.bufferSize);
+    this.bufferSize = config.bufferSize;
     this.watchTokenSecret = config.watchTokenSecret;
     this.allowedOrigins = config.allowedOrigins;
     this.onConnected = config.onConnected;
@@ -70,12 +71,14 @@ export class WsHub {
         this.seenClientKeys.add(clientKey);
       }
       this.onConnected?.();
-      this.buffer.snapshot().forEach((event) => {
+      this.getSessionBuffer(query.sessionId)
+        .snapshot()
+        .forEach((event) => {
         if (event.payload.sessionId === query.sessionId) {
           this.onReplayDelivered?.();
           socket.send(JSON.stringify(event));
         }
-      });
+        });
 
       socket.on("close", () => {
         this.clients.delete(socket);
@@ -95,12 +98,12 @@ export class WsHub {
 
   broadcast(event: WsEvent): void {
     const parsed = wsEventSchema.parse(event);
-    const overflowed = this.buffer.push(parsed);
+    const sessionId = parsed.payload.sessionId;
+    const overflowed = this.getSessionBuffer(sessionId).push(parsed);
     if (overflowed) {
       this.onDroppedEventSuspected?.();
     }
     const payload = JSON.stringify(parsed);
-    const sessionId = parsed.payload.sessionId;
 
     this.clients.forEach((socket) => {
       if (socket.readyState === WebSocket.OPEN && this.sessions.get(socket) === sessionId) {
@@ -136,5 +139,16 @@ export class WsHub {
 
   private hasActiveClientKey(clientKey: string): boolean {
     return Array.from(this.clientKeys.values()).some((value) => value === clientKey);
+  }
+
+  private getSessionBuffer(sessionId: string): WsRingBuffer {
+    const existing = this.buffers.get(sessionId);
+    if (existing) {
+      return existing;
+    }
+
+    const created = new WsRingBuffer(this.bufferSize);
+    this.buffers.set(sessionId, created);
+    return created;
   }
 }

@@ -130,4 +130,6 @@
 
 ## 2026-03-13
 - feat: add client-scoped realtime websocket reconnect and replay-buffer overflow suspicion metrics
+- fix: isolate websocket replay buffers per session so noisy sessions do not evict quiet-session recovery state
 - test: cover client-scoped reconnect metrics and stable websocket clientId reuse through realtime and web journeys
+- test: cover cross-session replay recovery under noisy traffic
