@@ -95,6 +95,19 @@ main {
   font-size: 0.92rem;
 }
 
+.selected-hud-link {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(34, 211, 238, 0.35);
+  background: rgba(15, 23, 42, 0.52);
+  color: var(--text-main);
+  font-size: 0.78rem;
+  text-decoration: none;
+}
+
 .hud-fallback {
   position: absolute;
   top: 12px;

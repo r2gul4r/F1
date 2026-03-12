@@ -41,6 +41,9 @@ export const SelectedDriverHud = () => {
         <span>L{tick.lap}</span>
         <span>{tick.speedKph.toFixed(0)} kph</span>
       </div>
+      <a className="selected-hud-link" href={selected.deepLink} rel="noopener noreferrer" target="_blank">
+        공식 온보드 열기
+      </a>
       <div className="selected-hud-update muted">업데이트 {formatLastUpdate(tick.timestampMs)}</div>
     </section>
   );

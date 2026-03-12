@@ -106,3 +106,5 @@
 - fix: harden OpenF1 driver mapping against missing acronym, name, and team fields
 - feat: label AI inference and fallback metrics with provider dimensions
 - test: cover provider-labelled AI metrics for ollama fallback and gemini success
+- feat: add official onboard link to selected-driver HUD for focus mode continuity
+- test: cover selected-driver HUD onboard link rendering and driver switch updates

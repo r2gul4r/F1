@@ -22,7 +22,7 @@ describe("selected driver hud", () => {
           fullName: "Lando Norris",
           number: 4,
           teamName: "McLaren",
-          deepLink: "https://f1tv.formula1.com"
+          deepLink: "https://www.formula1.com/en/drivers/lando-norris"
         }
       ],
       ticksByDriver: {
@@ -63,6 +63,8 @@ describe("selected driver hud", () => {
     expect(screen.getByText("Red Bull")).toBeTruthy();
     expect(screen.getByText("R1")).toBeTruthy();
     expect(screen.getByText(/업데이트 \d{2}:\d{2}:\d{2}/)).toBeTruthy();
+    const onboardLink = screen.getByRole("link", { name: "공식 온보드 열기" });
+    expect(onboardLink.getAttribute("href")).toBe("https://f1tv.formula1.com");
 
     act(() => {
       useRaceStore.getState().setSelectedDriverId("NOR");
@@ -72,5 +74,7 @@ describe("selected driver hud", () => {
     expect(screen.getByText("McLaren")).toBeTruthy();
     expect(screen.getByText("R2")).toBeTruthy();
     expect(screen.getByText("309 kph")).toBeTruthy();
+    const updatedOnboardLink = screen.getByRole("link", { name: "공식 온보드 열기" });
+    expect(updatedOnboardLink.getAttribute("href")).toBe("https://www.formula1.com/en/drivers/lando-norris");
   });
 });
