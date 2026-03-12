@@ -127,6 +127,23 @@ main {
   font-size: 0.9rem;
 }
 
+.driver-item-stats {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.driver-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  background: rgba(15, 23, 42, 0.56);
+  color: var(--text-muted);
+  font-size: 0.78rem;
+}
+
 .driver-item.active {
   border-color: var(--accent);
 }

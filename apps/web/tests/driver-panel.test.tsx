@@ -116,8 +116,8 @@ describe("driver panel", () => {
       .filter((text) => text.startsWith("#"));
 
     expect(rows).toEqual([
-      "#4 Lando NorrisMcLaren",
-      "#1 Max Verstappen선택됨Red Bull"
+      "#4 Lando NorrisMcLarenR1325 kph",
+      "#1 Max Verstappen선택됨Red BullR2320 kph"
     ]);
   });
 });

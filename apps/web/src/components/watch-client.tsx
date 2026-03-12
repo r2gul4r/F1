@@ -98,22 +98,30 @@ export const WatchClient = ({
         <aside className="panel">
         <h2>드라이버</h2>
         <div className="driver-list">
-          {orderedDrivers.map((driver) => (
-            <button
-              className={driver.id === selectedDriverId ? "driver-item active" : "driver-item"}
-              key={driver.id}
-              onClick={() => setSelectedDriverId(driver.id)}
-              type="button"
-            >
-              <div className="driver-item-top">
-                <span>
-                  #{driver.number} {driver.fullName}
-                </span>
-                <span className="muted">{driver.id === selectedDriverId ? "선택됨" : ""}</span>
-              </div>
-              <div className="driver-item-meta muted">{driver.teamName}</div>
-            </button>
-          ))}
+          {orderedDrivers.map((driver) => {
+            const driverTick = ticksByDriver[driver.id];
+
+            return (
+              <button
+                className={driver.id === selectedDriverId ? "driver-item active" : "driver-item"}
+                key={driver.id}
+                onClick={() => setSelectedDriverId(driver.id)}
+                type="button"
+              >
+                <div className="driver-item-top">
+                  <span>
+                    #{driver.number} {driver.fullName}
+                  </span>
+                  <span className="muted">{driver.id === selectedDriverId ? "선택됨" : ""}</span>
+                </div>
+                <div className="driver-item-meta muted">{driver.teamName}</div>
+                <div className="driver-item-stats">
+                  <span className="driver-chip">{driverTick?.rank ? `R${driverTick.rank}` : "R-"}</span>
+                  <span className="driver-chip">{driverTick ? `${driverTick.speedKph.toFixed(0)} kph` : "속도 -"}</span>
+                </div>
+              </button>
+            );
+          })}
         </div>
 
         <DriverPanel />
