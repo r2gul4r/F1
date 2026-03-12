@@ -67,6 +67,34 @@ describe("prediction card", () => {
     expect(screen.getByText("다른 드라이버 예측")).toBeTruthy();
   });
 
+  it("선택 드라이버의 예측이 있으면 최신 전체 예측보다 먼저 보여줌", () => {
+    useRaceStore.getState().setSelectedDriverId("NOR");
+    useRaceStore.getState().addPrediction({
+      sessionId: "session-1",
+      lap: 11,
+      triggerDriverId: "NOR",
+      podiumProb: [0.58, 0.28, 0.14],
+      reasoningSummary: "Norris selected-driver view",
+      modelLatencyMs: 790,
+      timestampMs: new Date("2026-03-12T09:59:00.000Z").getTime()
+    });
+    useRaceStore.getState().addPrediction({
+      sessionId: "session-1",
+      lap: 12,
+      triggerDriverId: "VER",
+      podiumProb: [0.52, 0.31, 0.17],
+      reasoningSummary: "Verstappen latest overall",
+      modelLatencyMs: 760,
+      timestampMs: new Date("2026-03-12T10:00:00.000Z").getTime()
+    });
+
+    render(<PredictionCard />);
+
+    expect(screen.getByText("선택 드라이버 관련 예측")).toBeTruthy();
+    expect(screen.getByText("Norris selected-driver view")).toBeTruthy();
+    expect(screen.queryByText("Verstappen latest overall")).toBeNull();
+  });
+
   it("선택 드라이버가 없으면 중립 문구로 표시함", () => {
     useRaceStore.setState({
       selectedDriverId: null

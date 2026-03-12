@@ -131,5 +131,7 @@
 ## 2026-03-13
 - feat: add client-scoped realtime websocket reconnect and replay-buffer overflow suspicion metrics
 - fix: isolate websocket replay buffers per session so noisy sessions do not evict quiet-session recovery state
+- feat: prefer selected-driver predictions in the dashboard card when available
 - test: cover client-scoped reconnect metrics and stable websocket clientId reuse through realtime and web journeys
 - test: cover cross-session replay recovery under noisy traffic
+- test: cover prediction card selection context against newer overall predictions
