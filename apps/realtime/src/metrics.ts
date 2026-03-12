@@ -3,8 +3,8 @@ import { Counter, Histogram, Registry, collectDefaultMetrics } from "prom-client
 export type Metrics = {
   registry: Registry;
   telemetryLagMs: Histogram<"source">;
-  aiInferenceMs: Histogram<"status">;
-  aiFallbacks: Counter<"reason">;
+  aiInferenceMs: Histogram<"status" | "provider">;
+  aiFallbacks: Counter<"reason" | "provider">;
   wsBroadcasts: Counter;
   wsConnections: Counter;
   wsRejects: Counter;
@@ -27,7 +27,7 @@ export const createMetrics = (): Metrics => {
   const aiInferenceMs = new Histogram({
     name: "ai_inference_ms",
     help: "AI inference duration",
-    labelNames: ["status"],
+    labelNames: ["status", "provider"],
     registers: [registry],
     buckets: [200, 500, 1000, 2000, 5000, 10000]
   });
@@ -35,7 +35,7 @@ export const createMetrics = (): Metrics => {
   const aiFallbacks = new Counter({
     name: "ai_fallback_count",
     help: "AI fallback count by reason",
-    labelNames: ["reason"],
+    labelNames: ["reason", "provider"],
     registers: [registry]
   });
 

@@ -58,10 +58,11 @@ export const buildServer = async (input: BuildServerInput): Promise<{
   const app = Fastify({ logger: true });
   const metrics = createMetrics();
   const tracker = new TriggerTracker();
+  const aiProvider = input.aiProvider ?? "ollama";
   const aiService = new AiService({
-    provider: input.aiProvider ?? "ollama",
+    provider: aiProvider,
     baseUrl: input.ollamaBaseUrl,
-    model: input.aiProvider === "gemini" ? input.geminiModel ?? "gemini-2.5-flash" : input.ollamaModel,
+    model: aiProvider === "gemini" ? input.geminiModel ?? "gemini-2.5-flash" : input.ollamaModel,
     apiKey: input.geminiApiKey
   });
 
@@ -175,9 +176,9 @@ export const buildServer = async (input: BuildServerInput): Promise<{
     const prediction = result.prediction;
     await input.repository.savePrediction(prediction);
     hub.broadcast({ type: "ai.prediction", payload: prediction });
-    metrics.aiInferenceMs.labels(result.status).observe(prediction.modelLatencyMs);
+    metrics.aiInferenceMs.labels(result.status, aiProvider).observe(prediction.modelLatencyMs);
     if (result.status === "fallback" && result.reason) {
-      metrics.aiFallbacks.labels(result.reason).inc();
+      metrics.aiFallbacks.labels(result.reason, aiProvider).inc();
     }
     metrics.wsBroadcasts.inc();
 
@@ -230,9 +231,9 @@ export const buildServer = async (input: BuildServerInput): Promise<{
 
       await input.repository.savePrediction(prediction);
       hub.broadcast({ type: "ai.prediction", payload: prediction });
-      metrics.aiInferenceMs.labels(result.status).observe(prediction.modelLatencyMs);
+      metrics.aiInferenceMs.labels(result.status, aiProvider).observe(prediction.modelLatencyMs);
       if (result.status === "fallback" && result.reason) {
-        metrics.aiFallbacks.labels(result.reason).inc();
+        metrics.aiFallbacks.labels(result.reason, aiProvider).inc();
       }
       metrics.wsBroadcasts.inc();
     });
