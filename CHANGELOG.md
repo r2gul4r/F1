@@ -96,3 +96,4 @@
 - feat: sort driver list by live rank while preserving team and selected context
 - feat: classify AI fallback results by reason and expose reason-specific metrics
 - feat: add selected-driver spotlight rules for race canvas rendering
+- feat: add autonomous preflight wrapper that selects structure or full env preflight by .env presence

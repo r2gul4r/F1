@@ -13,6 +13,7 @@
     "typecheck": "pnpm --filter @f1/shared build && pnpm -r typecheck",
     "autonomous:ensure-toolchain": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/autonomous/ensure-node-toolchain.ps1",
     "autonomous:ensure-deps": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/autonomous/ensure-project-dependencies.ps1",
+    "autonomous:preflight": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/autonomous/preflight.ps1",
     "autonomous:inspect": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/autonomous/inspect-repo.ps1",
     "autonomous:seed-plan": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/autonomous/seed-plan-tasks.ps1",
     "autonomous:blocker-report": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/autonomous/create-blocker-report.ps1",

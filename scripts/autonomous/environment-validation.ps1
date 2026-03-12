@@ -16,3 +16,16 @@ function Test-ShouldRunEnvValidation {
 function Get-EnvironmentValidationCommand {
     return "pnpm validate:env"
 }
+
+function Get-PreflightValidationCommand {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$RepoRoot
+    )
+
+    if (Test-ShouldRunEnvValidation -RepoRoot $RepoRoot) {
+        return "pnpm validate:preflight"
+    }
+
+    return "pnpm validate:structure"
+}

@@ -18,4 +18,29 @@ Describe "Environment validation preflight" {
     It "uses validate:env command as preflight" {
         (Get-EnvironmentValidationCommand) | Should Be "pnpm validate:env"
     }
+
+    It "uses validate:preflight when .env exists" {
+        $tempRoot = Join-Path ([System.IO.Path]::GetTempPath()) ([System.Guid]::NewGuid().ToString())
+        New-Item -ItemType Directory -Path $tempRoot | Out-Null
+
+        try {
+            New-Item -ItemType File -Path (Join-Path $tempRoot ".env") | Out-Null
+            (Get-PreflightValidationCommand -RepoRoot $tempRoot) | Should Be "pnpm validate:preflight"
+        }
+        finally {
+            Remove-Item -Path $tempRoot -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    It "uses validate:structure when .env is absent" {
+        $tempRoot = Join-Path ([System.IO.Path]::GetTempPath()) ([System.Guid]::NewGuid().ToString())
+        New-Item -ItemType Directory -Path $tempRoot | Out-Null
+
+        try {
+            (Get-PreflightValidationCommand -RepoRoot $tempRoot) | Should Be "pnpm validate:structure"
+        }
+        finally {
+            Remove-Item -Path $tempRoot -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
 }
