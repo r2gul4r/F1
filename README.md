@@ -40,6 +40,8 @@ F1 시청 보조 웹앱 초기 구현
 
 - OpenF1 응답이 일시 실패하면 워커가 mock 데이터로 자동 fallback
 - AI provider 기본값은 `ollama`이고, Gemini 사용 시 `AI_PROVIDER=gemini` 와 `GEMINI_API_KEY`가 모두 필요
+- 자동 근무 시작 전 점검은 `pnpm autonomous:preflight`
+- 수동 점검은 `pnpm validate:preflight`
 
 ## 워크스페이스
 
