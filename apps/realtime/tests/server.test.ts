@@ -1,5 +1,7 @@
 import { authSessionResponseSchema } from "@f1/shared";
 import { createWatchToken, verifyWatchToken } from "@f1/shared/watch-token";
+import { AddressInfo } from "node:net";
+import { WebSocket } from "ws";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { buildServer } from "../src/server.js";
 import { MemoryRepository } from "../src/store/memory-repository.js";
@@ -313,6 +315,68 @@ describe("realtime api", () => {
 
     expect(metrics.statusCode).toBe(200);
     expect(metrics.body).toContain("session_sync_count 1");
+  });
+
+  it("metrics는 websocket connection과 reject count를 노출함", async () => {
+    const repository = new MemoryRepository();
+    const { app } = await buildServer({
+      repository,
+      oauthUserRepository,
+      internalApiToken,
+      oauthProxyToken,
+      watchTokenSecret,
+      watchTokenTtlSec: 3600,
+      allowedOrigins: ["http://localhost:3000"],
+      wsBufferSize: 100,
+      ollamaBaseUrl: "http://localhost:11434",
+      ollamaModel: "gemma3:12b"
+    });
+
+    await app.listen({
+      port: 0,
+      host: "127.0.0.1"
+    });
+
+    try {
+      const port = (app.server.address() as AddressInfo).port;
+      const validToken = createWatchToken(watchTokenSecret, 60);
+
+      await new Promise<void>((resolve) => {
+        const socket = new WebSocket(`ws://127.0.0.1:${port}/ws?sessionId=session-1&token=${validToken}`, {
+          headers: {
+            origin: "http://localhost:3000"
+          }
+        });
+
+        socket.on("open", () => {
+          socket.close();
+          resolve();
+        });
+      });
+
+      await new Promise<void>((resolve) => {
+        const socket = new WebSocket(`ws://127.0.0.1:${port}/ws?sessionId=session-1&token=invalid-token`, {
+          headers: {
+            origin: "http://localhost:3000"
+          }
+        });
+
+        socket.on("close", () => resolve());
+      });
+
+      const metricsResponse = await fetch(`http://127.0.0.1:${port}/metrics`, {
+        headers: {
+          "x-internal-token": internalApiToken
+        }
+      });
+      const metricsBody = await metricsResponse.text();
+
+      expect(metricsResponse.status).toBe(200);
+      expect(metricsBody).toContain("ws_connection_count 1");
+      expect(metricsBody).toContain("ws_reject_count 1");
+    } finally {
+      await app.close();
+    }
   });
 
   it("metrics는 ai fallback inference를 별도 status로 노출함", async () => {
