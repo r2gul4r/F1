@@ -146,4 +146,44 @@ describe("useRaceSocket", () => {
 
     expect(FakeWebSocket.instances[1]?.url).toContain("sessionId=session-2");
   });
+
+  it("current session이 null이면 재시도 후 연결함", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn()
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => null
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({
+            id: "session-3",
+            name: "Australia GP",
+            startsAt: "2026-03-14T00:00:00.000Z",
+            isCurrent: true
+          })
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => []
+        })
+    );
+
+    render(<Probe sessionId="current" />);
+
+    await flushAsync();
+    expect(FakeWebSocket.instances).toHaveLength(0);
+    expect(screen.getByTestId("status").textContent).toBe("reconnecting");
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(500);
+    });
+
+    await flushAsync();
+    await flushAsync();
+
+    expect(FakeWebSocket.instances[0]?.url).toContain("sessionId=session-3");
+    expect(screen.getByTestId("status").textContent).toBe("connected");
+  });
 });

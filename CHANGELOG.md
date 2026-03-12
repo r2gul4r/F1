@@ -116,3 +116,5 @@
 - test: cover worker mock-mode validation without OPENF1_API_KEY
 - feat: load .env inside worker env validation and chain root validate:env across services
 - test: cover worker env validation env-file loading for openf1 and mock modes
+- fix: retry current-session websocket flow without throwing generic null-session errors
+- test: cover null current-session response before reconnect recovery

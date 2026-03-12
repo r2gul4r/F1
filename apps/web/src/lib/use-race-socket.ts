@@ -43,17 +43,13 @@ export const useRaceSocket = (sessionId: string, watchToken: string): { status: 
       }, delay);
     };
 
-    const resolveTargetSessionId = async (): Promise<string> => {
+    const resolveTargetSessionId = async (): Promise<string | null> => {
       if (sessionId !== "current") {
         return sessionId;
       }
 
       const current = await apiClient.getCurrentSession<Session | null>(watchToken);
-      if (!current?.id) {
-        throw new Error("CURRENT_SESSION_UNAVAILABLE");
-      }
-
-      return current.id;
+      return current?.id ?? null;
     };
 
     const connect = (targetSessionId: string): void => {
@@ -101,6 +97,10 @@ export const useRaceSocket = (sessionId: string, watchToken: string): { status: 
       try {
         const targetSessionId = await resolveTargetSessionId();
         if (closedByUser) {
+          return;
+        }
+        if (!targetSessionId) {
+          scheduleReconnect();
           return;
         }
 
