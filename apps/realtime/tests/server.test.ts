@@ -574,6 +574,75 @@ describe("realtime api", () => {
     expect(metrics.body).toContain("ai_fallback_count{reason=\"http_error\",provider=\"ollama\"} 1");
   });
 
+  it("telemetry trigger의 disabled provider는 fetch 없이 fallback metrics를 기록함", async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+
+    const repository = new MemoryRepository();
+    const { app } = await buildServer({
+      repository,
+      oauthUserRepository,
+      internalApiToken,
+      oauthProxyToken,
+      watchTokenSecret,
+      watchTokenTtlSec: 3600,
+      allowedOrigins: ["http://localhost:3000"],
+      wsBufferSize: 100,
+      aiProvider: "disabled",
+      ollamaBaseUrl: "http://localhost:11434",
+      ollamaModel: "gemma3:12b"
+    });
+
+    const firstTick = await app.inject({
+      method: "POST",
+      url: "/internal/events/telemetry",
+      headers: {
+        "x-internal-token": internalApiToken
+      },
+      payload: {
+        sessionId: "session-trigger-disabled",
+        driverId: "NOR",
+        position: { x: 1, y: 2, z: 0 },
+        speedKph: 312,
+        lap: 8,
+        rank: 6,
+        timestampMs: 1000
+      }
+    });
+    expect(firstTick.statusCode).toBe(202);
+
+    const triggerTick = await app.inject({
+      method: "POST",
+      url: "/internal/events/telemetry",
+      headers: {
+        "x-internal-token": internalApiToken
+      },
+      payload: {
+        sessionId: "session-trigger-disabled",
+        driverId: "NOR",
+        position: { x: 2, y: 3, z: 0 },
+        speedKph: 314,
+        lap: 8,
+        rank: 5,
+        timestampMs: 1100
+      }
+    });
+    expect(triggerTick.statusCode).toBe(202);
+    expect(fetchMock).not.toHaveBeenCalled();
+
+    const metrics = await app.inject({
+      method: "GET",
+      url: "/metrics",
+      headers: {
+        "x-internal-token": internalApiToken
+      }
+    });
+
+    expect(metrics.statusCode).toBe(200);
+    expect(metrics.body).toContain("ai_inference_ms_count{status=\"fallback\",provider=\"disabled\"} 1");
+    expect(metrics.body).toContain("ai_fallback_count{reason=\"disabled_provider\",provider=\"disabled\"} 1");
+  });
+
   it("OAuth 로그인 API는 토큰 검증 후 watch 토큰을 발급함", async () => {
     const repository = new MemoryRepository();
     const { app } = await buildServer({
@@ -763,5 +832,70 @@ describe("realtime api", () => {
 
     expect(metrics.statusCode).toBe(200);
     expect(metrics.body).toContain("ai_inference_ms_count{status=\"ok\",provider=\"gemini\"} 1");
+  });
+
+  it("ai predict는 disabled provider에서 fetch 없이 fallback으로 동작함", async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+
+    const repository = new MemoryRepository();
+    const { app } = await buildServer({
+      repository,
+      oauthUserRepository,
+      internalApiToken,
+      oauthProxyToken,
+      watchTokenSecret,
+      watchTokenTtlSec: 120,
+      allowedOrigins: ["http://localhost:3000"],
+      wsBufferSize: 100,
+      aiProvider: "disabled",
+      ollamaBaseUrl: "http://localhost:11434",
+      ollamaModel: "gemma3:12b"
+    });
+
+    const response = await app.inject({
+      method: "POST",
+      url: "/api/v1/ai/predict",
+      headers: {
+        "x-internal-token": internalApiToken
+      },
+      payload: {
+        sessionId: "session-disabled",
+        lap: 8,
+        triggerDriverId: "NOR",
+        snapshot: {
+          ticks: [
+            {
+              sessionId: "session-disabled",
+              driverId: "NOR",
+              position: { x: 1, y: 2, z: 0 },
+              speedKph: 312,
+              lap: 8,
+              rank: 2,
+              timestampMs: 1000
+            }
+          ]
+        }
+      }
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(response.json()).toMatchObject({
+      sessionId: "session-disabled",
+      triggerDriverId: "NOR"
+    });
+
+    const metrics = await app.inject({
+      method: "GET",
+      url: "/metrics",
+      headers: {
+        "x-internal-token": internalApiToken
+      }
+    });
+
+    expect(metrics.statusCode).toBe(200);
+    expect(metrics.body).toContain("ai_inference_ms_count{status=\"fallback\",provider=\"disabled\"} 1");
+    expect(metrics.body).toContain("ai_fallback_count{reason=\"disabled_provider\",provider=\"disabled\"} 1");
   });
 });

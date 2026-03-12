@@ -7,14 +7,14 @@ import {
 } from "@f1/shared";
 
 export type AiServiceConfig = {
-  provider: "ollama" | "gemini";
+  provider: "ollama" | "gemini" | "disabled";
   model: string;
   baseUrl?: string;
   apiKey?: string;
 };
 
 export type AiPredictionStatus = "ok" | "fallback";
-export type AiFallbackReason = "http_error" | "invalid_payload" | "exception";
+export type AiFallbackReason = "http_error" | "invalid_payload" | "exception" | "disabled_provider";
 
 export type AiPredictionResult = {
   prediction: AiPrediction;
@@ -92,6 +92,15 @@ export class AiService {
 
   async predictWithStatus(request: AiPredictRequest): Promise<AiPredictionResult> {
     const startedAt = Date.now();
+
+    if (this.config.provider === "disabled") {
+      return {
+        prediction: fallbackPrediction(request, Date.now() - startedAt),
+        status: "fallback",
+        reason: "disabled_provider"
+      };
+    }
+
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 5000);
 

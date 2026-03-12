@@ -4,7 +4,7 @@ export type RealtimeConfig = {
   port: number;
   postgresUrl: string;
   redisUrl: string;
-  aiProvider: "ollama" | "gemini";
+  aiProvider: "ollama" | "gemini" | "disabled";
   ollamaBaseUrl: string;
   ollamaModel: string;
   geminiApiKey?: string;
@@ -52,9 +52,9 @@ const parseAllowedOrigins = (value: string | undefined): string[] => {
   return origins;
 };
 
-const parseAiProvider = (value: string | undefined): "ollama" | "gemini" => {
+const parseAiProvider = (value: string | undefined): "ollama" | "gemini" | "disabled" => {
   const normalized = (value ?? "ollama").trim().toLowerCase();
-  if (normalized === "ollama" || normalized === "gemini") {
+  if (normalized === "ollama" || normalized === "gemini" || normalized === "disabled") {
     return normalized;
   }
 

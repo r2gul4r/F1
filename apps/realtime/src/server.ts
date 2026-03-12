@@ -34,7 +34,7 @@ export type BuildServerInput = {
   watchTokenTtlSec: number;
   allowedOrigins: string[];
   wsBufferSize: number;
-  aiProvider?: "ollama" | "gemini";
+  aiProvider?: "ollama" | "gemini" | "disabled";
   ollamaBaseUrl: string;
   ollamaModel: string;
   geminiApiKey?: string;

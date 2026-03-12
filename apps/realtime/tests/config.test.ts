@@ -36,6 +36,12 @@ describe("realtime config", () => {
     expect(() => readConfig()).toThrow();
   });
 
+  it("disabled provider는 유효한 설정으로 통과함", () => {
+    process.env.AI_PROVIDER = "disabled";
+
+    expect(() => readConfig()).not.toThrow();
+  });
+
   it("지원하지 않는 ai provider면 실패함", () => {
     process.env.AI_PROVIDER = "unknown";
 

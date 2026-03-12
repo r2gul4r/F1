@@ -175,4 +175,21 @@ describe("ai service", () => {
     expect(result.status).toBe("fallback");
     expect(result.reason).toBe("exception");
   });
+
+  it("disabled provider는 fetch 호출 없이 즉시 fallback함", async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+
+    const service = new AiService({
+      provider: "disabled",
+      model: "disabled"
+    });
+
+    const result = await service.predictWithStatus(request);
+
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(result.status).toBe("fallback");
+    expect(result.reason).toBe("disabled_provider");
+    expect(result.prediction.reasoningSummary).toBe("모델 응답 실패로 보수적 추정 사용");
+  });
 });
