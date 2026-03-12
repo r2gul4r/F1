@@ -33,6 +33,14 @@ describe("watch client HUD isolation", () => {
           number: 1,
           teamName: "Red Bull",
           deepLink: "https://f1tv.formula1.com"
+        },
+        {
+          id: "NOR",
+          sessionId: "session-1",
+          fullName: "Lando Norris",
+          number: 4,
+          teamName: "McLaren",
+          deepLink: "https://f1tv.formula1.com"
         }
       ],
       ticksByDriver: {
@@ -42,8 +50,17 @@ describe("watch client HUD isolation", () => {
           position: { x: 1, y: 2, z: 0 },
           speedKph: 320,
           lap: 7,
-          rank: 1,
+          rank: 2,
           timestampMs: 1000
+        },
+        NOR: {
+          sessionId: "session-1",
+          driverId: "NOR",
+          position: { x: 3, y: 4, z: 0 },
+          speedKph: 325,
+          lap: 7,
+          rank: 1,
+          timestampMs: 1001
         }
       },
       selectedDriverId: "VER",
@@ -109,4 +126,5 @@ describe("watch client HUD isolation", () => {
     expect(screen.queryByText("드라이버")).toBeNull();
     expect(screen.getByTestId("race-canvas")).toBeTruthy();
   });
+
 });

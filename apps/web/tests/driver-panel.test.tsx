@@ -30,6 +30,14 @@ describe("driver panel", () => {
           number: 1,
           teamName: "Red Bull",
           deepLink: "https://f1tv.formula1.com"
+        },
+        {
+          id: "NOR",
+          sessionId: "session-1",
+          fullName: "Lando Norris",
+          number: 4,
+          teamName: "McLaren",
+          deepLink: "https://f1tv.formula1.com"
         }
       ],
       ticksByDriver: {},
@@ -77,10 +85,39 @@ describe("driver panel", () => {
   });
 
   it("driver list는 번호, 이름, 팀을 함께 보여줌", async () => {
+    useRaceStore.getState().upsertTick({
+      sessionId: "session-1",
+      driverId: "VER",
+      position: { x: 1, y: 2, z: 0 },
+      speedKph: 320,
+      lap: 7,
+      rank: 2,
+      timestampMs: 1000
+    });
+    useRaceStore.getState().upsertTick({
+      sessionId: "session-1",
+      driverId: "NOR",
+      position: { x: 3, y: 4, z: 0 },
+      speedKph: 325,
+      lap: 7,
+      rank: 1,
+      timestampMs: 1001
+    });
+
     const { WatchClient } = await import("../src/components/watch-client");
     render(<WatchClient sessionId="session-1" watchToken="watch-token" />);
 
-    expect(screen.getByText("#1 Max Verstappen")).toBeTruthy();
+    expect(screen.getAllByText("#1 Max Verstappen").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Red Bull").length).toBeGreaterThan(0);
+
+    const rows = screen
+      .getAllByRole("button")
+      .map((button) => button.textContent?.replace(/\s+/g, " ").trim() ?? "")
+      .filter((text) => text.startsWith("#"));
+
+    expect(rows).toEqual([
+      "#4 Lando NorrisMcLaren",
+      "#1 Max Verstappen선택됨Red Bull"
+    ]);
   });
 });

@@ -25,6 +25,7 @@ export const WatchClient = ({
   const setSelectedDriverId = useRaceStore((state) => state.setSelectedDriverId);
   const flag = useRaceStore((state) => state.flag);
   const fps = useRaceStore((state) => state.fps);
+  const ticksByDriver = useRaceStore((state) => state.ticksByDriver);
 
   useEffect(() => {
     if (!selectedDriverId && drivers[0]) {
@@ -33,6 +34,16 @@ export const WatchClient = ({
   }, [drivers, selectedDriverId, setSelectedDriverId]);
 
   const selectedDriver = drivers.find((driver) => driver.id === selectedDriverId) ?? null;
+  const orderedDrivers = [...drivers].sort((left, right) => {
+    const leftRank = ticksByDriver[left.id]?.rank ?? Number.MAX_SAFE_INTEGER;
+    const rightRank = ticksByDriver[right.id]?.rank ?? Number.MAX_SAFE_INTEGER;
+
+    if (leftRank !== rightRank) {
+      return leftRank - rightRank;
+    }
+
+    return left.number - right.number;
+  });
 
   return (
     <main className={focusModeEnabled ? "dashboard dashboard-focus" : "dashboard"}>
@@ -87,7 +98,7 @@ export const WatchClient = ({
         <aside className="panel">
         <h2>드라이버</h2>
         <div className="driver-list">
-          {drivers.map((driver) => (
+          {orderedDrivers.map((driver) => (
             <button
               className={driver.id === selectedDriverId ? "driver-item active" : "driver-item"}
               key={driver.id}
