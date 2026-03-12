@@ -103,3 +103,4 @@
 - feat: enrich selected-driver HUD with team name and last update time
 - docs: document autonomous:preflight alongside validate:preflight in README
 - feat: expose prediction card context against the currently selected driver
+- fix: harden OpenF1 driver mapping against missing acronym, name, and team fields

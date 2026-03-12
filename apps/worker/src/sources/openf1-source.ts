@@ -9,9 +9,24 @@ type OpenF1SessionRow = {
 
 type OpenF1DriverRow = {
   driver_number: number;
-  full_name: string;
-  team_name: string;
-  name_acronym: string;
+  full_name?: string | null;
+  team_name?: string | null;
+  name_acronym?: string | null;
+};
+
+const normalizeDriverId = (row: OpenF1DriverRow): string => {
+  const normalized = String(row.name_acronym ?? "").trim();
+  return normalized.length > 0 ? normalized : String(row.driver_number);
+};
+
+const normalizeDriverFullName = (row: OpenF1DriverRow): string => {
+  const normalized = String(row.full_name ?? "").trim();
+  return normalized.length > 0 ? normalized : String(row.driver_number);
+};
+
+const normalizeDriverTeamName = (row: OpenF1DriverRow): string => {
+  const normalized = String(row.team_name ?? "").trim();
+  return normalized.length > 0 ? normalized : "Unknown Team";
 };
 
 const toSession = (row: OpenF1SessionRow): Session => ({
@@ -23,12 +38,12 @@ const toSession = (row: OpenF1SessionRow): Session => ({
 
 const toDrivers = (sessionId: string, rows: OpenF1DriverRow[]): Driver[] =>
   rows.map((row) => ({
-    id: row.name_acronym,
+    id: normalizeDriverId(row),
     sessionId,
-    fullName: row.full_name,
+    fullName: normalizeDriverFullName(row),
     number: row.driver_number,
-    teamName: row.team_name,
-    deepLink: `https://f1tv.formula1.com/search?q=${encodeURIComponent(row.full_name)}`
+    teamName: normalizeDriverTeamName(row),
+    deepLink: `https://f1tv.formula1.com/search?q=${encodeURIComponent(normalizeDriverFullName(row))}`
   }));
 
 export const buildOpenF1Headers = (apiKey: string): Record<string, string> => ({
