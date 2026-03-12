@@ -15,6 +15,7 @@ type WsHubConfig = {
   allowedOrigins: string[];
   onConnected?: () => void;
   onRejected?: () => void;
+  onReplayDelivered?: () => void;
 };
 
 export class WsHub {
@@ -47,6 +48,7 @@ export class WsHub {
       config.onConnected?.();
       this.buffer.snapshot().forEach((event) => {
         if (event.payload.sessionId === query.sessionId) {
+          config.onReplayDelivered?.();
           socket.send(JSON.stringify(event));
         }
       });

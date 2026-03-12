@@ -10,12 +10,14 @@ const openServer = async (bufferSize: number) => {
   const tokenSecret = "watch-token-secret-for-test-123456";
   const onConnected = vi.fn();
   const onRejected = vi.fn();
+  const onReplayDelivered = vi.fn();
   const hub = new WsHub(server, {
     bufferSize,
     watchTokenSecret: tokenSecret,
     allowedOrigins: ["http://localhost:3000"],
     onConnected,
-    onRejected
+    onRejected,
+    onReplayDelivered
   });
 
   await new Promise<void>((resolve) => {
@@ -26,6 +28,7 @@ const openServer = async (bufferSize: number) => {
     hub,
     onConnected,
     onRejected,
+    onReplayDelivered,
     tokenSecret,
     server,
     port: (server.address() as AddressInfo).port
@@ -135,6 +138,7 @@ describe("ws hub", () => {
 
     expect(runtime.onConnected).toHaveBeenCalledTimes(1);
     expect(runtime.onRejected).not.toHaveBeenCalled();
+    expect(runtime.onReplayDelivered).toHaveBeenCalledTimes(1);
     expect(messages).toHaveLength(1);
     expect(JSON.parse(messages[0] ?? "{}")).toMatchObject({
       type: "telemetry.tick",
@@ -194,6 +198,7 @@ describe("ws hub", () => {
     });
 
     const parsed = messages.map((message) => JSON.parse(message));
+    expect(runtime.onReplayDelivered).toHaveBeenCalledTimes(2);
     expect(parsed.map((item) => item.payload.timestampMs)).toEqual([1001, 1002]);
   });
 

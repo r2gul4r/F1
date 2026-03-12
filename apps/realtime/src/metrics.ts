@@ -8,6 +8,7 @@ export type Metrics = {
   wsBroadcasts: Counter;
   wsConnections: Counter;
   wsRejects: Counter;
+  wsReplayDeliveries: Counter;
   sessionSyncs: Counter;
 };
 
@@ -56,6 +57,12 @@ export const createMetrics = (): Metrics => {
     registers: [registry]
   });
 
+  const wsReplayDeliveries = new Counter({
+    name: "ws_replay_delivery_count",
+    help: "Replayed WebSocket event delivery count",
+    registers: [registry]
+  });
+
   const sessionSyncs = new Counter({
     name: "session_sync_count",
     help: "Accepted internal session sync count",
@@ -70,6 +77,7 @@ export const createMetrics = (): Metrics => {
     wsBroadcasts,
     wsConnections,
     wsRejects,
+    wsReplayDeliveries,
     sessionSyncs
   };
 };

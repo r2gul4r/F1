@@ -97,3 +97,4 @@
 - feat: classify AI fallback results by reason and expose reason-specific metrics
 - feat: add selected-driver spotlight rules for race canvas rendering
 - feat: add autonomous preflight wrapper that selects structure or full env preflight by .env presence
+- feat: expose websocket replay delivery count through realtime metrics

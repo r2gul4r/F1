@@ -379,6 +379,74 @@ describe("realtime api", () => {
     }
   });
 
+  it("metrics는 websocket replay delivery count를 노출함", async () => {
+    const repository = new MemoryRepository();
+    const { app } = await buildServer({
+      repository,
+      oauthUserRepository,
+      internalApiToken,
+      oauthProxyToken,
+      watchTokenSecret,
+      watchTokenTtlSec: 3600,
+      allowedOrigins: ["http://localhost:3000"],
+      wsBufferSize: 100,
+      ollamaBaseUrl: "http://localhost:11434",
+      ollamaModel: "gemma3:12b"
+    });
+
+    await app.listen({
+      port: 0,
+      host: "127.0.0.1"
+    });
+
+    try {
+      const port = (app.server.address() as AddressInfo).port;
+      const validToken = createWatchToken(watchTokenSecret, 60);
+
+      await app.inject({
+        method: "POST",
+        url: "/internal/events/telemetry",
+        headers: {
+          "x-internal-token": internalApiToken
+        },
+        payload: {
+          sessionId: "session-replay",
+          driverId: "VER",
+          position: { x: 1, y: 2, z: 0 },
+          speedKph: 312,
+          lap: 8,
+          rank: 1,
+          timestampMs: 1000
+        }
+      });
+
+      await new Promise<void>((resolve) => {
+        const socket = new WebSocket(`ws://127.0.0.1:${port}/ws?sessionId=session-replay&token=${validToken}`, {
+          headers: {
+            origin: "http://localhost:3000"
+          }
+        });
+
+        socket.on("message", () => {
+          socket.close();
+          resolve();
+        });
+      });
+
+      const metricsResponse = await fetch(`http://127.0.0.1:${port}/metrics`, {
+        headers: {
+          "x-internal-token": internalApiToken
+        }
+      });
+      const metricsBody = await metricsResponse.text();
+
+      expect(metricsResponse.status).toBe(200);
+      expect(metricsBody).toContain("ws_replay_delivery_count 1");
+    } finally {
+      await app.close();
+    }
+  });
+
   it("metrics는 ai fallback inference를 별도 status로 노출함", async () => {
     vi.stubGlobal(
       "fetch",
