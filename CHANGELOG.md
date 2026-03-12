@@ -112,3 +112,5 @@
 - fix: remove worker-only OPENF1 key requirement from realtime env validation
 - test: cover ollama realtime env validation without OPENF1_API_KEY
 - test: cover trigger-driven provider-labelled AI fallback metrics through telemetry events
+- feat: add worker env validation entrypoint script
+- test: cover worker mock-mode validation without OPENF1_API_KEY

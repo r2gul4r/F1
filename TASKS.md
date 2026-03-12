@@ -73,3 +73,4 @@
 [x] plan-driven task: 이중 배포 경로와 운영 준비를 마무리한다 [slice 7]
 [x] plan-driven task: 이중 배포 경로와 운영 준비를 마무리한다 [slice 8]
 [x] plan-driven task: 하이브리드 AI 전략 엔진을 단단하게 만든다 [slice 8]
+[x] plan-driven task: 이중 배포 경로와 운영 준비를 마무리한다 [slice 9]

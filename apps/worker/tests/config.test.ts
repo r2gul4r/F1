@@ -19,6 +19,13 @@ describe("worker config", () => {
     expect(() => readConfig()).toThrow();
   });
 
+  it("mock 모드에서는 api 키 없이 통과함", () => {
+    const config = readConfig();
+
+    expect(config.dataSource).toBe("mock");
+    expect(config.openF1ApiKey).toBeUndefined();
+  });
+
   it("내부 토큰이 약하면 실패함", () => {
     process.env.INTERNAL_API_TOKEN = "token";
     expect(() => readConfig()).toThrow();
