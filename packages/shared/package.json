@@ -16,9 +16,9 @@
     }
   },
   "scripts": {
-    "build": "pnpm exec tsc -p tsconfig.json",
-    "typecheck": "pnpm exec tsc -p tsconfig.json --noEmit",
-    "test": "pnpm exec vitest run"
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run"
   },
   "dependencies": {
     "sanitize-html": "^2.13.0",
@@ -26,6 +26,7 @@
   },
   "devDependencies": {
     "@types/node": "^22.13.9",
-    "@types/sanitize-html": "^2.13.0"
+    "@types/sanitize-html": "^2.13.0",
+    "typescript": "5.8.2"
   }
 }
