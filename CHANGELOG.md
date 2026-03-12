@@ -99,3 +99,4 @@
 - feat: add autonomous preflight wrapper that selects structure or full env preflight by .env presence
 - feat: expose websocket replay delivery count through realtime metrics
 - feat: add live rank and speed chips to the dashboard driver list
+- feat: classify AI fallback results by reason and expose reason-specific metrics
