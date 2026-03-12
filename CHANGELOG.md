@@ -108,3 +108,4 @@
 - test: cover provider-labelled AI metrics for ollama fallback and gemini success
 - feat: add official onboard link to selected-driver HUD for focus mode continuity
 - test: cover selected-driver HUD onboard link rendering and driver switch updates
+- docs: fix README install and preflight validation order for fresh environments
