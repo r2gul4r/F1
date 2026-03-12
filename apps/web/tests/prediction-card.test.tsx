@@ -9,7 +9,7 @@ describe("prediction card", () => {
     useRaceStore.setState({
       drivers: [],
       ticksByDriver: {},
-      selectedDriverId: null,
+      selectedDriverId: "NOR",
       flag: null,
       predictions: [],
       fps: 0
@@ -46,6 +46,43 @@ describe("prediction card", () => {
     expect(screen.getByText("27%")).toBeTruthy();
     expect(screen.getByText("12%")).toBeTruthy();
     expect(screen.getByText("812 ms")).toBeTruthy();
+    expect(screen.getByText("선택 드라이버 관련 예측")).toBeTruthy();
     expect(screen.getByText("Norris pace advantage")).toBeTruthy();
+  });
+
+  it("선택 드라이버와 다른 trigger면 다른 드라이버 예측으로 표시함", () => {
+    useRaceStore.getState().setSelectedDriverId("VER");
+    useRaceStore.getState().addPrediction({
+      sessionId: "session-1",
+      lap: 12,
+      triggerDriverId: "NOR",
+      podiumProb: [0.61, 0.27, 0.12],
+      reasoningSummary: "Norris pace advantage",
+      modelLatencyMs: 812,
+      timestampMs: new Date("2026-03-12T10:00:00.000Z").getTime()
+    });
+
+    render(<PredictionCard />);
+
+    expect(screen.getByText("다른 드라이버 예측")).toBeTruthy();
+  });
+
+  it("선택 드라이버가 없으면 중립 문구로 표시함", () => {
+    useRaceStore.setState({
+      selectedDriverId: null
+    });
+    useRaceStore.getState().addPrediction({
+      sessionId: "session-1",
+      lap: 12,
+      triggerDriverId: "NOR",
+      podiumProb: [0.61, 0.27, 0.12],
+      reasoningSummary: "Norris pace advantage",
+      modelLatencyMs: 812,
+      timestampMs: new Date("2026-03-12T10:00:00.000Z").getTime()
+    });
+
+    render(<PredictionCard />);
+
+    expect(screen.getByText("선택 드라이버 미정")).toBeTruthy();
   });
 });
