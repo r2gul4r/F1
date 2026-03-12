@@ -109,3 +109,4 @@
 - feat: add official onboard link to selected-driver HUD for focus mode continuity
 - test: cover selected-driver HUD onboard link rendering and driver switch updates
 - docs: fix README install and preflight validation order for fresh environments
+- test: cover trigger-driven provider-labelled AI fallback metrics through telemetry events

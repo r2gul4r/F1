@@ -501,6 +501,79 @@ describe("realtime api", () => {
     expect(metrics.body).toContain("ai_fallback_count{reason=\"http_error\",provider=\"ollama\"} 1");
   });
 
+  it("metrics는 telemetry trigger 경로의 ai fallback inference에 provider 라벨을 포함함", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: false,
+        status: 503,
+        json: async () => ({})
+      })
+    );
+
+    const repository = new MemoryRepository();
+    const { app } = await buildServer({
+      repository,
+      oauthUserRepository,
+      internalApiToken,
+      oauthProxyToken,
+      watchTokenSecret,
+      watchTokenTtlSec: 3600,
+      allowedOrigins: ["http://localhost:3000"],
+      wsBufferSize: 100,
+      ollamaBaseUrl: "http://localhost:11434",
+      ollamaModel: "gemma3:12b"
+    });
+
+    const firstTick = await app.inject({
+      method: "POST",
+      url: "/internal/events/telemetry",
+      headers: {
+        "x-internal-token": internalApiToken
+      },
+      payload: {
+        sessionId: "session-trigger-metrics",
+        driverId: "NOR",
+        position: { x: 1, y: 2, z: 0 },
+        speedKph: 312,
+        lap: 8,
+        rank: 6,
+        timestampMs: 1000
+      }
+    });
+    expect(firstTick.statusCode).toBe(202);
+
+    const triggerTick = await app.inject({
+      method: "POST",
+      url: "/internal/events/telemetry",
+      headers: {
+        "x-internal-token": internalApiToken
+      },
+      payload: {
+        sessionId: "session-trigger-metrics",
+        driverId: "NOR",
+        position: { x: 2, y: 3, z: 0 },
+        speedKph: 314,
+        lap: 8,
+        rank: 5,
+        timestampMs: 1100
+      }
+    });
+    expect(triggerTick.statusCode).toBe(202);
+
+    const metrics = await app.inject({
+      method: "GET",
+      url: "/metrics",
+      headers: {
+        "x-internal-token": internalApiToken
+      }
+    });
+
+    expect(metrics.statusCode).toBe(200);
+    expect(metrics.body).toContain("ai_inference_ms_count{status=\"fallback\",provider=\"ollama\"} 1");
+    expect(metrics.body).toContain("ai_fallback_count{reason=\"http_error\",provider=\"ollama\"} 1");
+  });
+
   it("OAuth 로그인 API는 토큰 검증 후 watch 토큰을 발급함", async () => {
     const repository = new MemoryRepository();
     const { app } = await buildServer({
