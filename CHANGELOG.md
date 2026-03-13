@@ -136,6 +136,7 @@
 - fix: retarget stale HUD selection to the first live driver when the selected entry disappears
 - fix: clear stale live session state across session switch, null current-session boundaries, and driver-fetch retries
 - feat: add stale telemetry warning that promotes old selected-driver data into an explicit dashboard state
+- fix: classify AI abort failures as timeout fallback reason instead of generic exception
 - test: cover client-scoped reconnect metrics and stable websocket clientId reuse through realtime and web journeys
 - test: cover cross-session replay recovery under noisy traffic
 - test: cover prediction card selection context against newer overall predictions
@@ -143,4 +144,5 @@
 - test: cover HUD recovery when the selected driver disappears from the live list
 - test: cover session-boundary stale state reset for session change, null current-session, and driver-fetch failure retry
 - test: cover stale telemetry auto-transition and driver panel hook-order safety
+- test: cover AbortError to timeout fallback classification in AI service
 - docs: add deployment runbook for mode switching, smoke checks, and rollback starting points

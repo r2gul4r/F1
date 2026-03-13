@@ -14,7 +14,7 @@ export type AiServiceConfig = {
 };
 
 export type AiPredictionStatus = "ok" | "fallback";
-export type AiFallbackReason = "http_error" | "invalid_payload" | "exception" | "disabled_provider";
+export type AiFallbackReason = "http_error" | "invalid_payload" | "exception" | "disabled_provider" | "timeout";
 
 export type AiPredictionResult = {
   prediction: AiPrediction;
@@ -90,6 +90,32 @@ const toPrompt = (request: AiPredictRequest): string => {
     `note=${note}`,
     ...rows
   ].join("\n");
+};
+
+const isAbortFailure = (error: unknown): boolean => {
+  if (!error || typeof error !== "object") {
+    return false;
+  }
+
+  const maybeError = error as {
+    name?: unknown;
+    code?: unknown;
+    message?: unknown;
+    cause?: unknown;
+  };
+  const name = typeof maybeError.name === "string" ? maybeError.name : "";
+  const code = typeof maybeError.code === "string" ? maybeError.code : "";
+  const message = typeof maybeError.message === "string" ? maybeError.message : "";
+
+  if (name === "AbortError" || code === "ABORT_ERR") {
+    return true;
+  }
+
+  if (/\babort(?:ed)?\b/i.test(message)) {
+    return true;
+  }
+
+  return isAbortFailure(maybeError.cause);
 };
 
 export class AiService {
@@ -190,7 +216,7 @@ export class AiService {
           reasoningSummary: sanitizeUserHtml(opaque.publicMessage)
         },
         status: "fallback",
-        reason: "exception"
+        reason: isAbortFailure(error) ? "timeout" : "exception"
       };
     } finally {
       clearTimeout(timer);

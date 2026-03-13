@@ -210,6 +210,24 @@ describe("ai service", () => {
     expect(result.reason).toBe("exception");
   });
 
+  it("AbortError 계열 실패는 timeout reason으로 fallback함", async () => {
+    const abortError = new DOMException("The operation was aborted", "AbortError");
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockRejectedValue(abortError)
+    );
+
+    const service = new AiService({
+      baseUrl: "http://localhost:11434",
+      model: "gemma3:12b"
+    });
+
+    const result = await service.predictWithStatus(request);
+
+    expect(result.status).toBe("fallback");
+    expect(result.reason).toBe("timeout");
+  });
+
   it("disabled provider는 fetch 호출 없이 즉시 fallback함", async () => {
     const fetchMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock);
