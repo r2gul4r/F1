@@ -73,6 +73,14 @@ describe("realtime config", () => {
     expect(config.aiRequestTimeoutMs).toBe(5000);
   });
 
+  it("ai timeout이 음수면 기본값으로 폴백함", () => {
+    process.env.AI_REQUEST_TIMEOUT_MS = "-1000";
+
+    const config = readConfig();
+
+    expect(config.aiRequestTimeoutMs).toBe(5000);
+  });
+
   it("지원하지 않는 ai provider면 실패함", () => {
     process.env.AI_PROVIDER = "unknown";
 
