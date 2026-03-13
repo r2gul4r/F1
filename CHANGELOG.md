@@ -149,6 +149,7 @@
 - feat: sort driver list as fresh > stale > no telemetry and label missing telemetry explicitly
 - test: lock AI exception fallback summary so it stays distinct from timeout fallback text
 - feat: keep HUD onboard link visible while selected telemetry is still loading
+- docs: sync README deployment notes with compose health checks and worker retry env knobs
 - feat: push stale driver rows behind fresh rows and label delayed list telemetry explicitly
 - fix: give AI timeout fallbacks a dedicated user-facing summary instead of generic opaque text
 - feat: keep selected-driver HUD visible with an explicit waiting state before telemetry arrives
