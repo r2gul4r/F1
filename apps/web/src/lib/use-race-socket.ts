@@ -20,10 +20,12 @@ const createSocketClientId = (): string => {
 export const useRaceSocket = (sessionId: string, watchToken: string): { status: SocketStatus; reconnectInMs: number } => {
   const setDrivers = useRaceStore((state) => state.setDrivers);
   const upsertTick = useRaceStore((state) => state.upsertTick);
+  const resetSessionState = useRaceStore((state) => state.resetSessionState);
   const setFlag = useRaceStore((state) => state.setFlag);
   const addPrediction = useRaceStore((state) => state.addPrediction);
   const socketRef = useRef<WebSocket | null>(null);
   const clientIdRef = useRef(createSocketClientId());
+  const activeSessionIdRef = useRef<string | null>(null);
   const reconnectAttempt = useRef(0);
   const reconnectTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [status, setStatus] = useState<SocketStatus>("idle");
@@ -112,8 +114,17 @@ export const useRaceSocket = (sessionId: string, watchToken: string): { status: 
           return;
         }
         if (!targetSessionId) {
+          if (activeSessionIdRef.current !== null) {
+            activeSessionIdRef.current = null;
+            resetSessionState();
+          }
           scheduleReconnect();
           return;
+        }
+
+        if (activeSessionIdRef.current !== targetSessionId) {
+          activeSessionIdRef.current = targetSessionId;
+          resetSessionState();
         }
 
         const drivers = await apiClient.getDrivers<Driver[]>(targetSessionId, watchToken);
@@ -137,7 +148,7 @@ export const useRaceSocket = (sessionId: string, watchToken: string): { status: 
       }
       socketRef.current?.close();
     };
-  }, [addPrediction, sessionId, setDrivers, setFlag, upsertTick, watchToken]);
+  }, [addPrediction, resetSessionState, sessionId, setDrivers, setFlag, upsertTick, watchToken]);
 
   return { status, reconnectInMs };
 };

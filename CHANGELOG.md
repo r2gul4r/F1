@@ -134,9 +134,11 @@
 - feat: prefer selected-driver predictions in the dashboard card when available
 - fix: normalize AI fallback podium probabilities so high-speed fallback outputs remain valid
 - fix: retarget stale HUD selection to the first live driver when the selected entry disappears
+- fix: clear stale live session state across session switch, null current-session boundaries, and driver-fetch retries
 - test: cover client-scoped reconnect metrics and stable websocket clientId reuse through realtime and web journeys
 - test: cover cross-session replay recovery under noisy traffic
 - test: cover prediction card selection context against newer overall predictions
 - test: cover AI fallback probability normalization under high-speed inputs
 - test: cover HUD recovery when the selected driver disappears from the live list
+- test: cover session-boundary stale state reset for session change, null current-session, and driver-fetch failure retry
 - docs: add deployment runbook for mode switching, smoke checks, and rollback starting points

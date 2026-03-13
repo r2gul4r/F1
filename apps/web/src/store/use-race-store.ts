@@ -11,6 +11,7 @@ type RaceState = {
   setDrivers: (drivers: Driver[]) => void;
   upsertTick: (tick: TelemetryTick) => void;
   setSelectedDriverId: (driverId: string | null) => void;
+  resetSessionState: () => void;
   setFlag: (flag: RaceFlag) => void;
   addPrediction: (prediction: AiPrediction) => void;
   setFps: (fps: number) => void;
@@ -32,6 +33,14 @@ export const useRaceStore = create<RaceState>((set) => ({
       }
     })),
   setSelectedDriverId: (driverId) => set(() => ({ selectedDriverId: driverId })),
+  resetSessionState: () =>
+    set(() => ({
+      drivers: [],
+      ticksByDriver: {},
+      selectedDriverId: null,
+      flag: null,
+      predictions: []
+    })),
   setFlag: (flag) => set(() => ({ flag: { ...flag } })),
   addPrediction: (prediction) =>
     set((state) => ({

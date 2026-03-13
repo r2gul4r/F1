@@ -147,6 +147,342 @@ describe("useRaceSocket", () => {
     expect(FakeWebSocket.instances[1]?.url).toContain("sessionId=session-2");
   });
 
+  it("current session 경계가 바뀌면 이전 session live 상태를 비움", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn()
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({
+            id: "session-1",
+            name: "Bahrain GP",
+            startsAt: "2026-03-12T00:00:00.000Z",
+            isCurrent: true
+          })
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => [
+            {
+              id: "VER",
+              sessionId: "session-1",
+              fullName: "Max Verstappen",
+              number: 1,
+              teamName: "Red Bull",
+              deepLink: "https://f1tv.formula1.com"
+            }
+          ]
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({
+            id: "session-2",
+            name: "Saudi GP",
+            startsAt: "2026-03-13T00:00:00.000Z",
+            isCurrent: true
+          })
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => [
+            {
+              id: "NOR",
+              sessionId: "session-2",
+              fullName: "Lando Norris",
+              number: 4,
+              teamName: "McLaren",
+              deepLink: "https://www.formula1.com/en/drivers/lando-norris"
+            }
+          ]
+        })
+    );
+
+    render(<Probe sessionId="current" />);
+
+    await flushAsync();
+    await flushAsync();
+
+    act(() => {
+      useRaceStore.setState({
+        ticksByDriver: {
+          VER: {
+            sessionId: "session-1",
+            driverId: "VER",
+            position: { x: 1, y: 2, z: 0 },
+            speedKph: 320,
+            lap: 9,
+            rank: 1,
+            timestampMs: 1000
+          }
+        },
+        selectedDriverId: "VER",
+        flag: {
+          sessionId: "session-1",
+          flagType: "YELLOW",
+          timestampMs: 1000
+        },
+        predictions: [
+          {
+            sessionId: "session-1",
+            lap: 9,
+            triggerDriverId: "VER",
+            podiumProb: [0.6, 0.3, 0.1],
+            reasoningSummary: "old session",
+            modelLatencyMs: 100,
+            timestampMs: 1000
+          }
+        ]
+      });
+    });
+
+    FakeWebSocket.instances[0]?.close();
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(500);
+    });
+
+    await flushAsync();
+    await flushAsync();
+
+    const next = useRaceStore.getState();
+    expect(FakeWebSocket.instances[1]?.url).toContain("sessionId=session-2");
+    expect(next.drivers).toMatchObject([{ id: "NOR", sessionId: "session-2" }]);
+    expect(next.ticksByDriver).toEqual({});
+    expect(next.predictions).toEqual([]);
+    expect(next.flag).toBeNull();
+    expect(next.selectedDriverId).toBeNull();
+  });
+
+  it("새 session 드라이버 조회가 한 번 실패해도 stale 드라이버를 유지하지 않음", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn()
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({
+            id: "session-1",
+            name: "Bahrain GP",
+            startsAt: "2026-03-12T00:00:00.000Z",
+            isCurrent: true
+          })
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => [
+            {
+              id: "VER",
+              sessionId: "session-1",
+              fullName: "Max Verstappen",
+              number: 1,
+              teamName: "Red Bull",
+              deepLink: "https://f1tv.formula1.com"
+            }
+          ]
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({
+            id: "session-2",
+            name: "Saudi GP",
+            startsAt: "2026-03-13T00:00:00.000Z",
+            isCurrent: true
+          })
+        })
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 503
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({
+            id: "session-2",
+            name: "Saudi GP",
+            startsAt: "2026-03-13T00:00:00.000Z",
+            isCurrent: true
+          })
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => [
+            {
+              id: "NOR",
+              sessionId: "session-2",
+              fullName: "Lando Norris",
+              number: 4,
+              teamName: "McLaren",
+              deepLink: "https://www.formula1.com/en/drivers/lando-norris"
+            }
+          ]
+        })
+    );
+
+    render(<Probe sessionId="current" />);
+
+    await flushAsync();
+    await flushAsync();
+
+    act(() => {
+      useRaceStore.setState({
+        ticksByDriver: {
+          VER: {
+            sessionId: "session-1",
+            driverId: "VER",
+            position: { x: 1, y: 2, z: 0 },
+            speedKph: 320,
+            lap: 9,
+            rank: 1,
+            timestampMs: 1000
+          }
+        },
+        selectedDriverId: "VER",
+        predictions: [
+          {
+            sessionId: "session-1",
+            lap: 9,
+            triggerDriverId: "VER",
+            podiumProb: [0.6, 0.3, 0.1],
+            reasoningSummary: "old session",
+            modelLatencyMs: 100,
+            timestampMs: 1000
+          }
+        ]
+      });
+    });
+
+    FakeWebSocket.instances[0]?.close();
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(500);
+    });
+    await flushAsync();
+    await flushAsync();
+
+    const failedBoundary = useRaceStore.getState();
+    expect(failedBoundary.drivers).toEqual([]);
+    expect(failedBoundary.ticksByDriver).toEqual({});
+    expect(failedBoundary.predictions).toEqual([]);
+    expect(failedBoundary.selectedDriverId).toBeNull();
+    expect(screen.getByTestId("status").textContent).toBe("reconnecting");
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1000);
+    });
+    await flushAsync();
+    await flushAsync();
+
+    const recovered = useRaceStore.getState();
+    expect(FakeWebSocket.instances[1]?.url).toContain("sessionId=session-2");
+    expect(recovered.drivers).toMatchObject([{ id: "NOR", sessionId: "session-2" }]);
+  });
+
+  it("current session이 null로 떨어지면 기존 live 상태를 비우고 재시도함", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn()
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({
+            id: "session-1",
+            name: "Bahrain GP",
+            startsAt: "2026-03-12T00:00:00.000Z",
+            isCurrent: true
+          })
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => [
+            {
+              id: "VER",
+              sessionId: "session-1",
+              fullName: "Max Verstappen",
+              number: 1,
+              teamName: "Red Bull",
+              deepLink: "https://f1tv.formula1.com"
+            }
+          ]
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => null
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({
+            id: "session-2",
+            name: "Saudi GP",
+            startsAt: "2026-03-13T00:00:00.000Z",
+            isCurrent: true
+          })
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => [
+            {
+              id: "NOR",
+              sessionId: "session-2",
+              fullName: "Lando Norris",
+              number: 4,
+              teamName: "McLaren",
+              deepLink: "https://www.formula1.com/en/drivers/lando-norris"
+            }
+          ]
+        })
+    );
+
+    render(<Probe sessionId="current" />);
+
+    await flushAsync();
+    await flushAsync();
+
+    act(() => {
+      useRaceStore.setState({
+        ticksByDriver: {
+          VER: {
+            sessionId: "session-1",
+            driverId: "VER",
+            position: { x: 1, y: 2, z: 0 },
+            speedKph: 320,
+            lap: 9,
+            rank: 1,
+            timestampMs: 1000
+          }
+        },
+        selectedDriverId: "VER",
+        predictions: [
+          {
+            sessionId: "session-1",
+            lap: 9,
+            triggerDriverId: "VER",
+            podiumProb: [0.6, 0.3, 0.1],
+            reasoningSummary: "old session",
+            modelLatencyMs: 100,
+            timestampMs: 1000
+          }
+        ]
+      });
+    });
+
+    FakeWebSocket.instances[0]?.close();
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(500);
+    });
+    await flushAsync();
+
+    const nullBoundary = useRaceStore.getState();
+    expect(nullBoundary.drivers).toEqual([]);
+    expect(nullBoundary.ticksByDriver).toEqual({});
+    expect(nullBoundary.predictions).toEqual([]);
+    expect(nullBoundary.selectedDriverId).toBeNull();
+    expect(screen.getByTestId("status").textContent).toBe("reconnecting");
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1000);
+    });
+    await flushAsync();
+    await flushAsync();
+
+    expect(FakeWebSocket.instances[1]?.url).toContain("sessionId=session-2");
+    expect(useRaceStore.getState().drivers).toMatchObject([{ id: "NOR", sessionId: "session-2" }]);
+  });
+
   it("재연결 중에도 같은 websocket clientId를 유지함", async () => {
     vi.stubGlobal(
       "fetch",

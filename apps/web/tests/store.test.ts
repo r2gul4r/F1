@@ -57,4 +57,40 @@ describe("race store", () => {
     expect(next.ticksByDriver.VER.rank).toBe(1);
     expect(next.predictions).toHaveLength(1);
   });
+
+  it("session 경계가 바뀌면 live 상태를 초기화함", () => {
+    const state = useRaceStore.getState();
+    state.upsertTick({
+      sessionId: "s1",
+      driverId: "VER",
+      position: { x: 1, y: 2, z: 0 },
+      speedKph: 320,
+      lap: 3,
+      rank: 1,
+      timestampMs: Date.now()
+    });
+    state.setSelectedDriverId("VER");
+    state.setFlag({
+      sessionId: "s1",
+      flagType: "YELLOW",
+      timestampMs: Date.now()
+    });
+    state.addPrediction({
+      sessionId: "s1",
+      lap: 3,
+      triggerDriverId: "VER",
+      podiumProb: [0.6, 0.3, 0.1],
+      reasoningSummary: "속도 우세",
+      modelLatencyMs: 800,
+      timestampMs: Date.now()
+    });
+    state.resetSessionState();
+
+    const next = useRaceStore.getState();
+    expect(next.drivers).toEqual([]);
+    expect(next.ticksByDriver).toEqual({});
+    expect(next.selectedDriverId).toBeNull();
+    expect(next.flag).toBeNull();
+    expect(next.predictions).toEqual([]);
+  });
 });
