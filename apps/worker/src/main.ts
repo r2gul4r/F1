@@ -1,4 +1,5 @@
 import { getNextPollDelayMs, nextBackoffState, type BackoffOutcome } from "./backoff-policy.js";
+import { decideBackoffOutcome } from "./backoff-outcome.js";
 import { readConfig } from "./config.js";
 import { RealtimeClient } from "./realtime-client.js";
 import { MockSource } from "./sources/mock-source.js";
@@ -27,7 +28,8 @@ const start = async (): Promise<void> => {
   let backoffState = { consecutiveFailures: 0 };
 
   while (true) {
-    let backoffOutcome: BackoffOutcome = "failure";
+    let primarySourceSucceeded = false;
+    let fallbackSourceSucceeded = false;
 
     try {
       const snapshot = await source.pull();
@@ -40,7 +42,7 @@ const start = async (): Promise<void> => {
         await client.sendFlag(snapshot.flag);
       }
 
-      backoffOutcome = "primary_success";
+      primarySourceSucceeded = true;
     } catch (error) {
       if (config.dataSource === "openf1") {
         try {
@@ -51,7 +53,7 @@ const start = async (): Promise<void> => {
             await client.sendFlag(fallback.flag);
           }
 
-          backoffOutcome = "degraded";
+          fallbackSourceSucceeded = true;
         } catch (fallbackError) {
           client.handleFailure(fallbackError);
         }
@@ -60,6 +62,10 @@ const start = async (): Promise<void> => {
       }
     }
 
+    const backoffOutcome: BackoffOutcome = decideBackoffOutcome({
+      primarySourceSucceeded,
+      fallbackSourceSucceeded
+    });
     backoffState = nextBackoffState(backoffState, backoffOutcome);
     await wait(getNextPollDelayMs(backoffPolicy, backoffState));
   }
