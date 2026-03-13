@@ -28,38 +28,43 @@
 ```powershell
 docker compose ps realtime worker web
 ```
-  - `realtime`의 `STATUS`에 `(healthy)`가 표시되는지 확인한다
-  - `worker`, `web`이 `Up` 상태인지 확인한다
+  - `realtime`, `web`의 `STATUS`에 `(healthy)`가 표시되는지 확인한다
+  - `worker`가 `Up` 상태인지 확인한다
 2. realtime health endpoint 확인
 ```powershell
-curl http://localhost:4001/healthz
+curl.exe -fsS http://localhost:4001/healthz
 ```
-3. startup gating 동작 로그 확인
+3. web health endpoint 확인
+```powershell
+curl.exe -fsS http://localhost:3000/watch/current > $null
+```
+4. startup gating 동작 로그 확인
 ```powershell
 docker compose logs realtime worker web --tail=120
 ```
   - `realtime` healthcheck 통과 이후 `worker`, `web` 시작 로그가 이어지는지 확인한다
-4. 내부 metrics 확인
+5. 내부 metrics 확인
 ```powershell
-curl -H "x-internal-token: <INTERNAL_API_TOKEN>" http://localhost:4001/metrics
+curl.exe -fsS -H "x-internal-token: <INTERNAL_API_TOKEN>" http://localhost:4001/metrics
 ```
-5. web 진입 확인
+6. web 진입 확인
   - `http://localhost:3000/watch/current`
   - 드라이버 목록, canvas, HUD 토글, prediction 카드가 보이는지 확인한다
-6. 데이터 모드 확인
+7. 데이터 모드 확인
   - public 모드면 실데이터가 들어오는지
   - developer 모드면 mock fallback 이 깨지지 않는지
 
 ## 운영 중 확인 포인트
-- `docker compose ps realtime`의 `STATUS`가 `(healthy)`를 유지하는지 본다
-- `healthz`는 `{"status":"ok"}` 를 반환해야 한다
+- `docker compose ps realtime web`의 `STATUS`가 `(healthy)`를 유지하는지 본다
+- realtime `healthz`는 `{"status":"ok"}` 를 반환해야 한다
+- web `watch/current` 요청이 성공해야 한다
 - `/metrics`에서 websocket, replay, AI fallback, session sync 계수가 증가하는지 본다
 - `watch/current`에서 선택 드라이버 HUD, focus mode, prediction 카드가 함께 동작하는지 본다
 
 ## rollback 시작점
-1. 새 배포에서 `validate:preflight`, `healthz`, `watch/current` 중 하나라도 실패하면 즉시 이전 정상 리비전 또는 이미지를 다시 배포한다
+1. 새 배포에서 `validate:preflight`, realtime `healthz`, web `watch/current` 중 하나라도 실패하면 즉시 이전 정상 리비전 또는 이미지를 다시 배포한다
 2. rollback 에서는 `.env`를 함께 되돌리지 말고 현재 운영 비밀값을 유지한 채 애플리케이션 리비전만 되돌린다
-3. rollback 뒤에는 다시 `healthz`, `/metrics`, `watch/current` smoke check 를 반복한다
+3. rollback 뒤에는 다시 realtime `healthz`, web `watch/current`, `/metrics` smoke check 를 반복한다
 
 ## 메모
 - 이 저장소의 기준 preflight 는 `pnpm validate:preflight` 이다
