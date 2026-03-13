@@ -10,6 +10,10 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
+    "./project-structure": {
+      "types": "./dist/project-structure.d.ts",
+      "default": "./dist/project-structure.js"
+    },
     "./watch-token": {
       "types": "./dist/security/watch-token.d.ts",
       "default": "./dist/security/watch-token.js"

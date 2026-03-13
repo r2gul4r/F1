@@ -1,5 +1,6 @@
 import React from "react";
 import { WatchClient } from "@/src/components/watch-client";
+import { WatchPreviewClient } from "@/src/components/watch-preview-client";
 import { readWatchSessionToken } from "@/src/lib/watch-session-cookie";
 
 export const dynamic = "force-dynamic";
@@ -11,6 +12,10 @@ export default async function WatchPage({
   params: Promise<{ sessionId: string }>;
 }) {
   const { sessionId } = await params;
+  if (sessionId === "preview") {
+    return <WatchPreviewClient />;
+  }
+
   const watchToken = await readWatchSessionToken();
   if (!watchToken) {
     return fallbackMessage;

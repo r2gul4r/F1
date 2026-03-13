@@ -1,4 +1,4 @@
-import { assertProjectStructure, ProjectStructureError } from "../packages/shared/dist/index.js";
+import { assertProjectStructure, ProjectStructureError } from "../packages/shared/dist/project-structure.js";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 

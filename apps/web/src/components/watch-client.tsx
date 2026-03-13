@@ -25,12 +25,14 @@ const TELEMETRY_FRESHNESS_LABEL: Record<TelemetryFreshness, string> = {
 
 export const WatchClient = ({
   sessionId,
-  watchToken
+  watchToken,
+  previewMode = false
 }: {
   sessionId: string;
   watchToken: string;
+  previewMode?: boolean;
 }) => {
-  const { status, reconnectInMs } = useRaceSocket(sessionId, watchToken);
+  const { status, reconnectInMs } = useRaceSocket(sessionId, watchToken, previewMode);
   const [hudEnabled, setHudEnabled] = useState(true);
   const [focusModeEnabled, setFocusModeEnabled] = useState(false);
   const [nowMs, setNowMs] = useState<number>(() => Date.now());

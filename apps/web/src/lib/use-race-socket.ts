@@ -17,7 +17,11 @@ const createSocketClientId = (): string => {
   return `socket-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
 };
 
-export const useRaceSocket = (sessionId: string, watchToken: string): { status: SocketStatus; reconnectInMs: number } => {
+export const useRaceSocket = (
+  sessionId: string,
+  watchToken: string,
+  previewMode = false
+): { status: SocketStatus; reconnectInMs: number } => {
   const setDrivers = useRaceStore((state) => state.setDrivers);
   const upsertTick = useRaceStore((state) => state.upsertTick);
   const resetSessionState = useRaceStore((state) => state.resetSessionState);
@@ -28,11 +32,17 @@ export const useRaceSocket = (sessionId: string, watchToken: string): { status: 
   const activeSessionIdRef = useRef<string | null>(null);
   const reconnectAttempt = useRef(0);
   const reconnectTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [status, setStatus] = useState<SocketStatus>("idle");
+  const [status, setStatus] = useState<SocketStatus>(previewMode ? "connected" : "idle");
   const [reconnectInMs, setReconnectInMs] = useState(0);
 
   useEffect(() => {
     let closedByUser = false;
+
+    if (previewMode) {
+      setStatus("connected");
+      setReconnectInMs(0);
+      return;
+    }
 
     if (!hasWatchToken(watchToken)) {
       setStatus("reconnecting");
@@ -148,7 +158,7 @@ export const useRaceSocket = (sessionId: string, watchToken: string): { status: 
       }
       socketRef.current?.close();
     };
-  }, [addPrediction, resetSessionState, sessionId, setDrivers, setFlag, upsertTick, watchToken]);
+  }, [addPrediction, previewMode, resetSessionState, sessionId, setDrivers, setFlag, upsertTick, watchToken]);
 
   return { status, reconnectInMs };
 };

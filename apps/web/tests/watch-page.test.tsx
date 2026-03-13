@@ -18,6 +18,10 @@ vi.mock("@/src/components/watch-client", () => ({
   )
 }));
 
+vi.mock("@/src/components/watch-preview-client", () => ({
+  WatchPreviewClient: () => <div data-testid="watch-preview">preview</div>
+}));
+
 describe("watch page", () => {
   afterEach(() => {
     cleanup();
@@ -48,6 +52,20 @@ describe("watch page", () => {
     render(page);
 
     expect(screen.getByText("요청 처리 실패")).toBeTruthy();
+    expect(screen.queryByTestId("watch-client")).toBeNull();
+  });
+
+  it("preview 세션이면 watch 세션 쿠키 없이도 preview client를 렌더링함", async () => {
+    cookiesMock.mockResolvedValue({
+      get: () => undefined
+    });
+
+    const page = await WatchPage({
+      params: Promise.resolve({ sessionId: "preview" })
+    });
+    render(page);
+
+    expect(screen.getByTestId("watch-preview")).toBeTruthy();
     expect(screen.queryByTestId("watch-client")).toBeNull();
   });
 });
