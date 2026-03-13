@@ -1,7 +1,11 @@
 import React from "react";
-import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useRaceStore } from "../src/store/use-race-store";
+
+const { raceCanvasSpy } = vi.hoisted(() => ({
+  raceCanvasSpy: vi.fn()
+}));
 
 vi.mock("@/src/lib/use-race-socket", () => ({
   useRaceSocket: () => ({
@@ -11,7 +15,11 @@ vi.mock("@/src/lib/use-race-socket", () => ({
 }));
 
 vi.mock("@/src/components/race-canvas", () => ({
-  RaceCanvas: () => <div data-testid="race-canvas" />
+  RaceCanvas: (props: { focusModeEnabled: boolean }) => {
+    raceCanvasSpy(props);
+
+    return <div data-testid="race-canvas" />;
+  }
 }));
 
 vi.mock("@/src/components/driver-panel", () => ({
@@ -24,6 +32,7 @@ vi.mock("@/src/components/prediction-card", () => ({
 
 describe("watch client HUD isolation", () => {
   beforeEach(() => {
+    raceCanvasSpy.mockClear();
     useRaceStore.setState({
       drivers: [
         {
@@ -125,6 +134,9 @@ describe("watch client HUD isolation", () => {
     expect(screen.getByText("집중 모드 끄기")).toBeTruthy();
     expect(screen.queryByText("드라이버")).toBeNull();
     expect(screen.getByTestId("race-canvas")).toBeTruthy();
+    await waitFor(() => {
+      expect(raceCanvasSpy).toHaveBeenLastCalledWith(expect.objectContaining({ focusModeEnabled: true }));
+    });
   });
 
   it("선택 드라이버가 목록에서 사라지면 첫 유효 드라이버로 HUD 대상을 되돌림", async () => {

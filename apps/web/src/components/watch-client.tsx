@@ -93,7 +93,7 @@ export const WatchClient = ({
               <SelectedDriverHud />
             </HudErrorBoundary>
           ) : null}
-          <RaceCanvas />
+          <RaceCanvas focusModeEnabled={focusModeEnabled} />
         </div>
       </section>
 

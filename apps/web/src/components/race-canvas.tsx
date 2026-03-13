@@ -3,15 +3,20 @@
 import React from "react";
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
-import { getDriverVisualState } from "@/src/components/race-canvas-visuals";
+import { getCameraTarget, getDriverVisualState } from "@/src/components/race-canvas-visuals";
 import { useRaceStore } from "@/src/store/use-race-store";
 
 const DRIVER_COLORS = [0x22d3ee, 0xfb7185, 0xfacc15, 0x4ade80, 0xc084fc, 0xf97316, 0x60a5fa];
 
-export const RaceCanvas = () => {
+type RaceCanvasProps = {
+  focusModeEnabled?: boolean;
+};
+
+export const RaceCanvas = ({ focusModeEnabled = false }: RaceCanvasProps) => {
   const canvasRef = useRef<HTMLDivElement | null>(null);
   const ticksRef = useRef(useRaceStore.getState().ticksByDriver);
   const selectedDriverIdRef = useRef(useRaceStore.getState().selectedDriverId);
+  const focusModeEnabledRef = useRef(focusModeEnabled);
   const ticksByDriver = useRaceStore((state) => state.ticksByDriver);
   const selectedDriverId = useRaceStore((state) => state.selectedDriverId);
   const setFps = useRaceStore((state) => state.setFps);
@@ -23,6 +28,10 @@ export const RaceCanvas = () => {
   useEffect(() => {
     selectedDriverIdRef.current = selectedDriverId;
   }, [selectedDriverId]);
+
+  useEffect(() => {
+    focusModeEnabledRef.current = focusModeEnabled;
+  }, [focusModeEnabled]);
 
   useEffect(() => {
     const container = canvasRef.current;
@@ -41,6 +50,9 @@ export const RaceCanvas = () => {
     const camera = new THREE.OrthographicCamera(-220, 220, 140, -140, 0.1, 1000);
     camera.position.set(0, 0, 300);
     camera.lookAt(0, 0, 0);
+    const cameraLookAt = new THREE.Vector3(0, 0, 0);
+    const cameraFocus = new THREE.Vector2(0, 0);
+    const cameraTargetPosition = new THREE.Vector2(0, 0);
 
     const trackMaterial = new THREE.LineBasicMaterial({ color: 0x334155 });
     const trackPoints = Array.from({ length: 120 }).map((_, index) => {
@@ -95,6 +107,20 @@ export const RaceCanvas = () => {
         meshes[tick.driverId] = mesh;
         scene.add(mesh);
       });
+
+      const selectedDriverTick = selectedDriverIdRef.current
+        ? ticksRef.current[selectedDriverIdRef.current] ?? null
+        : null;
+      const cameraTarget = getCameraTarget({
+        focusModeEnabled: focusModeEnabledRef.current,
+        selectedDriverId: selectedDriverIdRef.current,
+        selectedDriverTick
+      });
+      cameraTargetPosition.set(cameraTarget.x, cameraTarget.y);
+      cameraFocus.lerp(cameraTargetPosition, 0.12);
+      camera.position.set(cameraFocus.x, cameraFocus.y, 300);
+      cameraLookAt.set(cameraFocus.x, cameraFocus.y, 0);
+      camera.lookAt(cameraLookAt);
 
       renderer.render(scene, camera);
       rafId = requestAnimationFrame(animate);
