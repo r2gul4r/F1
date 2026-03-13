@@ -38,14 +38,15 @@
 3. `pnpm validate:preflight`
 4. `docker compose up --build -d`
 5. compose startup gating 확인
+  - `realtime`은 `postgres`, `redis` healthcheck가 `healthy`가 된 뒤에만 시작된다
   - `web`, `worker`는 `realtime` healthcheck가 `healthy`가 된 뒤에만 시작된다
 
 ## 배포 직후 smoke check
 1. compose health 상태 확인
 ```powershell
-docker compose ps realtime worker web
+docker compose ps postgres redis realtime worker web
 ```
-  - `realtime`, `web`의 `STATUS`에 `(healthy)`가 표시되는지 확인한다
+  - `postgres`, `redis`, `realtime`, `web`의 `STATUS`에 `(healthy)`가 표시되는지 확인한다
   - `worker`가 `Up` 상태인지 확인한다
 2. realtime health endpoint 확인
 ```powershell
@@ -57,8 +58,9 @@ curl.exe -fsS http://localhost:3000/watch/current > $null
 ```
 4. startup gating 동작 로그 확인
 ```powershell
-docker compose logs realtime worker web --tail=120
+docker compose logs postgres redis realtime worker web --tail=120
 ```
+  - `postgres`, `redis` healthcheck 통과 이후 `realtime` 시작 로그가 이어지는지 확인한다
   - `realtime` healthcheck 통과 이후 `worker`, `web` 시작 로그가 이어지는지 확인한다
 5. 내부 metrics 확인
 ```powershell

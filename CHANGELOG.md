@@ -165,6 +165,7 @@
 - feat: localize selected-driver freshness chip labels in the dashboard KPI strip
 - docs: sync README deployment section with worker OpenF1 timeout knob
 - docs: add timeout/backoff env reference block to deployment runbook
+- chore: gate realtime startup on postgres and redis healthchecks in compose
 - feat: show current flag sector inside selected-driver HUD when available
 - feat: show how many seconds behind the latest overall prediction a selected-driver prediction is
 - feat: add freshness status chips to the selected-driver panel
