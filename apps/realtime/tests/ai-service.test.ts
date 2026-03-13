@@ -208,6 +208,8 @@ describe("ai service", () => {
 
     expect(result.status).toBe("fallback");
     expect(result.reason).toBe("exception");
+    expect(result.prediction.reasoningSummary).toBe("요청 처리 실패");
+    expect(result.prediction.reasoningSummary).not.toBe("모델 응답 시간 초과로 보수적 추정 사용");
   });
 
   it("AbortError 계열 실패는 timeout reason으로 fallback함", async () => {
