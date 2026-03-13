@@ -86,12 +86,13 @@ describe("selected driver hud", () => {
     expect(updatedOnboardLink.getAttribute("href")).toBe("https://www.formula1.com/en/drivers/lando-norris");
   });
 
-  it("현재 flag 상태를 HUD에서 직접 보여줌", () => {
+  it("flag sector가 있으면 HUD에서 타입과 sector를 함께 보여줌", () => {
     act(() => {
       useRaceStore.setState({
         flag: {
           sessionId: "session-1",
           flagType: "YELLOW",
+          sector: "S2",
           timestampMs: Date.now() - 500
         }
       });
@@ -99,7 +100,24 @@ describe("selected driver hud", () => {
 
     render(<SelectedDriverHud />);
 
-    expect(screen.getByText("플래그 YELLOW")).toBeTruthy();
+    expect(screen.getByText("플래그 YELLOW · S2")).toBeTruthy();
+  });
+
+  it("flag sector가 없으면 기존 flag 표시를 유지함", () => {
+    act(() => {
+      useRaceStore.setState({
+        flag: {
+          sessionId: "session-1",
+          flagType: "RED",
+          timestampMs: Date.now() - 500
+        }
+      });
+    });
+
+    render(<SelectedDriverHud />);
+
+    expect(screen.getByText("플래그 RED")).toBeTruthy();
+    expect(screen.queryByText(/플래그 RED ·/)).toBeNull();
   });
 
   it("stale 텔레메트리는 HUD에서 즉시 표시됨", () => {

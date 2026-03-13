@@ -47,7 +47,8 @@ export const SelectedDriverHud = () => {
   }, [tick?.timestampMs]);
 
   const isStaleTelemetry = typeof tick?.timestampMs === "number" && nowMs - tick.timestampMs > TELEMETRY_STALE_MS;
-  const flagText = flag?.flagType ?? "GREEN";
+  const flagType = flag?.flagType ?? "GREEN";
+  const flagText = flag?.sector ? `${flagType} · ${flag.sector}` : flagType;
 
   if (!selected) {
     return null;
