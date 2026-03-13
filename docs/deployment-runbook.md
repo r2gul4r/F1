@@ -20,25 +20,33 @@
 2. `pnpm install`
 3. `pnpm validate:preflight`
 4. `docker compose up --build -d`
+5. compose startup gating 확인
+  - `web`, `worker`는 `realtime` healthcheck가 `healthy`가 된 뒤에만 시작된다
 
 ## 배포 직후 smoke check
 1. compose health 상태 확인
 ```powershell
-docker compose ps realtime
+docker compose ps realtime worker web
 ```
-  - `STATUS`에 `(healthy)`가 표시되는지 확인한다
+  - `realtime`의 `STATUS`에 `(healthy)`가 표시되는지 확인한다
+  - `worker`, `web`이 `Up` 상태인지 확인한다
 2. realtime health endpoint 확인
 ```powershell
 curl http://localhost:4001/healthz
 ```
-3. 내부 metrics 확인
+3. startup gating 동작 로그 확인
+```powershell
+docker compose logs realtime worker web --tail=120
+```
+  - `realtime` healthcheck 통과 이후 `worker`, `web` 시작 로그가 이어지는지 확인한다
+4. 내부 metrics 확인
 ```powershell
 curl -H "x-internal-token: <INTERNAL_API_TOKEN>" http://localhost:4001/metrics
 ```
-4. web 진입 확인
+5. web 진입 확인
   - `http://localhost:3000/watch/current`
   - 드라이버 목록, canvas, HUD 토글, prediction 카드가 보이는지 확인한다
-5. 데이터 모드 확인
+6. 데이터 모드 확인
   - public 모드면 실데이터가 들어오는지
   - developer 모드면 mock fallback 이 깨지지 않는지
 
