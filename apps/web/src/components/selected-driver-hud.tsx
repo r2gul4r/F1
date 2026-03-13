@@ -13,6 +13,11 @@ const formatLastUpdate = (timestampMs: number): string =>
     second: "2-digit"
   });
 
+const formatElapsedSeconds = (nowMs: number, timestampMs: number): string => {
+  const elapsedSeconds = Math.max(0, Math.floor((nowMs - timestampMs) / 1000));
+  return `${elapsedSeconds}초 전`;
+};
+
 export const SelectedDriverHud = () => {
   const [nowMs, setNowMs] = useState<number>(() => Date.now());
   const drivers = useRaceStore((state) => state.drivers);
@@ -31,19 +36,12 @@ export const SelectedDriverHud = () => {
       return;
     }
 
-    const current = Date.now();
-    setNowMs(current);
-    const ageMs = current - tick.timestampMs;
-    if (ageMs >= TELEMETRY_STALE_MS) {
-      return;
-    }
-
-    const timeoutMs = TELEMETRY_STALE_MS - ageMs + 1;
-    const timer = window.setTimeout(() => {
+    setNowMs(Date.now());
+    const timer = window.setInterval(() => {
       setNowMs(Date.now());
-    }, timeoutMs);
+    }, 1000);
 
-    return () => window.clearTimeout(timer);
+    return () => window.clearInterval(timer);
   }, [tick?.timestampMs]);
 
   const isStaleTelemetry = typeof tick?.timestampMs === "number" && nowMs - tick.timestampMs > TELEMETRY_STALE_MS;
@@ -79,7 +77,9 @@ export const SelectedDriverHud = () => {
         공식 온보드 열기
       </a>
       {tick ? (
-        <div className="selected-hud-update muted">업데이트 {formatLastUpdate(tick.timestampMs)}</div>
+        <div className="selected-hud-update muted">
+          업데이트 {formatLastUpdate(tick.timestampMs)} ({formatElapsedSeconds(nowMs, tick.timestampMs)})
+        </div>
       ) : (
         <div className="selected-hud-update muted">텔레메트리 수신 대기 중</div>
       )}

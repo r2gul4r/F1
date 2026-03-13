@@ -69,7 +69,7 @@ describe("selected driver hud", () => {
     expect(screen.getByText("플래그 GREEN")).toBeTruthy();
     expect(screen.getByText("정상")).toBeTruthy();
     expect(screen.getByText("R1")).toBeTruthy();
-    expect(screen.getByText(/업데이트 \d{2}:\d{2}:\d{2}/)).toBeTruthy();
+    expect(screen.getByText(/업데이트 \d{2}:\d{2}:\d{2} \(\d+초 전\)/)).toBeTruthy();
     expect(screen.queryByText("지연 텔레메트리")).toBeNull();
     const onboardLink = screen.getByRole("link", { name: "공식 온보드 열기" });
     expect(onboardLink.getAttribute("href")).toBe("https://f1tv.formula1.com");
@@ -158,7 +158,14 @@ describe("selected driver hud", () => {
 
     render(<SelectedDriverHud />);
     expect(screen.getByText("정상")).toBeTruthy();
+    expect(screen.getByText(/업데이트 \d{2}:\d{2}:\d{2} \(5초 전\)/)).toBeTruthy();
     expect(screen.queryByText("지연 텔레메트리")).toBeNull();
+
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
+
+    expect(screen.getByText(/업데이트 \d{2}:\d{2}:\d{2} \(7초 전\)/)).toBeTruthy();
 
     act(() => {
       vi.advanceTimersByTime(10001);

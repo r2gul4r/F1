@@ -169,6 +169,7 @@
 - feat: show how many seconds behind the latest overall prediction a selected-driver prediction is
 - feat: add freshness status chips to the selected-driver panel
 - feat: surface freshness status chips inside selected-driver HUD
+- feat: show elapsed update age inside selected-driver HUD
 - refactor: extract worker main-loop cycle helper and preserve primary plus fallback failures together
 - chore: add compose health verification for web and reflect it in deployment smoke checks
 - test: cover client-scoped reconnect metrics and stable websocket clientId reuse through realtime and web journeys
