@@ -1,6 +1,7 @@
 import React from "react";
 import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { TELEMETRY_STALE_MS } from "../src/components/telemetry-freshness";
 import { useRaceStore } from "../src/store/use-race-store";
 
 const { raceCanvasSpy } = vi.hoisted(() => ({
@@ -203,6 +204,259 @@ describe("watch client HUD isolation", () => {
 
     expect(screen.getByText("#4 NOR")).toBeTruthy();
     expect(screen.getByText("#4 Lando Norris")).toBeTruthy();
+  });
+
+  it("선택 드라이버 복구 시 raw 첫 드라이버보다 live 드라이버를 우선 선택함", async () => {
+    const { WatchClient } = await import("../src/components/watch-client");
+    const { useRaceStore: runtimeStore } = await import("../src/store/use-race-store");
+
+    runtimeStore.setState({
+      drivers: [
+        {
+          id: "NOR",
+          sessionId: "session-1",
+          fullName: "Lando Norris",
+          number: 4,
+          teamName: "McLaren",
+          deepLink: "https://f1tv.formula1.com"
+        },
+        {
+          id: "TSU",
+          sessionId: "session-1",
+          fullName: "Yuki Tsunoda",
+          number: 22,
+          teamName: "RB",
+          deepLink: "https://f1tv.formula1.com"
+        },
+        {
+          id: "VER",
+          sessionId: "session-1",
+          fullName: "Max Verstappen",
+          number: 1,
+          teamName: "Red Bull",
+          deepLink: "https://f1tv.formula1.com"
+        }
+      ],
+      ticksByDriver: {
+        NOR: {
+          sessionId: "session-1",
+          driverId: "NOR",
+          position: { x: 3, y: 4, z: 0 },
+          speedKph: 325,
+          lap: 7,
+          rank: 1,
+          timestampMs: 1001
+        },
+        VER: {
+          sessionId: "session-1",
+          driverId: "VER",
+          position: { x: 1, y: 2, z: 0 },
+          speedKph: 320,
+          lap: 7,
+          rank: 2,
+          timestampMs: 1000
+        }
+      },
+      selectedDriverId: "NOR",
+      flag: null,
+      predictions: [],
+      fps: 60
+    });
+
+    render(<WatchClient sessionId="session-1" watchToken="watch-token" />);
+
+    expect(screen.getByText("#4 NOR")).toBeTruthy();
+
+    act(() => {
+      runtimeStore.setState((state) => ({
+        ...state,
+        drivers: state.drivers.filter((driver) => driver.id !== "NOR")
+      }));
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText("#1 VER")).toBeTruthy();
+    });
+    expect(screen.queryByText("#22 TSU")).toBeNull();
+    expect(screen.getAllByText("#1 Max Verstappen").length).toBeGreaterThan(0);
+  });
+
+  it("mount 뒤 늦게 들어온 stale telemetry도 KPI와 목록에 즉시 지연으로 표시함", async () => {
+    vi.useFakeTimers();
+    const fixedNow = new Date("2026-03-13T10:00:20.000Z");
+    vi.setSystemTime(fixedNow);
+
+    vi.doMock("@/src/components/selected-driver-hud", () => ({
+      SelectedDriverHud: () => <div>#1 Max Verstappen</div>
+    }));
+
+    const { WatchClient } = await import("../src/components/watch-client");
+    const { useRaceStore: runtimeStore } = await import("../src/store/use-race-store");
+    const nowMs = fixedNow.getTime();
+
+    runtimeStore.setState({
+      drivers: [
+        {
+          id: "VER",
+          sessionId: "session-1",
+          fullName: "Max Verstappen",
+          number: 1,
+          teamName: "Red Bull",
+          deepLink: "https://f1tv.formula1.com"
+        },
+        {
+          id: "NOR",
+          sessionId: "session-1",
+          fullName: "Lando Norris",
+          number: 4,
+          teamName: "McLaren",
+          deepLink: "https://f1tv.formula1.com"
+        }
+      ],
+      ticksByDriver: {
+        VER: {
+          sessionId: "session-1",
+          driverId: "VER",
+          position: { x: 1, y: 2, z: 0 },
+          speedKph: 320,
+          lap: 7,
+          rank: 2,
+          timestampMs: nowMs - 1000
+        },
+        NOR: {
+          sessionId: "session-1",
+          driverId: "NOR",
+          position: { x: 3, y: 4, z: 0 },
+          speedKph: 325,
+          lap: 7,
+          rank: 1,
+          timestampMs: nowMs - 900
+        }
+      },
+      selectedDriverId: "VER",
+      flag: null,
+      predictions: [],
+      fps: 60
+    });
+
+    render(<WatchClient sessionId="session-1" watchToken="watch-token" />);
+
+    expect(screen.getByTestId("selected-driver-telemetry-status").textContent).toBe("정상");
+
+    act(() => {
+      runtimeStore.setState((state) => ({
+        ...state,
+        ticksByDriver: {
+          ...state.ticksByDriver,
+          VER: {
+            ...state.ticksByDriver.VER,
+            timestampMs: nowMs - TELEMETRY_STALE_MS - 1000
+          }
+        }
+      }));
+    });
+
+    expect(screen.getByTestId("selected-driver-telemetry-status").textContent).toBe("지연");
+    expect(screen.getByText("지연 텔레메트리")).toBeTruthy();
+  });
+
+  it("선택 드라이버 stale 전환은 다른 드라이버 tick이 계속 와도 제때 반영함", async () => {
+    vi.useFakeTimers();
+    const fixedNow = new Date("2026-03-13T10:00:20.000Z");
+    vi.setSystemTime(fixedNow);
+
+    vi.doMock("@/src/components/selected-driver-hud", () => ({
+      SelectedDriverHud: () => <div>#1 Max Verstappen</div>
+    }));
+
+    const { WatchClient } = await import("../src/components/watch-client");
+    const { useRaceStore: runtimeStore } = await import("../src/store/use-race-store");
+    const nowMs = fixedNow.getTime();
+    const verTimestampMs = nowMs - TELEMETRY_STALE_MS + 1000;
+
+    runtimeStore.setState({
+      drivers: [
+        {
+          id: "VER",
+          sessionId: "session-1",
+          fullName: "Max Verstappen",
+          number: 1,
+          teamName: "Red Bull",
+          deepLink: "https://f1tv.formula1.com"
+        },
+        {
+          id: "NOR",
+          sessionId: "session-1",
+          fullName: "Lando Norris",
+          number: 4,
+          teamName: "McLaren",
+          deepLink: "https://f1tv.formula1.com"
+        }
+      ],
+      ticksByDriver: {
+        VER: {
+          sessionId: "session-1",
+          driverId: "VER",
+          position: { x: 1, y: 2, z: 0 },
+          speedKph: 320,
+          lap: 7,
+          rank: 2,
+          timestampMs: verTimestampMs
+        },
+        NOR: {
+          sessionId: "session-1",
+          driverId: "NOR",
+          position: { x: 3, y: 4, z: 0 },
+          speedKph: 325,
+          lap: 7,
+          rank: 1,
+          timestampMs: nowMs - 500
+        }
+      },
+      selectedDriverId: "VER",
+      flag: null,
+      predictions: [],
+      fps: 60
+    });
+
+    render(<WatchClient sessionId="session-1" watchToken="watch-token" />);
+
+    expect(screen.getByTestId("selected-driver-telemetry-status").textContent).toBe("정상");
+
+    act(() => {
+      vi.advanceTimersByTime(600);
+      runtimeStore.setState((state) => ({
+        ...state,
+        ticksByDriver: {
+          ...state.ticksByDriver,
+          NOR: {
+            ...state.ticksByDriver.NOR,
+            speedKph: 326,
+            timestampMs: Date.now()
+          }
+        }
+      }));
+    });
+
+    expect(screen.getByTestId("selected-driver-telemetry-status").textContent).toBe("정상");
+
+    act(() => {
+      vi.advanceTimersByTime(500);
+      runtimeStore.setState((state) => ({
+        ...state,
+        ticksByDriver: {
+          ...state.ticksByDriver,
+          NOR: {
+            ...state.ticksByDriver.NOR,
+            speedKph: 327,
+            timestampMs: Date.now()
+          }
+        }
+      }));
+    });
+
+    expect(screen.getByTestId("selected-driver-telemetry-status").textContent).toBe("지연");
+    expect(screen.getByText("지연 텔레메트리")).toBeTruthy();
   });
 
   it("선택 드라이버 KPI에서 telemetry freshness를 즉시 표시함", async () => {

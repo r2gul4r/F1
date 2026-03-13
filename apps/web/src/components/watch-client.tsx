@@ -1,40 +1,26 @@
 "use client";
 
 import React from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { DriverPanel } from "@/src/components/driver-panel";
 import { HudErrorBoundary } from "@/src/components/hud-error-boundary";
 import { PredictionCard } from "@/src/components/prediction-card";
 import { RaceCanvas } from "@/src/components/race-canvas";
 import { SelectedDriverHud } from "@/src/components/selected-driver-hud";
+import {
+  TELEMETRY_STALE_MS,
+  getTelemetryFreshness,
+  getTelemetryPriority,
+  TelemetryFreshness,
+  isTelemetryStale
+} from "@/src/components/telemetry-freshness";
 import { useRaceSocket } from "@/src/lib/use-race-socket";
 import { useRaceStore } from "@/src/store/use-race-store";
 
-const TELEMETRY_STALE_MS = 15000;
-const isTelemetryStale = (timestampMs: number | undefined, currentMs: number): boolean =>
-  typeof timestampMs === "number" && currentMs - timestampMs > TELEMETRY_STALE_MS;
-type TelemetryFreshness = "fresh" | "stale" | "no telemetry";
 const TELEMETRY_FRESHNESS_LABEL: Record<TelemetryFreshness, string> = {
   fresh: "정상",
   stale: "지연",
   "no telemetry": "미수신"
-};
-const getTelemetryFreshness = (timestampMs: number | undefined, currentMs: number): TelemetryFreshness => {
-  if (typeof timestampMs !== "number") {
-    return "no telemetry";
-  }
-
-  return isTelemetryStale(timestampMs, currentMs) ? "stale" : "fresh";
-};
-const getTelemetryPriority = (
-  timestampMs: number | undefined,
-  currentMs: number
-): 0 | 1 | 2 => {
-  if (typeof timestampMs !== "number") {
-    return 2;
-  }
-
-  return isTelemetryStale(timestampMs, currentMs) ? 1 : 0;
 };
 
 export const WatchClient = ({
@@ -54,6 +40,27 @@ export const WatchClient = ({
   const flag = useRaceStore((state) => state.flag);
   const fps = useRaceStore((state) => state.fps);
   const ticksByDriver = useRaceStore((state) => state.ticksByDriver);
+  const lastTicksByDriverRef = useRef(ticksByDriver);
+  const currentNowMs = lastTicksByDriverRef.current === ticksByDriver ? nowMs : Date.now();
+  const orderedDrivers = [...drivers].sort((left, right) => {
+    const leftTick = ticksByDriver[left.id];
+    const rightTick = ticksByDriver[right.id];
+    const leftPriority = getTelemetryPriority(leftTick?.timestampMs, currentNowMs);
+    const rightPriority = getTelemetryPriority(rightTick?.timestampMs, currentNowMs);
+
+    if (leftPriority !== rightPriority) {
+      return leftPriority - rightPriority;
+    }
+
+    const leftRank = leftTick?.rank ?? Number.MAX_SAFE_INTEGER;
+    const rightRank = rightTick?.rank ?? Number.MAX_SAFE_INTEGER;
+
+    if (leftRank !== rightRank) {
+      return leftRank - rightRank;
+    }
+
+    return left.number - right.number;
+  });
 
   useEffect(() => {
     const selectedStillExists = selectedDriverId ? drivers.some((driver) => driver.id === selectedDriverId) : false;
@@ -61,8 +68,17 @@ export const WatchClient = ({
       return;
     }
 
-    setSelectedDriverId(drivers[0]?.id ?? null);
-  }, [drivers, selectedDriverId, setSelectedDriverId]);
+    setSelectedDriverId(orderedDrivers[0]?.id ?? null);
+  }, [drivers, orderedDrivers, selectedDriverId, setSelectedDriverId]);
+
+  useEffect(() => {
+    if (lastTicksByDriverRef.current === ticksByDriver) {
+      return;
+    }
+
+    lastTicksByDriverRef.current = ticksByDriver;
+    setNowMs(Date.now());
+  }, [ticksByDriver]);
 
   useEffect(() => {
     const current = Date.now();
@@ -85,29 +101,10 @@ export const WatchClient = ({
   const selectedDriver = drivers.find((driver) => driver.id === selectedDriverId) ?? null;
   const selectedDriverTick = selectedDriver ? ticksByDriver[selectedDriver.id] : undefined;
   const selectedDriverFreshness = selectedDriver
-    ? getTelemetryFreshness(selectedDriverTick?.timestampMs, nowMs)
+    ? getTelemetryFreshness(selectedDriverTick?.timestampMs, currentNowMs)
     : null;
   const selectedDriverFreshnessClass =
     selectedDriverFreshness === "no telemetry" ? "no-telemetry" : selectedDriverFreshness;
-  const orderedDrivers = [...drivers].sort((left, right) => {
-    const leftTick = ticksByDriver[left.id];
-    const rightTick = ticksByDriver[right.id];
-    const leftPriority = getTelemetryPriority(leftTick?.timestampMs, nowMs);
-    const rightPriority = getTelemetryPriority(rightTick?.timestampMs, nowMs);
-
-    if (leftPriority !== rightPriority) {
-      return leftPriority - rightPriority;
-    }
-
-    const leftRank = leftTick?.rank ?? Number.MAX_SAFE_INTEGER;
-    const rightRank = rightTick?.rank ?? Number.MAX_SAFE_INTEGER;
-
-    if (leftRank !== rightRank) {
-      return leftRank - rightRank;
-    }
-
-    return left.number - right.number;
-  });
 
   return (
     <main className={focusModeEnabled ? "dashboard dashboard-focus" : "dashboard"}>
@@ -174,9 +171,9 @@ export const WatchClient = ({
         <div className="driver-list">
           {orderedDrivers.map((driver) => {
             const driverTick = ticksByDriver[driver.id];
-            const telemetryPriority = getTelemetryPriority(driverTick?.timestampMs, nowMs);
+            const telemetryPriority = getTelemetryPriority(driverTick?.timestampMs, currentNowMs);
             const isNoTelemetry = telemetryPriority === 2;
-            const isStaleTelemetry = isTelemetryStale(driverTick?.timestampMs, nowMs);
+            const isStaleTelemetry = isTelemetryStale(driverTick?.timestampMs, currentNowMs);
             const rankText = isNoTelemetry ? "순위 미수신" : driverTick?.rank ? `R${driverTick.rank}` : "R-";
             const speedText = isNoTelemetry ? "속도 미수신" : driverTick ? `${driverTick.speedKph.toFixed(0)} kph` : "속도 -";
             const telemetryStatusText = isNoTelemetry ? "텔레메트리 미수신" : isStaleTelemetry ? "지연 텔레메트리" : null;

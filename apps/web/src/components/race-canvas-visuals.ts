@@ -1,4 +1,6 @@
 export type DriverVisualState = {
+  haloOpacity: number;
+  haloScale: number;
   opacity: number;
   scale: number;
 };
@@ -17,23 +19,31 @@ type DriverTickPosition = {
 
 export const getDriverVisualState = (input: {
   driverId: string;
+  elapsedMs?: number;
   selectedDriverId: string | null;
 }): DriverVisualState => {
   if (!input.selectedDriverId) {
     return {
+      haloOpacity: 0,
+      haloScale: 0,
       opacity: 1,
       scale: 1
     };
   }
 
   if (input.driverId === input.selectedDriverId) {
+    const pulse = (Math.sin((input.elapsedMs ?? 0) * 0.008) + 1) * 0.5;
     return {
+      haloOpacity: 0.24 + pulse * 0.28,
+      haloScale: 1.84 + pulse * 0.34,
       opacity: 1,
       scale: 1.55
     };
   }
 
   return {
+    haloOpacity: 0,
+    haloScale: 0,
     opacity: 0.32,
     scale: 0.78
   };
