@@ -4,6 +4,7 @@ export type RealtimeConfig = {
   port: number;
   postgresUrl: string;
   redisUrl: string;
+  aiRequestTimeoutMs: number;
   aiProvider: "ollama" | "gemini" | "disabled";
   ollamaBaseUrl: string;
   ollamaModel: string;
@@ -79,6 +80,7 @@ export const readConfig = (): RealtimeConfig => {
     port: asNumber(process.env.REALTIME_PORT, 4001),
     postgresUrl,
     redisUrl,
+    aiRequestTimeoutMs: asNumber(process.env.AI_REQUEST_TIMEOUT_MS, 5000),
     aiProvider,
     ollamaBaseUrl: process.env.OLLAMA_BASE_URL ?? "http://localhost:11434",
     ollamaModel: process.env.OLLAMA_MODEL ?? "gemma3:12b",

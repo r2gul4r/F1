@@ -28,6 +28,7 @@ const start = async (): Promise<void> => {
     watchTokenTtlSec: config.watchTokenTtlSec,
     allowedOrigins: config.allowedOrigins,
     wsBufferSize: config.wsBufferSize,
+    aiRequestTimeoutMs: config.aiRequestTimeoutMs,
     aiProvider: config.aiProvider,
     ollamaBaseUrl: config.ollamaBaseUrl,
     ollamaModel: config.ollamaModel,

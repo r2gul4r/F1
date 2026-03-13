@@ -13,6 +13,7 @@ describe("realtime config", () => {
     process.env.WS_BUFFER_SIZE = "1024";
     process.env.AI_PROVIDER = "ollama";
     Reflect.deleteProperty(process.env, "GEMINI_API_KEY");
+    Reflect.deleteProperty(process.env, "AI_REQUEST_TIMEOUT_MS");
   });
 
   it("필수 설정이 유효하면 통과함", () => {
@@ -40,6 +41,20 @@ describe("realtime config", () => {
     process.env.AI_PROVIDER = "disabled";
 
     expect(() => readConfig()).not.toThrow();
+  });
+
+  it("ai timeout 기본값은 5000ms임", () => {
+    const config = readConfig();
+
+    expect(config.aiRequestTimeoutMs).toBe(5000);
+  });
+
+  it("ai timeout env override를 반영함", () => {
+    process.env.AI_REQUEST_TIMEOUT_MS = "7000";
+
+    const config = readConfig();
+
+    expect(config.aiRequestTimeoutMs).toBe(7000);
   });
 
   it("지원하지 않는 ai provider면 실패함", () => {

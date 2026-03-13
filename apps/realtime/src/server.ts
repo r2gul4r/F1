@@ -34,6 +34,7 @@ export type BuildServerInput = {
   watchTokenTtlSec: number;
   allowedOrigins: string[];
   wsBufferSize: number;
+  aiRequestTimeoutMs?: number;
   aiProvider?: "ollama" | "gemini" | "disabled";
   ollamaBaseUrl: string;
   ollamaModel: string;
@@ -50,6 +51,13 @@ const checkOAuthToken = (token: string, expected: string): boolean => token.leng
 const checkWatchToken = (token: string, secret: string): boolean => token.length > 0 && verifyWatchToken(token, secret);
 const isAllowedOrigin = (origin: string | undefined, allowedOrigins: string[]): boolean =>
   !origin || allowedOrigins.includes(origin);
+const resolveAiRequestTimeoutMs = (value: number | undefined): number | undefined => {
+  if (typeof value === "number" && Number.isFinite(value) && value > 0) {
+    return value;
+  }
+
+  return undefined;
+};
 
 export const buildServer = async (input: BuildServerInput): Promise<{
   app: ReturnType<typeof Fastify>;
@@ -63,7 +71,8 @@ export const buildServer = async (input: BuildServerInput): Promise<{
     provider: aiProvider,
     baseUrl: input.ollamaBaseUrl,
     model: aiProvider === "gemini" ? input.geminiModel ?? "gemini-2.5-flash" : input.ollamaModel,
-    apiKey: input.geminiApiKey
+    apiKey: input.geminiApiKey,
+    requestTimeoutMs: resolveAiRequestTimeoutMs(input.aiRequestTimeoutMs)
   });
 
   await app.register(cors, {

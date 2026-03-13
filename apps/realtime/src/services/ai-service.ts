@@ -7,10 +7,11 @@ import {
 } from "@f1/shared";
 
 export type AiServiceConfig = {
-  provider: "ollama" | "gemini" | "disabled";
+  provider?: "ollama" | "gemini" | "disabled";
   model: string;
   baseUrl?: string;
   apiKey?: string;
+  requestTimeoutMs?: number;
 };
 
 export type AiPredictionStatus = "ok" | "fallback";
@@ -35,6 +36,8 @@ type GeminiGenerateResponse = {
     };
   }>;
 };
+
+const DEFAULT_REQUEST_TIMEOUT_MS = 5000;
 
 const clamp = (value: number): number => Math.min(1, Math.max(0, value));
 
@@ -118,6 +121,14 @@ const isAbortFailure = (error: unknown): boolean => {
   return isAbortFailure(maybeError.cause);
 };
 
+const resolveRequestTimeoutMs = (value: number | undefined): number => {
+  if (typeof value !== "number" || !Number.isFinite(value) || value <= 0) {
+    return DEFAULT_REQUEST_TIMEOUT_MS;
+  }
+
+  return value;
+};
+
 export class AiService {
   constructor(private readonly config: AiServiceConfig) {}
 
@@ -133,7 +144,7 @@ export class AiService {
     }
 
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 5000);
+    const timer = setTimeout(() => controller.abort(), resolveRequestTimeoutMs(this.config.requestTimeoutMs));
 
     try {
       const prompt = toPrompt(request);

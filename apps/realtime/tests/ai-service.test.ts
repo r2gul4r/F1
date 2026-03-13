@@ -22,6 +22,7 @@ const request = {
 
 describe("ai service", () => {
   afterEach(() => {
+    vi.restoreAllMocks();
     vi.unstubAllGlobals();
   });
 
@@ -246,5 +247,42 @@ describe("ai service", () => {
     expect(result.status).toBe("fallback");
     expect(result.reason).toBe("disabled_provider");
     expect(result.prediction.reasoningSummary).toBe("모델 응답 실패로 보수적 추정 사용");
+  });
+
+  it("requestTimeoutMs override를 setTimeout에 반영함", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockRejectedValue(new Error("network down"))
+    );
+    const timeoutSpy = vi.spyOn(globalThis, "setTimeout");
+
+    const service = new AiService({
+      baseUrl: "http://localhost:11434",
+      model: "gemma3:12b",
+      requestTimeoutMs: 1234
+    });
+
+    await service.predictWithStatus(request);
+
+    expect(timeoutSpy).toHaveBeenCalled();
+    expect(timeoutSpy.mock.calls[0]?.[1]).toBe(1234);
+  });
+
+  it("requestTimeoutMs가 없으면 기본 5000ms를 사용함", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockRejectedValue(new Error("network down"))
+    );
+    const timeoutSpy = vi.spyOn(globalThis, "setTimeout");
+
+    const service = new AiService({
+      baseUrl: "http://localhost:11434",
+      model: "gemma3:12b"
+    });
+
+    await service.predictWithStatus(request);
+
+    expect(timeoutSpy).toHaveBeenCalled();
+    expect(timeoutSpy.mock.calls[0]?.[1]).toBe(5000);
   });
 });

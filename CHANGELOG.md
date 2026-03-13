@@ -148,6 +148,7 @@
 - feat: keep worker retry backoff active through degraded mock-fallback cycles
 - feat: sort driver list as fresh > stale > no telemetry and label missing telemetry explicitly
 - test: lock AI exception fallback summary so it stays distinct from timeout fallback text
+- feat: make AI request timeout configurable through validated realtime config
 - feat: keep HUD onboard link visible while selected telemetry is still loading
 - docs: sync README deployment notes with compose health checks and worker retry env knobs
 - refactor: extract worker loop outcome helper so degraded fallback behavior is explicit and testable

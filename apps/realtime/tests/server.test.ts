@@ -867,6 +867,85 @@ describe("realtime api", () => {
     expect(metrics.body).toContain("ai_fallback_count{reason=\"timeout\",provider=\"ollama\"} 1");
   });
 
+  it("server는 ai timeout env fallback 없이 기본값을 사용함", async () => {
+    process.env.AI_REQUEST_TIMEOUT_MS = "1";
+
+    const fetchMock = vi.fn().mockImplementation(async (_url: string, init?: { signal?: AbortSignal }) => {
+      await new Promise<void>((resolve, reject) => {
+        const timer = setTimeout(() => resolve(), 20);
+        const signal = init?.signal;
+        if (signal?.aborted) {
+          clearTimeout(timer);
+          const abortError = new Error("Request aborted");
+          abortError.name = "AbortError";
+          reject(abortError);
+          return;
+        }
+
+        signal?.addEventListener(
+          "abort",
+          () => {
+            clearTimeout(timer);
+            const abortError = new Error("Request aborted");
+            abortError.name = "AbortError";
+            reject(abortError);
+          },
+          { once: true }
+        );
+      });
+
+      return {
+        ok: true,
+        json: async () => ({
+          response: "0.6,0.3,0.1\nTimeout fallback removed"
+        })
+      };
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const predict = await (async () => {
+      try {
+        const repository = new MemoryRepository();
+        const { app } = await buildServer({
+          repository,
+          oauthUserRepository,
+          internalApiToken,
+          oauthProxyToken,
+          watchTokenSecret,
+          watchTokenTtlSec: 3600,
+          allowedOrigins: ["http://localhost:3000"],
+          wsBufferSize: 100,
+          ollamaBaseUrl: "http://localhost:11434",
+          ollamaModel: "gemma3:12b"
+        });
+
+        return app.inject({
+          method: "POST",
+          url: "/api/v1/ai/predict",
+          headers: {
+            "x-internal-token": internalApiToken
+          },
+          payload: {
+            sessionId: "session-timeout-default",
+            lap: 4,
+            triggerDriverId: "NOR",
+            snapshot: {
+              ticks: []
+            }
+          }
+        });
+      } finally {
+        Reflect.deleteProperty(process.env, "AI_REQUEST_TIMEOUT_MS");
+      }
+    })();
+
+    expect(predict.statusCode).toBe(200);
+    expect(predict.json()).toMatchObject({
+      reasoningSummary: "Timeout fallback removed"
+    });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
   it("metrics는 telemetry trigger 경로의 ai fallback inference에 provider 라벨을 포함함", async () => {
     vi.stubGlobal(
       "fetch",
