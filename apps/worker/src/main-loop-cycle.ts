@@ -21,6 +21,12 @@ const publishSnapshot = async (client: MainLoopClient, snapshot: Snapshot): Prom
   }
 };
 
+const createCombinedFailure = (primaryError: unknown, fallbackError: unknown): AggregateError =>
+  new AggregateError(
+    [primaryError, fallbackError],
+    "Primary telemetry source and fallback source both failed"
+  );
+
 export const runMainLoopCycle = async ({
   source,
   mockSource,
@@ -43,7 +49,7 @@ export const runMainLoopCycle = async ({
         await publishSnapshot(client, fallbackSnapshot);
         fallbackSourceSucceeded = true;
       } catch (fallbackError) {
-        client.handleFailure(fallbackError);
+        client.handleFailure(createCombinedFailure(error, fallbackError));
       }
     }
   }

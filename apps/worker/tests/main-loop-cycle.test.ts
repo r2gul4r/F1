@@ -84,6 +84,32 @@ describe("main loop cycle helper", () => {
     expect(client.handleFailure).not.toHaveBeenCalled();
   });
 
+  it("fallback까지 실패하면 failure를 반환하고 원본 실패 맥락을 보존함", async () => {
+    const primaryError = new Error("openf1 unavailable");
+    const fallbackError = new Error("mock source unavailable");
+    const source = createSource(vi.fn().mockRejectedValue(primaryError));
+    const mockSource = createSource(vi.fn().mockRejectedValue(fallbackError));
+    const client = createClient();
+
+    const outcome = await runMainLoopCycle({
+      source,
+      mockSource,
+      client,
+      allowMockFallback: true
+    });
+
+    expect(outcome).toBe("failure");
+    expect(client.handleFailure).toHaveBeenCalledTimes(1);
+
+    const [reportedError] = client.handleFailure.mock.calls[0] as [unknown];
+    expect(reportedError).toBeInstanceOf(AggregateError);
+
+    if (reportedError instanceof AggregateError) {
+      expect(reportedError.errors).toContain(primaryError);
+      expect(reportedError.errors).toContain(fallbackError);
+    }
+  });
+
   it("fallback 비활성화 상태에서 원본 source 실패면 failure를 반환함", async () => {
     const primaryError = new Error("mock source failed");
     const source = createSource(vi.fn().mockRejectedValue(primaryError));

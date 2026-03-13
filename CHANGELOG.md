@@ -168,6 +168,7 @@
 - feat: show current flag sector inside selected-driver HUD when available
 - feat: show how many seconds behind the latest overall prediction a selected-driver prediction is
 - feat: surface freshness status chips inside selected-driver HUD
+- refactor: extract worker main-loop cycle helper and preserve primary plus fallback failures together
 - chore: add compose health verification for web and reflect it in deployment smoke checks
 - test: cover client-scoped reconnect metrics and stable websocket clientId reuse through realtime and web journeys
 - test: cover cross-session replay recovery under noisy traffic
