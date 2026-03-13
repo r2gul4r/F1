@@ -209,14 +209,16 @@ export class AiService {
         status: "ok"
       };
     } catch (error) {
+      const timeoutFallbackSummary = "모델 응답 시간 초과로 보수적 추정 사용";
+      const timedOut = isAbortFailure(error);
       const opaque = toOpaqueError(error);
       return {
         prediction: {
           ...fallbackPrediction(request, Date.now() - startedAt),
-          reasoningSummary: sanitizeUserHtml(opaque.publicMessage)
+          reasoningSummary: sanitizeUserHtml(timedOut ? timeoutFallbackSummary : opaque.publicMessage)
         },
         status: "fallback",
-        reason: isAbortFailure(error) ? "timeout" : "exception"
+        reason: timedOut ? "timeout" : "exception"
       };
     } finally {
       clearTimeout(timer);

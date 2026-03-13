@@ -226,6 +226,7 @@ describe("ai service", () => {
 
     expect(result.status).toBe("fallback");
     expect(result.reason).toBe("timeout");
+    expect(result.prediction.reasoningSummary).toBe("모델 응답 시간 초과로 보수적 추정 사용");
   });
 
   it("disabled provider는 fetch 호출 없이 즉시 fallback함", async () => {
