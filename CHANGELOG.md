@@ -138,6 +138,7 @@
 - feat: add stale telemetry warning that promotes old selected-driver data into an explicit dashboard state
 - fix: classify AI abort failures as timeout fallback reason instead of generic exception
 - feat: make focus mode route the canvas camera toward the selected driver instead of only hiding side panels
+- chore: add realtime container healthcheck and document compose-level deployment health verification
 - test: cover client-scoped reconnect metrics and stable websocket clientId reuse through realtime and web journeys
 - test: cover cross-session replay recovery under noisy traffic
 - test: cover prediction card selection context against newer overall predictions

@@ -22,22 +22,28 @@
 4. `docker compose up --build -d`
 
 ## 배포 직후 smoke check
-1. realtime health 확인
+1. compose health 상태 확인
+```powershell
+docker compose ps realtime
+```
+  - `STATUS`에 `(healthy)`가 표시되는지 확인한다
+2. realtime health endpoint 확인
 ```powershell
 curl http://localhost:4001/healthz
 ```
-2. 내부 metrics 확인
+3. 내부 metrics 확인
 ```powershell
 curl -H "x-internal-token: <INTERNAL_API_TOKEN>" http://localhost:4001/metrics
 ```
-3. web 진입 확인
+4. web 진입 확인
   - `http://localhost:3000/watch/current`
   - 드라이버 목록, canvas, HUD 토글, prediction 카드가 보이는지 확인한다
-4. 데이터 모드 확인
+5. 데이터 모드 확인
   - public 모드면 실데이터가 들어오는지
   - developer 모드면 mock fallback 이 깨지지 않는지
 
 ## 운영 중 확인 포인트
+- `docker compose ps realtime`의 `STATUS`가 `(healthy)`를 유지하는지 본다
 - `healthz`는 `{"status":"ok"}` 를 반환해야 한다
 - `/metrics`에서 websocket, replay, AI fallback, session sync 계수가 증가하는지 본다
 - `watch/current`에서 선택 드라이버 HUD, focus mode, prediction 카드가 함께 동작하는지 본다
