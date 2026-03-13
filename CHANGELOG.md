@@ -147,6 +147,7 @@
 - feat: allow worker realtime POST timeout tuning via environment configuration
 - feat: push stale driver rows behind fresh rows and label delayed list telemetry explicitly
 - fix: give AI timeout fallbacks a dedicated user-facing summary instead of generic opaque text
+- feat: keep selected-driver HUD visible with an explicit waiting state before telemetry arrives
 - test: cover client-scoped reconnect metrics and stable websocket clientId reuse through realtime and web journeys
 - test: cover cross-session replay recovery under noisy traffic
 - test: cover prediction card selection context against newer overall predictions

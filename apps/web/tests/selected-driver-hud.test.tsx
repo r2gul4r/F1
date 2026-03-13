@@ -127,4 +127,21 @@ describe("selected driver hud", () => {
 
     expect(screen.getByText("지연 텔레메트리")).toBeTruthy();
   });
+
+  it("선택 드라이버는 있지만 tick이 없으면 HUD가 대기 상태를 보여줌", () => {
+    act(() => {
+      const state = useRaceStore.getState();
+      const nextTicksByDriver = { ...state.ticksByDriver };
+      delete nextTicksByDriver.VER;
+      useRaceStore.setState({
+        ticksByDriver: nextTicksByDriver
+      });
+    });
+
+    render(<SelectedDriverHud />);
+
+    expect(screen.getByText("#1 Max Verstappen")).toBeTruthy();
+    expect(screen.getByText("텔레메트리 수신 대기 중")).toBeTruthy();
+    expect(screen.queryByText("지연 텔레메트리")).toBeNull();
+  });
 });

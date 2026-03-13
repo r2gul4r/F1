@@ -52,7 +52,15 @@ export const SelectedDriverHud = () => {
   }
 
   if (!tick) {
-    return null;
+    return (
+      <section className="selected-hud">
+        <div className="selected-hud-name">
+          #{selected.number} {selected.fullName}
+        </div>
+        <div className="selected-hud-team muted">{selected.teamName}</div>
+        <div className="selected-hud-update muted">텔레메트리 수신 대기 중</div>
+      </section>
+    );
   }
 
   return (
