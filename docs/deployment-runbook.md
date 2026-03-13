@@ -15,6 +15,23 @@
   - `OPENF1_API_KEY`, `GEMINI_API_KEY`, 강한 내부 토큰을 실제 값으로 둔다
   - `ALLOWED_ORIGINS`, `NEXT_PUBLIC_REALTIME_HTTP_BASE`, `NEXT_PUBLIC_REALTIME_WS_BASE`를 실제 공개 주소로 맞춘다
 
+## 운영용 timeout and backoff 환경 변수
+- `AI_REQUEST_TIMEOUT_MS`
+  - AI provider 요청 timeout(ms)
+  - 기본값 예시: `5000`
+- `WORKER_REALTIME_POST_TIMEOUT_MS`
+  - worker가 realtime 내부 endpoint로 전송할 때 요청 timeout(ms)
+  - 기본값 예시: `3000`
+- `WORKER_OPENF1_REQUEST_TIMEOUT_MS`
+  - worker의 OpenF1 API 요청 timeout(ms)
+  - 기본값 예시: `5000`
+- `WORKER_RETRY_BACKOFF_MULTIPLIER`
+  - worker 재시도 backoff 배수
+  - 기본값 예시: `2`
+- `WORKER_RETRY_BACKOFF_MAX_MS`
+  - worker 재시도 backoff 최대 대기(ms)
+  - 기본값 예시: `10000`
+
 ## 배포 전 점검
 1. `.env`가 public 모드 값인지 확인한다
 2. `pnpm install`
