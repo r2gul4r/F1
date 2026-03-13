@@ -158,6 +158,7 @@
 - feat: keep selected-driver HUD visible with an explicit waiting state before telemetry arrives
 - feat: surface current flag state directly inside selected-driver HUD
 - docs: sync README deployment section with AI timeout env knob
+- feat: allow realtime AI request timeout tuning through validated config and startup wiring
 - feat: allow worker OpenF1 request timeout tuning via environment configuration
 - feat: show how many seconds behind the latest overall prediction a selected-driver prediction is
 - chore: add compose health verification for web and reflect it in deployment smoke checks
