@@ -42,34 +42,32 @@
   - `web`, `worker`는 `realtime` healthcheck가 `healthy`가 된 뒤에만 시작된다
 
 ## 배포 직후 smoke check
-1. compose health 상태 확인
+1. 통합 smoke 명령 실행
 ```powershell
-docker compose ps postgres redis realtime worker web
+pnpm deployment:smoke
 ```
-  - `postgres`, `redis`, `realtime`, `web`의 `STATUS`에 `(healthy)`가 표시되는지 확인한다
-  - `worker`가 `Up` 상태인지 확인한다
-2. realtime health endpoint 확인
+  - `pnpm deployment:smoke`는 Windows PowerShell 엔트리포인트다
+  - Linux 또는 pwsh 환경은 `pnpm deployment:smoke:pwsh`를 사용한다
+  - Windows PowerShell 명시 호출은 `pnpm deployment:smoke:windows`와 동일하다
+  - compose 상태(`postgres`, `redis`, `realtime`, `web`는 `(healthy)`, `worker`는 `Up`)를 확인한다
+  - realtime `healthz`의 HTTP 200뿐 아니라 본문 `{"status":"ok"}`도 확인한다
+  - web `watch/current`를 확인한다
+  - startup gating 로그 tail(`--tail=120`)를 실제로 출력한다
+  - metrics 토큰 우선순위는 `-MetricsToken` > 프로세스 환경 변수 `INTERNAL_API_TOKEN` > `.env`의 `INTERNAL_API_TOKEN`이다
+  - metrics 토큰이 끝까지 없거나 `-SkipMetrics`를 주면 `/metrics` 확인을 skip 한다
+2. 선택적 skip 옵션
 ```powershell
-curl.exe -fsS http://localhost:4001/healthz
+powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/deployment/smoke-check.ps1 -SkipCompose -SkipRealtimeHealth -SkipWebWatch -SkipLogs -SkipMetrics
 ```
-3. web health endpoint 확인
+  - `-SkipRealtimeHealth`, `-SkipWebWatch`, `-SkipCompose`, `-SkipLogs`, `-SkipMetrics`를 조합해 환경에 맞게 부분 실행할 수 있다
+  - pwsh 대안:
 ```powershell
-curl.exe -fsS http://localhost:3000/watch/current > $null
+pwsh -NoProfile -ExecutionPolicy Bypass -File ./scripts/deployment/smoke-check.ps1 -SkipCompose -SkipRealtimeHealth -SkipWebWatch -SkipLogs -SkipMetrics
 ```
-4. startup gating 동작 로그 확인
-```powershell
-docker compose logs postgres redis realtime worker web --tail=120
-```
-  - `postgres`, `redis` healthcheck 통과 이후 `realtime` 시작 로그가 이어지는지 확인한다
-  - `realtime` healthcheck 통과 이후 `worker`, `web` 시작 로그가 이어지는지 확인한다
-5. 내부 metrics 확인
-```powershell
-curl.exe -fsS -H "x-internal-token: <INTERNAL_API_TOKEN>" http://localhost:4001/metrics
-```
-6. web 진입 확인
+3. web 진입 확인
   - `http://localhost:3000/watch/current`
   - 드라이버 목록, canvas, HUD 토글, prediction 카드가 보이는지 확인한다
-7. 데이터 모드 확인
+4. 데이터 모드 확인
   - public 모드면 실데이터가 들어오는지
   - developer 모드면 mock fallback 이 깨지지 않는지
 

@@ -190,3 +190,4 @@
 - test: cover stale selected-driver prediction warning context
 - test: cover stale selected-driver HUD telemetry display
 - docs: add deployment runbook for mode switching, smoke checks, and rollback starting points
+- docs: end-of-day summary at 2026-03-13 17:01:32
