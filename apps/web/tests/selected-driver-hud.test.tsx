@@ -66,6 +66,7 @@ describe("selected driver hud", () => {
 
     expect(screen.getByText("#1 Max Verstappen")).toBeTruthy();
     expect(screen.getByText("Red Bull")).toBeTruthy();
+    expect(screen.getByText("플래그 GREEN")).toBeTruthy();
     expect(screen.getByText("R1")).toBeTruthy();
     expect(screen.getByText(/업데이트 \d{2}:\d{2}:\d{2}/)).toBeTruthy();
     expect(screen.queryByText("지연 텔레메트리")).toBeNull();
@@ -83,6 +84,22 @@ describe("selected driver hud", () => {
     expect(screen.queryByText("지연 텔레메트리")).toBeNull();
     const updatedOnboardLink = screen.getByRole("link", { name: "공식 온보드 열기" });
     expect(updatedOnboardLink.getAttribute("href")).toBe("https://www.formula1.com/en/drivers/lando-norris");
+  });
+
+  it("현재 flag 상태를 HUD에서 직접 보여줌", () => {
+    act(() => {
+      useRaceStore.setState({
+        flag: {
+          sessionId: "session-1",
+          flagType: "YELLOW",
+          timestampMs: Date.now() - 500
+        }
+      });
+    });
+
+    render(<SelectedDriverHud />);
+
+    expect(screen.getByText("플래그 YELLOW")).toBeTruthy();
   });
 
   it("stale 텔레메트리는 HUD에서 즉시 표시됨", () => {
@@ -141,6 +158,7 @@ describe("selected driver hud", () => {
     render(<SelectedDriverHud />);
 
     expect(screen.getByText("#1 Max Verstappen")).toBeTruthy();
+    expect(screen.getByText("플래그 GREEN")).toBeTruthy();
     expect(screen.getByText("텔레메트리 수신 대기 중")).toBeTruthy();
     expect(screen.queryByText("지연 텔레메트리")).toBeNull();
     const onboardLink = screen.getByRole("link", { name: "공식 온보드 열기" });

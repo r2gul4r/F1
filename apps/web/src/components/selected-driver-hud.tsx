@@ -18,6 +18,7 @@ export const SelectedDriverHud = () => {
   const drivers = useRaceStore((state) => state.drivers);
   const selectedDriverId = useRaceStore((state) => state.selectedDriverId);
   const ticksByDriver = useRaceStore((state) => state.ticksByDriver);
+  const flag = useRaceStore((state) => state.flag);
 
   const selected = useMemo(
     () => drivers.find((driver) => driver.id === selectedDriverId) ?? null,
@@ -46,6 +47,7 @@ export const SelectedDriverHud = () => {
   }, [tick?.timestampMs]);
 
   const isStaleTelemetry = typeof tick?.timestampMs === "number" && nowMs - tick.timestampMs > TELEMETRY_STALE_MS;
+  const flagText = flag?.flagType ?? "GREEN";
 
   if (!selected) {
     return null;
@@ -58,6 +60,7 @@ export const SelectedDriverHud = () => {
           #{selected.number} {selected.fullName}
         </div>
         <div className="selected-hud-team muted">{selected.teamName}</div>
+        <div className="selected-hud-team muted">플래그 {flagText}</div>
         <a className="selected-hud-link" href={selected.deepLink} rel="noopener noreferrer" target="_blank">
           공식 온보드 열기
         </a>
@@ -72,6 +75,7 @@ export const SelectedDriverHud = () => {
         #{selected.number} {selected.fullName}
       </div>
       <div className="selected-hud-team muted">{selected.teamName}</div>
+      <div className="selected-hud-team muted">플래그 {flagText}</div>
       {isStaleTelemetry ? <div className="telemetry-stale-alert">지연 텔레메트리</div> : null}
       <div className="selected-hud-stats">
         <span>R{tick.rank}</span>
