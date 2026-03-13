@@ -67,6 +67,8 @@ F1 시청 보조 웹앱 초기 구현
   - `WORKER_REALTIME_POST_TIMEOUT_MS`: realtime 내부 전송 요청 timeout(ms)
   - `WORKER_RETRY_BACKOFF_MULTIPLIER`: 실패 재시도 backoff 배수
   - `WORKER_RETRY_BACKOFF_MAX_MS`: 재시도 backoff 최대 대기(ms)
+- AI 요청 안정화 주요 환경 변수
+  - `AI_REQUEST_TIMEOUT_MS`: AI provider 요청 timeout(ms)
 - compose health 빠른 확인 경로
   - 상태: `docker compose ps realtime worker web`
   - realtime: `http://localhost:4001/healthz`
