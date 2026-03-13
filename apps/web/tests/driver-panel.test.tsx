@@ -230,7 +230,7 @@ describe("driver panel", () => {
     ]);
   });
 
-  it("driver list는 mixed fresh/stale에서 fresh를 먼저 rank 순으로 보여주고 stale를 뒤로 보냄", async () => {
+  it("driver list는 mixed fresh/stale/no telemetry에서 fresh > stale > no telemetry 순서로 보여줌", async () => {
     vi.useFakeTimers();
     const now = new Date("2026-03-13T00:00:00.000Z").getTime();
     vi.setSystemTime(now);
@@ -260,6 +260,14 @@ describe("driver panel", () => {
           fullName: "Lewis Hamilton",
           number: 44,
           teamName: "Ferrari",
+          deepLink: "https://f1tv.formula1.com"
+        },
+        {
+          id: "PIA",
+          sessionId: "session-1",
+          fullName: "Oscar Piastri",
+          number: 81,
+          teamName: "McLaren",
           deepLink: "https://f1tv.formula1.com"
         }
       ],
@@ -305,7 +313,8 @@ describe("driver panel", () => {
     expect(rows).toEqual([
       "#1 Max Verstappen선택됨Red BullR2320 kph",
       "#44 Lewis HamiltonFerrariR3318 kph",
-      "#4 Lando NorrisMcLaren지연 텔레메트리지연 R1지연 325 kph"
+      "#4 Lando NorrisMcLaren지연 텔레메트리지연 R1지연 325 kph",
+      "#81 Oscar PiastriMcLaren텔레메트리 미수신순위 미수신속도 미수신"
     ]);
   });
 });

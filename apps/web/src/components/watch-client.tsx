@@ -13,6 +13,16 @@ import { useRaceStore } from "@/src/store/use-race-store";
 const TELEMETRY_STALE_MS = 15000;
 const isTelemetryStale = (timestampMs: number | undefined, currentMs: number): boolean =>
   typeof timestampMs === "number" && currentMs - timestampMs > TELEMETRY_STALE_MS;
+const getTelemetryPriority = (
+  timestampMs: number | undefined,
+  currentMs: number
+): 0 | 1 | 2 => {
+  if (typeof timestampMs !== "number") {
+    return 2;
+  }
+
+  return isTelemetryStale(timestampMs, currentMs) ? 1 : 0;
+};
 
 export const WatchClient = ({
   sessionId,
@@ -63,11 +73,11 @@ export const WatchClient = ({
   const orderedDrivers = [...drivers].sort((left, right) => {
     const leftTick = ticksByDriver[left.id];
     const rightTick = ticksByDriver[right.id];
-    const leftStale = isTelemetryStale(leftTick?.timestampMs, nowMs);
-    const rightStale = isTelemetryStale(rightTick?.timestampMs, nowMs);
+    const leftPriority = getTelemetryPriority(leftTick?.timestampMs, nowMs);
+    const rightPriority = getTelemetryPriority(rightTick?.timestampMs, nowMs);
 
-    if (leftStale !== rightStale) {
-      return leftStale ? 1 : -1;
+    if (leftPriority !== rightPriority) {
+      return leftPriority - rightPriority;
     }
 
     const leftRank = leftTick?.rank ?? Number.MAX_SAFE_INTEGER;
@@ -135,9 +145,12 @@ export const WatchClient = ({
         <div className="driver-list">
           {orderedDrivers.map((driver) => {
             const driverTick = ticksByDriver[driver.id];
+            const telemetryPriority = getTelemetryPriority(driverTick?.timestampMs, nowMs);
+            const isNoTelemetry = telemetryPriority === 2;
             const isStaleTelemetry = isTelemetryStale(driverTick?.timestampMs, nowMs);
-            const rankText = driverTick?.rank ? `R${driverTick.rank}` : "R-";
-            const speedText = driverTick ? `${driverTick.speedKph.toFixed(0)} kph` : "속도 -";
+            const rankText = isNoTelemetry ? "순위 미수신" : driverTick?.rank ? `R${driverTick.rank}` : "R-";
+            const speedText = isNoTelemetry ? "속도 미수신" : driverTick ? `${driverTick.speedKph.toFixed(0)} kph` : "속도 -";
+            const telemetryStatusText = isNoTelemetry ? "텔레메트리 미수신" : isStaleTelemetry ? "지연 텔레메트리" : null;
 
             return (
               <button
@@ -153,10 +166,10 @@ export const WatchClient = ({
                   <span className="muted">{driver.id === selectedDriverId ? "선택됨" : ""}</span>
                 </div>
                 <div className="driver-item-meta muted">{driver.teamName}</div>
-                {isStaleTelemetry ? <div className="driver-item-meta muted">지연 텔레메트리</div> : null}
+                {telemetryStatusText ? <div className="driver-item-meta muted">{telemetryStatusText}</div> : null}
                 <div className="driver-item-stats">
-                  <span className="driver-chip">{isStaleTelemetry ? `지연 ${rankText}` : rankText}</span>
-                  <span className="driver-chip">{isStaleTelemetry ? `지연 ${speedText}` : speedText}</span>
+                  <span className="driver-chip">{isStaleTelemetry && !isNoTelemetry ? `지연 ${rankText}` : rankText}</span>
+                  <span className="driver-chip">{isStaleTelemetry && !isNoTelemetry ? `지연 ${speedText}` : speedText}</span>
                 </div>
               </button>
             );
