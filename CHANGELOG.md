@@ -159,6 +159,7 @@
 - feat: surface current flag state directly inside selected-driver HUD
 - docs: sync README deployment section with AI timeout env knob
 - feat: allow realtime AI request timeout tuning through validated config and startup wiring
+- test: lock invalid AI timeout config values to the default fallback
 - feat: allow worker OpenF1 request timeout tuning via environment configuration
 - refactor: extract worker main-loop cycle helper so degraded fallback behavior is directly testable
 - feat: localize selected-driver freshness chip labels in the dashboard KPI strip

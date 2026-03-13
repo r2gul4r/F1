@@ -57,6 +57,22 @@ describe("realtime config", () => {
     expect(config.aiRequestTimeoutMs).toBe(7000);
   });
 
+  it("ai timeout이 숫자가 아니면 기본값으로 폴백함", () => {
+    process.env.AI_REQUEST_TIMEOUT_MS = "invalid";
+
+    const config = readConfig();
+
+    expect(config.aiRequestTimeoutMs).toBe(5000);
+  });
+
+  it("ai timeout이 0이면 기본값으로 폴백함", () => {
+    process.env.AI_REQUEST_TIMEOUT_MS = "0";
+
+    const config = readConfig();
+
+    expect(config.aiRequestTimeoutMs).toBe(5000);
+  });
+
   it("지원하지 않는 ai provider면 실패함", () => {
     process.env.AI_PROVIDER = "unknown";
 
