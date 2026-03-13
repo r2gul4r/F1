@@ -818,6 +818,55 @@ describe("realtime api", () => {
     expect(metrics.body).toContain("ai_fallback_count{reason=\"http_error\",provider=\"ollama\"} 1");
   });
 
+  it("metrics는 ai timeout fallback reason을 노출함", async () => {
+    const abortError = new Error("Request aborted");
+    abortError.name = "AbortError";
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(abortError));
+
+    const repository = new MemoryRepository();
+    const { app } = await buildServer({
+      repository,
+      oauthUserRepository,
+      internalApiToken,
+      oauthProxyToken,
+      watchTokenSecret,
+      watchTokenTtlSec: 3600,
+      allowedOrigins: ["http://localhost:3000"],
+      wsBufferSize: 100,
+      ollamaBaseUrl: "http://localhost:11434",
+      ollamaModel: "gemma3:12b"
+    });
+
+    const predict = await app.inject({
+      method: "POST",
+      url: "/api/v1/ai/predict",
+      headers: {
+        "x-internal-token": internalApiToken
+      },
+      payload: {
+        sessionId: "session-timeout",
+        lap: 4,
+        triggerDriverId: "NOR",
+        snapshot: {
+          ticks: []
+        }
+      }
+    });
+    expect(predict.statusCode).toBe(200);
+
+    const metrics = await app.inject({
+      method: "GET",
+      url: "/metrics",
+      headers: {
+        "x-internal-token": internalApiToken
+      }
+    });
+
+    expect(metrics.statusCode).toBe(200);
+    expect(metrics.body).toContain("ai_inference_ms_count{status=\"fallback\",provider=\"ollama\"} 1");
+    expect(metrics.body).toContain("ai_fallback_count{reason=\"timeout\",provider=\"ollama\"} 1");
+  });
+
   it("metrics는 telemetry trigger 경로의 ai fallback inference에 provider 라벨을 포함함", async () => {
     vi.stubGlobal(
       "fetch",
@@ -889,6 +938,74 @@ describe("realtime api", () => {
     expect(metrics.statusCode).toBe(200);
     expect(metrics.body).toContain("ai_inference_ms_count{status=\"fallback\",provider=\"ollama\"} 1");
     expect(metrics.body).toContain("ai_fallback_count{reason=\"http_error\",provider=\"ollama\"} 1");
+  });
+
+  it("metrics는 telemetry trigger 경로의 ai timeout fallback reason을 노출함", async () => {
+    const abortError = new Error("Request aborted");
+    abortError.name = "AbortError";
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(abortError));
+
+    const repository = new MemoryRepository();
+    const { app } = await buildServer({
+      repository,
+      oauthUserRepository,
+      internalApiToken,
+      oauthProxyToken,
+      watchTokenSecret,
+      watchTokenTtlSec: 3600,
+      allowedOrigins: ["http://localhost:3000"],
+      wsBufferSize: 100,
+      ollamaBaseUrl: "http://localhost:11434",
+      ollamaModel: "gemma3:12b"
+    });
+
+    const firstTick = await app.inject({
+      method: "POST",
+      url: "/internal/events/telemetry",
+      headers: {
+        "x-internal-token": internalApiToken
+      },
+      payload: {
+        sessionId: "session-trigger-timeout",
+        driverId: "NOR",
+        position: { x: 1, y: 2, z: 0 },
+        speedKph: 312,
+        lap: 8,
+        rank: 6,
+        timestampMs: 1000
+      }
+    });
+    expect(firstTick.statusCode).toBe(202);
+
+    const triggerTick = await app.inject({
+      method: "POST",
+      url: "/internal/events/telemetry",
+      headers: {
+        "x-internal-token": internalApiToken
+      },
+      payload: {
+        sessionId: "session-trigger-timeout",
+        driverId: "NOR",
+        position: { x: 2, y: 3, z: 0 },
+        speedKph: 314,
+        lap: 8,
+        rank: 5,
+        timestampMs: 1100
+      }
+    });
+    expect(triggerTick.statusCode).toBe(202);
+
+    const metrics = await app.inject({
+      method: "GET",
+      url: "/metrics",
+      headers: {
+        "x-internal-token": internalApiToken
+      }
+    });
+
+    expect(metrics.statusCode).toBe(200);
+    expect(metrics.body).toContain("ai_inference_ms_count{status=\"fallback\",provider=\"ollama\"} 1");
+    expect(metrics.body).toContain("ai_fallback_count{reason=\"timeout\",provider=\"ollama\"} 1");
   });
 
   it("telemetry trigger의 disabled provider는 fetch 없이 fallback metrics를 기록함", async () => {
