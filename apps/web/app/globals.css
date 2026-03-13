@@ -242,6 +242,17 @@ main {
   padding: 12px;
 }
 
+.telemetry-stale-alert {
+  margin-top: 12px;
+  padding: 8px 10px;
+  border: 1px solid rgba(251, 113, 133, 0.45);
+  border-radius: 10px;
+  background: rgba(127, 29, 29, 0.28);
+  color: #fecdd3;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
 .muted {
   color: var(--text-muted);
 }

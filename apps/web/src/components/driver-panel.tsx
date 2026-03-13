@@ -1,8 +1,10 @@
 "use client";
 
 import React from "react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRaceStore } from "@/src/store/use-race-store";
+
+const TELEMETRY_STALE_MS = 15000;
 
 const formatTelemetryTime = (timestampMs: number | undefined): string =>
   typeof timestampMs === "number"
@@ -16,6 +18,7 @@ const formatTelemetryTime = (timestampMs: number | undefined): string =>
 
 export const DriverPanel = () => {
   const [linkError, setLinkError] = useState<string | null>(null);
+  const [nowMs, setNowMs] = useState<number>(() => Date.now());
   const drivers = useRaceStore((state) => state.drivers);
   const selectedDriverId = useRaceStore((state) => state.selectedDriverId);
   const ticksByDriver = useRaceStore((state) => state.ticksByDriver);
@@ -24,12 +27,33 @@ export const DriverPanel = () => {
     () => drivers.find((driver) => driver.id === selectedDriverId) ?? null,
     [drivers, selectedDriverId]
   );
+  const tick = selected ? ticksByDriver[selected.id] : undefined;
+
+  useEffect(() => {
+    if (typeof tick?.timestampMs !== "number") {
+      return;
+    }
+
+    const current = Date.now();
+    setNowMs(current);
+    const ageMs = current - tick.timestampMs;
+    if (ageMs >= TELEMETRY_STALE_MS) {
+      return;
+    }
+
+    const timeoutMs = TELEMETRY_STALE_MS - ageMs + 1;
+    const timer = setTimeout(() => {
+      setNowMs(Date.now());
+    }, timeoutMs);
+
+    return () => clearTimeout(timer);
+  }, [tick?.timestampMs]);
+
+  const isStaleTelemetry = typeof tick?.timestampMs === "number" && nowMs - tick.timestampMs > TELEMETRY_STALE_MS;
 
   if (!selected) {
     return <p className="muted">드라이버 선택 필요</p>;
   }
-
-  const tick = ticksByDriver[selected.id];
 
   const openDeepLink = () => {
     setLinkError(null);
@@ -45,24 +69,27 @@ export const DriverPanel = () => {
       <p className="muted">{selected.teamName}</p>
 
       {tick ? (
-        <div className="telemetry-grid">
-          <article className="telemetry-card">
-            <div className="muted">순위</div>
-            <div className="telemetry-value">{tick.rank}</div>
-          </article>
-          <article className="telemetry-card">
-            <div className="muted">랩</div>
-            <div className="telemetry-value">{tick.lap}</div>
-          </article>
-          <article className="telemetry-card">
-            <div className="muted">속도</div>
-            <div className="telemetry-value">{tick.speedKph.toFixed(1)} kph</div>
-          </article>
-          <article className="telemetry-card">
-            <div className="muted">마지막 수신</div>
-            <div className="telemetry-value">{formatTelemetryTime(tick.timestampMs)}</div>
-          </article>
-        </div>
+        <>
+          {isStaleTelemetry ? <div className="telemetry-stale-alert">지연 텔레메트리</div> : null}
+          <div className="telemetry-grid">
+            <article className="telemetry-card">
+              <div className="muted">순위</div>
+              <div className="telemetry-value">{tick.rank}</div>
+            </article>
+            <article className="telemetry-card">
+              <div className="muted">랩</div>
+              <div className="telemetry-value">{tick.lap}</div>
+            </article>
+            <article className="telemetry-card">
+              <div className="muted">속도</div>
+              <div className="telemetry-value">{tick.speedKph.toFixed(1)} kph</div>
+            </article>
+            <article className="telemetry-card">
+              <div className="muted">마지막 수신</div>
+              <div className="telemetry-value">{formatTelemetryTime(tick.timestampMs)}</div>
+            </article>
+          </div>
+        </>
       ) : (
         <div className="telemetry-empty muted">텔레메트리 대기 중</div>
       )}

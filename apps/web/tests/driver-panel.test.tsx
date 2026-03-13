@@ -1,5 +1,5 @@
 import React from "react";
-import { cleanup, render, screen } from "@testing-library/react";
+import { act, cleanup, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { DriverPanel } from "../src/components/driver-panel";
 import { useRaceStore } from "../src/store/use-race-store";
@@ -51,6 +51,7 @@ describe("driver panel", () => {
 
   afterEach(() => {
     cleanup();
+    vi.useRealTimers();
     vi.unstubAllGlobals();
   });
 
@@ -62,6 +63,7 @@ describe("driver panel", () => {
   });
 
   it("선택된 드라이버의 핵심 텔레메트리를 카드로 보여줌", () => {
+    const now = Date.now();
     useRaceStore.getState().upsertTick({
       sessionId: "session-1",
       driverId: "VER",
@@ -69,7 +71,7 @@ describe("driver panel", () => {
       speedKph: 320.4,
       lap: 7,
       rank: 1,
-      timestampMs: new Date("2026-03-12T09:50:00.000Z").getTime()
+      timestampMs: now
     });
 
     render(<DriverPanel />);
@@ -82,6 +84,73 @@ describe("driver panel", () => {
     expect(screen.getByText("7")).toBeTruthy();
     expect(screen.getByText("320.4 kph")).toBeTruthy();
     expect(screen.getByText(/\d{2}:\d{2}:\d{2}/)).toBeTruthy();
+    expect(screen.queryByText("지연 텔레메트리")).toBeNull();
+  });
+
+  it("오래된 텔레메트리는 stale 상태를 명확히 보여줌", () => {
+    const now = Date.now();
+    useRaceStore.getState().upsertTick({
+      sessionId: "session-1",
+      driverId: "VER",
+      position: { x: 1, y: 2, z: 0 },
+      speedKph: 301.2,
+      lap: 18,
+      rank: 4,
+      timestampMs: now - 16000
+    });
+
+    render(<DriverPanel />);
+
+    expect(screen.getByText("지연 텔레메트리")).toBeTruthy();
+    expect(screen.getByText("301.2 kph")).toBeTruthy();
+    expect(screen.getByText("18")).toBeTruthy();
+  });
+
+  it("fresh 텔레메트리는 추가 수신이 없어도 15초 뒤 stale 경고로 전환됨", async () => {
+    vi.useFakeTimers();
+    const now = new Date("2026-03-13T00:00:00.000Z").getTime();
+    vi.setSystemTime(now);
+
+    useRaceStore.getState().upsertTick({
+      sessionId: "session-1",
+      driverId: "VER",
+      position: { x: 1, y: 2, z: 0 },
+      speedKph: 319.8,
+      lap: 12,
+      rank: 3,
+      timestampMs: now
+    });
+
+    render(<DriverPanel />);
+
+    expect(screen.queryByText("지연 텔레메트리")).toBeNull();
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(15001);
+    });
+
+    expect(screen.getByText("지연 텔레메트리")).toBeTruthy();
+    expect(screen.getByText("319.8 kph")).toBeTruthy();
+  });
+
+  it("선택 드라이버 없음/있음 상태 전환에서도 hook 순서 오류가 나지 않음", () => {
+    useRaceStore.setState((state) => ({
+      ...state,
+      selectedDriverId: null
+    }));
+
+    render(<DriverPanel />);
+    expect(screen.getByText("드라이버 선택 필요")).toBeTruthy();
+
+    act(() => {
+      useRaceStore.getState().setSelectedDriverId("VER");
+    });
+    expect(screen.getByText("Max Verstappen")).toBeTruthy();
+
+    act(() => {
+      useRaceStore.getState().setSelectedDriverId(null);
+    });
+    expect(screen.getByText("드라이버 선택 필요")).toBeTruthy();
   });
 
   it("driver list는 번호, 이름, 팀을 함께 보여줌", async () => {
