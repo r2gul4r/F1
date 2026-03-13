@@ -1,7 +1,7 @@
 import { Driver, InternalSessionSyncRequest, RaceFlag, Session, TelemetryTick, toOpaqueError } from "@f1/shared";
 const opaqueMessage = "요청 처리 실패";
 const requestTimeoutStatus = 504;
-const requestUnknownFailureStatus = 500;
+const requestUpstreamFailureStatus = 502;
 const defaultRequestTimeoutMs = 3000;
 
 export type RealtimeClientErrorCode = "REQUEST_FAILED";
@@ -49,7 +49,7 @@ export class RealtimeClient {
       const status =
         error instanceof Error && error.name === "AbortError"
           ? requestTimeoutStatus
-          : requestUnknownFailureStatus;
+          : requestUpstreamFailureStatus;
       throw new RealtimeClientError("REQUEST_FAILED", status);
     } finally {
       clearTimeout(timer);

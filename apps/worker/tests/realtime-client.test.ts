@@ -86,7 +86,7 @@ describe("realtime client", () => {
     });
   });
 
-  it("에러 타입을 유지함", async () => {
+  it("500 non-ok 응답은 에러 타입과 상태 코드를 유지함", async () => {
     vi.stubGlobal(
       "fetch",
       vi.fn().mockResolvedValue({
@@ -102,7 +102,24 @@ describe("realtime client", () => {
       expect.fail("실패가 필요함");
     } catch (error) {
       expect(error).toBeInstanceOf(RealtimeClientError);
+      expect(error).toMatchObject({
+        status: 500
+      });
     }
+  });
+
+  it("timeout이 아닌 fetch/network 실패는 upstream 성격 상태로 매핑함", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockRejectedValue(new TypeError("fetch failed"))
+    );
+
+    const client = new RealtimeClient("http://localhost:4001", "internal-token");
+
+    await expect(client.sendTelemetry(tick)).rejects.toMatchObject({
+      code: "REQUEST_FAILED",
+      status: 502
+    });
   });
 
   it("내부 POST timeout 기본값은 3000ms를 사용함", async () => {
