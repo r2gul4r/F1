@@ -1,5 +1,8 @@
 import { Driver, InternalSessionSyncRequest, RaceFlag, Session, TelemetryTick, toOpaqueError } from "@f1/shared";
 const opaqueMessage = "요청 처리 실패";
+const requestTimeoutStatus = 504;
+const requestUnknownFailureStatus = 500;
+const defaultRequestTimeoutMs = 3000;
 
 export type RealtimeClientErrorCode = "REQUEST_FAILED";
 
@@ -14,20 +17,42 @@ export class RealtimeClientError extends Error {
 }
 
 export class RealtimeClient {
-  constructor(private readonly baseUrl: string, private readonly token: string) {}
+  constructor(
+    private readonly baseUrl: string,
+    private readonly token: string,
+    private readonly timeoutMs: number = defaultRequestTimeoutMs
+  ) {}
 
   private async post(path: string, body: unknown): Promise<void> {
-    const response = await fetch(`${this.baseUrl}${path}`, {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        "x-internal-token": this.token
-      },
-      body: JSON.stringify(body)
-    });
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), this.timeoutMs);
 
-    if (!response.ok) {
-      throw new RealtimeClientError("REQUEST_FAILED", response.status);
+    try {
+      const response = await fetch(`${this.baseUrl}${path}`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "x-internal-token": this.token
+        },
+        body: JSON.stringify(body),
+        signal: controller.signal
+      });
+
+      if (!response.ok) {
+        throw new RealtimeClientError("REQUEST_FAILED", response.status);
+      }
+    } catch (error) {
+      if (error instanceof RealtimeClientError) {
+        throw error;
+      }
+
+      const status =
+        error instanceof Error && error.name === "AbortError"
+          ? requestTimeoutStatus
+          : requestUnknownFailureStatus;
+      throw new RealtimeClientError("REQUEST_FAILED", status);
+    } finally {
+      clearTimeout(timer);
     }
   }
 

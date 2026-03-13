@@ -31,6 +31,7 @@ const tick = {
 
 describe("realtime client", () => {
   afterEach(() => {
+    vi.useRealTimers();
     vi.unstubAllGlobals();
   });
 
@@ -44,14 +45,17 @@ describe("realtime client", () => {
     const client = new RealtimeClient("http://localhost:4001", "internal-token");
     await client.syncSession(session, drivers);
 
-    expect(fetchMock).toHaveBeenCalledWith("http://localhost:4001/internal/session", {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        "x-internal-token": "internal-token"
-      },
-      body: JSON.stringify({ session, drivers })
-    });
+    expect(fetchMock).toHaveBeenCalledWith(
+      "http://localhost:4001/internal/session",
+      expect.objectContaining({
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "x-internal-token": "internal-token"
+        },
+        body: JSON.stringify({ session, drivers })
+      })
+    );
   });
 
   it("내부 API 실패 시 RealtimeClientError로 전달함", async () => {
@@ -88,5 +92,33 @@ describe("realtime client", () => {
     } catch (error) {
       expect(error).toBeInstanceOf(RealtimeClientError);
     }
+  });
+
+  it("내부 POST timeout 시 opaque 실패로 빠르게 종료함", async () => {
+    vi.useFakeTimers();
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockImplementation((_input: unknown, init?: { signal?: AbortSignal }) => {
+        return new Promise((_resolve, reject) => {
+          init?.signal?.addEventListener("abort", () => {
+            const abortError = new Error("aborted");
+            abortError.name = "AbortError";
+            reject(abortError);
+          });
+        });
+      })
+    );
+
+    const client = new RealtimeClient("http://localhost:4001", "internal-token", 10);
+    const pending = client.sendTelemetry(tick);
+    const assertion = expect(pending).rejects.toMatchObject({
+      code: "REQUEST_FAILED",
+      status: 504,
+      message: "요청 처리 실패"
+    });
+
+    await vi.advanceTimersByTimeAsync(10);
+    await assertion;
   });
 });
