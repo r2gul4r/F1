@@ -151,6 +151,7 @@
 - feat: keep HUD onboard link visible while selected telemetry is still loading
 - docs: sync README deployment notes with compose health checks and worker retry env knobs
 - refactor: extract worker loop outcome helper so degraded fallback behavior is explicit and testable
+- feat: surface selected-driver telemetry freshness directly in the dashboard KPI strip
 - feat: push stale driver rows behind fresh rows and label delayed list telemetry explicitly
 - fix: give AI timeout fallbacks a dedicated user-facing summary instead of generic opaque text
 - feat: keep selected-driver HUD visible with an explicit waiting state before telemetry arrives
