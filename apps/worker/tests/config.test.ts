@@ -14,6 +14,7 @@ describe("worker config", () => {
     delete process.env.DATA_SOURCE;
     delete process.env.WORKER_POLL_MS;
     delete process.env.WORKER_REALTIME_POST_TIMEOUT_MS;
+    delete process.env.WORKER_OPENF1_REQUEST_TIMEOUT_MS;
     delete process.env.WORKER_RETRY_BACKOFF_MULTIPLIER;
     delete process.env.WORKER_RETRY_BACKOFF_MAX_MS;
   });
@@ -57,6 +58,28 @@ describe("worker config", () => {
     const config = readConfig();
 
     expect(config.realtimePostTimeoutMs).toBe(4500);
+  });
+
+  it("openf1 request timeout 기본값은 5000ms임", () => {
+    const config = readConfig();
+
+    expect(config.openF1RequestTimeoutMs).toBe(5000);
+  });
+
+  it("openf1 request timeout env override를 반영함", () => {
+    process.env.WORKER_OPENF1_REQUEST_TIMEOUT_MS = "7200";
+
+    const config = readConfig();
+
+    expect(config.openF1RequestTimeoutMs).toBe(7200);
+  });
+
+  it("openf1 request timeout env 값이 비정상이면 5000ms로 폴백함", () => {
+    process.env.WORKER_OPENF1_REQUEST_TIMEOUT_MS = "invalid";
+
+    const config = readConfig();
+
+    expect(config.openF1RequestTimeoutMs).toBe(5000);
   });
 
   it("retry backoff 기본값을 사용함", () => {

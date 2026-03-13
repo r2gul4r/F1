@@ -4,6 +4,7 @@ export type WorkerConfig = {
   realtimeBaseUrl: string;
   openF1BaseUrl: string;
   openF1ApiKey?: string;
+  openF1RequestTimeoutMs: number;
   pollMs: number;
   retryBackoffMultiplier: number;
   retryBackoffMaxMs: number;
@@ -68,6 +69,7 @@ export const readConfig = (): WorkerConfig => {
     realtimeBaseUrl,
     openF1BaseUrl: process.env.OPENF1_BASE_URL ?? "https://api.openf1.org/v1",
     openF1ApiKey,
+    openF1RequestTimeoutMs: asNumber(process.env.WORKER_OPENF1_REQUEST_TIMEOUT_MS, 5000),
     pollMs,
     retryBackoffMultiplier: asMultiplier(process.env.WORKER_RETRY_BACKOFF_MULTIPLIER, 2),
     retryBackoffMaxMs,

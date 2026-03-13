@@ -51,15 +51,18 @@ export const buildOpenF1Headers = (apiKey: string): Record<string, string> => ({
   "x-api-key": apiKey
 });
 
+const DEFAULT_REQUEST_TIMEOUT_MS = 5000;
+
 export class OpenF1Source implements TelemetrySource {
   constructor(
     private readonly baseUrl: string,
-    private readonly apiKey: string
+    private readonly apiKey: string,
+    private readonly requestTimeoutMs: number = DEFAULT_REQUEST_TIMEOUT_MS
   ) {}
 
   private async requestJson<T>(path: string): Promise<T> {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 5000);
+    const timeout = setTimeout(() => controller.abort(), this.requestTimeoutMs);
 
     try {
       const response = await fetch(`${this.baseUrl}${path}`, {

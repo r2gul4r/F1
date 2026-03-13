@@ -158,6 +158,7 @@
 - feat: keep selected-driver HUD visible with an explicit waiting state before telemetry arrives
 - feat: surface current flag state directly inside selected-driver HUD
 - docs: sync README deployment section with AI timeout env knob
+- feat: allow worker OpenF1 request timeout tuning via environment configuration
 - chore: add compose health verification for web and reflect it in deployment smoke checks
 - test: cover client-scoped reconnect metrics and stable websocket clientId reuse through realtime and web journeys
 - test: cover cross-session replay recovery under noisy traffic

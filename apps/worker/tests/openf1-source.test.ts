@@ -3,6 +3,7 @@ import { buildOpenF1Headers, OpenF1Source } from "../src/sources/openf1-source.j
 
 describe("openf1 source", () => {
   afterEach(() => {
+    delete process.env.WORKER_OPENF1_REQUEST_TIMEOUT_MS;
     vi.unstubAllGlobals();
   });
 
@@ -239,5 +240,50 @@ describe("openf1 source", () => {
         deepLink: "https://f1tv.formula1.com/search?q=63"
       }
     ]);
+  });
+
+  it("요청 timeout 인자를 사용함", async () => {
+    const timeoutSpy = vi.spyOn(globalThis, "setTimeout");
+    vi.stubGlobal(
+      "fetch",
+      vi.fn()
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => [
+            {
+              session_key: 1004,
+              session_name: "Japan GP",
+              date_start: "2026-03-15T00:00:00.000Z"
+            }
+          ]
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => [
+            {
+              driver_number: 22
+            }
+          ]
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => [
+            {
+              date: "2026-03-15T00:00:01.000Z",
+              x: 10,
+              y: 20,
+              z: 0,
+              speed: 279,
+              driver_number: 22
+            }
+          ]
+        })
+    );
+
+    const source = new OpenF1Source("https://api.openf1.org/v1", "sample-key", 1200);
+    await source.pull();
+
+    expect(timeoutSpy).toHaveBeenCalledWith(expect.any(Function), 1200);
+    timeoutSpy.mockRestore();
   });
 });

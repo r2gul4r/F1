@@ -18,7 +18,7 @@ const start = async (): Promise<void> => {
   const mockSource = new MockSource();
 
   const source: TelemetrySource = config.dataSource === "openf1"
-    ? new OpenF1Source(config.openF1BaseUrl, config.openF1ApiKey!)
+    ? new OpenF1Source(config.openF1BaseUrl, config.openF1ApiKey!, config.openF1RequestTimeoutMs)
     : mockSource;
   const backoffPolicy = {
     baseMs: config.pollMs,
