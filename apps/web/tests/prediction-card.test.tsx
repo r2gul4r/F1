@@ -78,7 +78,7 @@ describe("prediction card", () => {
       podiumProb: [0.58, 0.28, 0.14],
       reasoningSummary: "Norris selected-driver view",
       modelLatencyMs: 790,
-      timestampMs: new Date("2026-03-12T09:59:00.000Z").getTime()
+      timestampMs: new Date("2026-03-12T09:59:45.000Z").getTime()
     });
     useRaceStore.getState().addPrediction({
       sessionId: "session-1",
@@ -94,8 +94,36 @@ describe("prediction card", () => {
 
     expect(screen.getByText("선택 드라이버 관련 예측")).toBeTruthy();
     expect(screen.getByText("Norris selected-driver view")).toBeTruthy();
-    expect(screen.getByText(/최신 전체 예측보다 이전 시각 데이터/)).toBeTruthy();
+    expect(screen.getByText(/최신 전체 예측보다 15초 이전 데이터/)).toBeTruthy();
     expect(screen.queryByText("Verstappen latest overall")).toBeNull();
+  });
+
+  it("선택 드라이버 예측이 최신이면 stale 경고를 보여주지 않음", () => {
+    useRaceStore.getState().setSelectedDriverId("NOR");
+    useRaceStore.getState().addPrediction({
+      sessionId: "session-1",
+      lap: 11,
+      triggerDriverId: "VER",
+      podiumProb: [0.58, 0.28, 0.14],
+      reasoningSummary: "Verstappen older prediction",
+      modelLatencyMs: 790,
+      timestampMs: new Date("2026-03-12T09:59:45.000Z").getTime()
+    });
+    useRaceStore.getState().addPrediction({
+      sessionId: "session-1",
+      lap: 12,
+      triggerDriverId: "NOR",
+      podiumProb: [0.52, 0.31, 0.17],
+      reasoningSummary: "Norris latest overall",
+      modelLatencyMs: 760,
+      timestampMs: new Date("2026-03-12T10:00:00.000Z").getTime()
+    });
+
+    render(<PredictionCard />);
+
+    expect(screen.getByText("선택 드라이버 관련 예측")).toBeTruthy();
+    expect(screen.getByText("Norris latest overall")).toBeTruthy();
+    expect(screen.queryByText(/최신 전체 예측보다 .*초 이전 데이터/)).toBeNull();
   });
 
   it("선택 드라이버가 없으면 중립 문구로 표시함", () => {

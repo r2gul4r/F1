@@ -25,6 +25,10 @@ export const PredictionCard = () => {
     isSelectedDriverPriorityView &&
     latest !== undefined &&
     selectedDriverPrediction.timestampMs < latest.timestampMs;
+  const staleGapSeconds =
+    isSelectedPredictionStale && latest !== undefined && selectedDriverPrediction !== null
+      ? Math.ceil((latest.timestampMs - selectedDriverPrediction.timestampMs) / 1000)
+      : null;
 
   if (!visiblePrediction) {
     return <div className="prediction-empty muted">예측 대기 중</div>;
@@ -44,7 +48,7 @@ export const PredictionCard = () => {
       <p className="muted">{selectedDriverContext}</p>
       {isSelectedPredictionStale ? (
         <p className="prediction-stale-alert">
-          선택 드라이버 예측 우선 표시 중 · 최신 전체 예측보다 이전 시각 데이터
+          선택 드라이버 예측 우선 표시 중 · 최신 전체 예측보다 {staleGapSeconds}초 이전 데이터
         </p>
       ) : null}
       <div className="prediction-grid">

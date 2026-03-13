@@ -159,6 +159,7 @@
 - feat: surface current flag state directly inside selected-driver HUD
 - docs: sync README deployment section with AI timeout env knob
 - feat: allow worker OpenF1 request timeout tuning via environment configuration
+- feat: show how many seconds behind the latest overall prediction a selected-driver prediction is
 - chore: add compose health verification for web and reflect it in deployment smoke checks
 - test: cover client-scoped reconnect metrics and stable websocket clientId reuse through realtime and web journeys
 - test: cover cross-session replay recovery under noisy traffic
