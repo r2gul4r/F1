@@ -143,5 +143,7 @@ describe("selected driver hud", () => {
     expect(screen.getByText("#1 Max Verstappen")).toBeTruthy();
     expect(screen.getByText("텔레메트리 수신 대기 중")).toBeTruthy();
     expect(screen.queryByText("지연 텔레메트리")).toBeNull();
+    const onboardLink = screen.getByRole("link", { name: "공식 온보드 열기" });
+    expect(onboardLink.getAttribute("href")).toBe("https://f1tv.formula1.com");
   });
 });

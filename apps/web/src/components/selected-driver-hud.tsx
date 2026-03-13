@@ -58,6 +58,9 @@ export const SelectedDriverHud = () => {
           #{selected.number} {selected.fullName}
         </div>
         <div className="selected-hud-team muted">{selected.teamName}</div>
+        <a className="selected-hud-link" href={selected.deepLink} rel="noopener noreferrer" target="_blank">
+          공식 온보드 열기
+        </a>
         <div className="selected-hud-update muted">텔레메트리 수신 대기 중</div>
       </section>
     );
