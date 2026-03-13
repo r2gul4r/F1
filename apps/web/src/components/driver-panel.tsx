@@ -5,6 +5,19 @@ import { useEffect, useMemo, useState } from "react";
 import { useRaceStore } from "@/src/store/use-race-store";
 
 const TELEMETRY_STALE_MS = 15000;
+type TelemetryFreshness = "fresh" | "stale" | "no telemetry";
+const TELEMETRY_FRESHNESS_LABEL: Record<TelemetryFreshness, string> = {
+  fresh: "정상",
+  stale: "지연",
+  "no telemetry": "미수신"
+};
+const getTelemetryFreshness = (timestampMs: number | undefined, currentMs: number): TelemetryFreshness => {
+  if (typeof timestampMs !== "number") {
+    return "no telemetry";
+  }
+
+  return currentMs - timestampMs > TELEMETRY_STALE_MS ? "stale" : "fresh";
+};
 
 const formatTelemetryTime = (timestampMs: number | undefined): string =>
   typeof timestampMs === "number"
@@ -50,6 +63,8 @@ export const DriverPanel = () => {
   }, [tick?.timestampMs]);
 
   const isStaleTelemetry = typeof tick?.timestampMs === "number" && nowMs - tick.timestampMs > TELEMETRY_STALE_MS;
+  const telemetryFreshness = getTelemetryFreshness(tick?.timestampMs, nowMs);
+  const telemetryFreshnessClass = telemetryFreshness === "no telemetry" ? "no-telemetry" : telemetryFreshness;
 
   if (!selected) {
     return <p className="muted">드라이버 선택 필요</p>;
@@ -67,6 +82,12 @@ export const DriverPanel = () => {
     <section style={{ marginTop: 14 }}>
       <h3>{selected.fullName}</h3>
       <p className="muted">{selected.teamName}</p>
+      <span
+        className={`telemetry-status-chip telemetry-status-chip-${telemetryFreshnessClass}`}
+        data-testid="driver-panel-telemetry-status"
+      >
+        {TELEMETRY_FRESHNESS_LABEL[telemetryFreshness]}
+      </span>
 
       {tick ? (
         <>

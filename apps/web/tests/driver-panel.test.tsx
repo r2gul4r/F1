@@ -60,6 +60,9 @@ describe("driver panel", () => {
 
     expect(screen.getByText("Max Verstappen")).toBeTruthy();
     expect(screen.getByText("텔레메트리 대기 중")).toBeTruthy();
+    const statusChip = screen.getByTestId("driver-panel-telemetry-status");
+    expect(statusChip.textContent).toBe("미수신");
+    expect(statusChip.className).toContain("telemetry-status-chip-no-telemetry");
   });
 
   it("선택된 드라이버의 핵심 텔레메트리를 카드로 보여줌", () => {
@@ -85,6 +88,9 @@ describe("driver panel", () => {
     expect(screen.getByText("320.4 kph")).toBeTruthy();
     expect(screen.getByText(/\d{2}:\d{2}:\d{2}/)).toBeTruthy();
     expect(screen.queryByText("지연 텔레메트리")).toBeNull();
+    const statusChip = screen.getByTestId("driver-panel-telemetry-status");
+    expect(statusChip.textContent).toBe("정상");
+    expect(statusChip.className).toContain("telemetry-status-chip-fresh");
   });
 
   it("오래된 텔레메트리는 stale 상태를 명확히 보여줌", () => {
@@ -104,6 +110,9 @@ describe("driver panel", () => {
     expect(screen.getByText("지연 텔레메트리")).toBeTruthy();
     expect(screen.getByText("301.2 kph")).toBeTruthy();
     expect(screen.getByText("18")).toBeTruthy();
+    const statusChip = screen.getByTestId("driver-panel-telemetry-status");
+    expect(statusChip.textContent).toBe("지연");
+    expect(statusChip.className).toContain("telemetry-status-chip-stale");
   });
 
   it("fresh 텔레메트리는 추가 수신이 없어도 15초 뒤 stale 경고로 전환됨", async () => {
@@ -124,6 +133,7 @@ describe("driver panel", () => {
     render(<DriverPanel />);
 
     expect(screen.queryByText("지연 텔레메트리")).toBeNull();
+    expect(screen.getByTestId("driver-panel-telemetry-status").textContent).toBe("정상");
 
     await act(async () => {
       await vi.advanceTimersByTimeAsync(15001);
@@ -131,6 +141,7 @@ describe("driver panel", () => {
 
     expect(screen.getByText("지연 텔레메트리")).toBeTruthy();
     expect(screen.getByText("319.8 kph")).toBeTruthy();
+    expect(screen.getByTestId("driver-panel-telemetry-status").textContent).toBe("지연");
   });
 
   it("선택 드라이버 없음/있음 상태 전환에서도 hook 순서 오류가 나지 않음", () => {
