@@ -140,6 +140,7 @@
 - feat: make focus mode route the canvas camera toward the selected driver instead of only hiding side panels
 - chore: add realtime container healthcheck and document compose-level deployment health verification
 - fix: add worker realtime POST timeout so stalled internal delivery fails fast with opaque status
+- feat: warn when selected-driver prediction is older than the latest overall prediction
 - test: cover client-scoped reconnect metrics and stable websocket clientId reuse through realtime and web journeys
 - test: cover cross-session replay recovery under noisy traffic
 - test: cover prediction card selection context against newer overall predictions
@@ -150,4 +151,5 @@
 - test: cover AbortError to timeout fallback classification in AI service
 - test: cover focus mode camera target rules and explicit canvas prop wiring
 - test: cover worker realtime client timeout failure path
+- test: cover stale selected-driver prediction warning context
 - docs: add deployment runbook for mode switching, smoke checks, and rollback starting points

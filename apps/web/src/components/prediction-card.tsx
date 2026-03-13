@@ -20,6 +20,11 @@ export const PredictionCard = () => {
       ? null
       : [...predictions].reverse().find((prediction) => prediction.triggerDriverId === selectedDriverId) ?? null;
   const visiblePrediction = selectedDriverPrediction ?? latest;
+  const isSelectedDriverPriorityView = selectedDriverPrediction !== null;
+  const isSelectedPredictionStale =
+    isSelectedDriverPriorityView &&
+    latest !== undefined &&
+    selectedDriverPrediction.timestampMs < latest.timestampMs;
 
   if (!visiblePrediction) {
     return <div className="prediction-empty muted">예측 대기 중</div>;
@@ -37,6 +42,11 @@ export const PredictionCard = () => {
       <h3>P5 트리거 예측</h3>
       <p className="muted">Lap {visiblePrediction.lap} · Driver {visiblePrediction.triggerDriverId}</p>
       <p className="muted">{selectedDriverContext}</p>
+      {isSelectedPredictionStale ? (
+        <p className="prediction-stale-alert">
+          선택 드라이버 예측 우선 표시 중 · 최신 전체 예측보다 이전 시각 데이터
+        </p>
+      ) : null}
       <div className="prediction-grid">
         <article className="prediction-stat">
           <div className="muted">P1 확률</div>

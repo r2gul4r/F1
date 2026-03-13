@@ -215,6 +215,17 @@ main {
   padding: 12px;
 }
 
+.prediction-stale-alert {
+  margin-top: 8px;
+  padding: 8px 10px;
+  border: 1px solid rgba(251, 113, 133, 0.45);
+  border-radius: 10px;
+  background: rgba(127, 29, 29, 0.24);
+  color: #fecdd3;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
 .telemetry-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

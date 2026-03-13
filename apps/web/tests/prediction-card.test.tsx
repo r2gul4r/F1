@@ -48,6 +48,7 @@ describe("prediction card", () => {
     expect(screen.getByText("812 ms")).toBeTruthy();
     expect(screen.getByText("선택 드라이버 관련 예측")).toBeTruthy();
     expect(screen.getByText("Norris pace advantage")).toBeTruthy();
+    expect(screen.queryByText(/최신 전체 예측보다 이전 시각 데이터/)).toBeNull();
   });
 
   it("선택 드라이버와 다른 trigger면 다른 드라이버 예측으로 표시함", () => {
@@ -65,6 +66,7 @@ describe("prediction card", () => {
     render(<PredictionCard />);
 
     expect(screen.getByText("다른 드라이버 예측")).toBeTruthy();
+    expect(screen.queryByText(/최신 전체 예측보다 이전 시각 데이터/)).toBeNull();
   });
 
   it("선택 드라이버의 예측이 있으면 최신 전체 예측보다 먼저 보여줌", () => {
@@ -92,6 +94,7 @@ describe("prediction card", () => {
 
     expect(screen.getByText("선택 드라이버 관련 예측")).toBeTruthy();
     expect(screen.getByText("Norris selected-driver view")).toBeTruthy();
+    expect(screen.getByText(/최신 전체 예측보다 이전 시각 데이터/)).toBeTruthy();
     expect(screen.queryByText("Verstappen latest overall")).toBeNull();
   });
 
