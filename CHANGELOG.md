@@ -160,6 +160,7 @@
 - docs: sync README deployment section with AI timeout env knob
 - feat: allow realtime AI request timeout tuning through validated config and startup wiring
 - feat: allow worker OpenF1 request timeout tuning via environment configuration
+- docs: sync README deployment section with worker OpenF1 timeout knob
 - feat: show current flag sector inside selected-driver HUD when available
 - feat: show how many seconds behind the latest overall prediction a selected-driver prediction is
 - chore: add compose health verification for web and reflect it in deployment smoke checks

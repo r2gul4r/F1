@@ -65,6 +65,7 @@ F1 시청 보조 웹앱 초기 구현
 - 배포 전 점검, smoke check, rollback 시작점은 `docs/deployment-runbook.md` 를 따른다
 - worker -> realtime 전송 안정화 주요 환경 변수
   - `WORKER_REALTIME_POST_TIMEOUT_MS`: realtime 내부 전송 요청 timeout(ms)
+  - `WORKER_OPENF1_REQUEST_TIMEOUT_MS`: OpenF1 API 요청 timeout(ms)
   - `WORKER_RETRY_BACKOFF_MULTIPLIER`: 실패 재시도 backoff 배수
   - `WORKER_RETRY_BACKOFF_MAX_MS`: 재시도 backoff 최대 대기(ms)
 - AI 요청 안정화 주요 환경 변수
