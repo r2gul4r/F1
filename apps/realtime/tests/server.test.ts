@@ -946,6 +946,86 @@ describe("realtime api", () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
+  it("server는 direct ai timeout 입력이 잘못되면 기본 timeout 경로를 사용함", async () => {
+    const invalidTimeoutInputs = [0, Number.NaN];
+    const fetchMock = vi.fn().mockImplementation(async (_url: string, init?: { signal?: AbortSignal }) => {
+      await new Promise<void>((resolve, reject) => {
+        const timer = setTimeout(() => resolve(), 20);
+        const signal = init?.signal;
+        if (signal?.aborted) {
+          clearTimeout(timer);
+          const abortError = new Error("Request aborted");
+          abortError.name = "AbortError";
+          reject(abortError);
+          return;
+        }
+
+        signal?.addEventListener(
+          "abort",
+          () => {
+            clearTimeout(timer);
+            const abortError = new Error("Request aborted");
+            abortError.name = "AbortError";
+            reject(abortError);
+          },
+          { once: true }
+        );
+      });
+
+      return {
+        ok: true,
+        json: async () => ({
+          response: "0.6,0.3,0.1\nDirect timeout invalid input fallback"
+        })
+      };
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    for (const [index, aiRequestTimeoutMs] of invalidTimeoutInputs.entries()) {
+      const repository = new MemoryRepository();
+      const { app } = await buildServer({
+        repository,
+        oauthUserRepository,
+        internalApiToken,
+        oauthProxyToken,
+        watchTokenSecret,
+        watchTokenTtlSec: 3600,
+        allowedOrigins: ["http://localhost:3000"],
+        wsBufferSize: 100,
+        aiRequestTimeoutMs,
+        ollamaBaseUrl: "http://localhost:11434",
+        ollamaModel: "gemma3:12b"
+      });
+
+      try {
+        const predict = await app.inject({
+          method: "POST",
+          url: "/api/v1/ai/predict",
+          headers: {
+            "x-internal-token": internalApiToken
+          },
+          payload: {
+            sessionId: `session-timeout-invalid-${index}`,
+            lap: 4,
+            triggerDriverId: "NOR",
+            snapshot: {
+              ticks: []
+            }
+          }
+        });
+
+        expect(predict.statusCode).toBe(200);
+        expect(predict.json()).toMatchObject({
+          reasoningSummary: "Direct timeout invalid input fallback"
+        });
+      } finally {
+        await app.close();
+      }
+    }
+
+    expect(fetchMock).toHaveBeenCalledTimes(invalidTimeoutInputs.length);
+  });
+
   it("metrics는 telemetry trigger 경로의 ai fallback inference에 provider 라벨을 포함함", async () => {
     vi.stubGlobal(
       "fetch",

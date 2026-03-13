@@ -174,6 +174,7 @@
 - feat: show elapsed update age inside selected-driver HUD
 - refactor: extract worker main-loop cycle helper and preserve primary plus fallback failures together
 - fix: classify worker non-timeout transport failures as upstream errors while preserving explicit timeout handling
+- test: cover invalid direct realtime AI timeout inputs falling back to the default request timeout
 - chore: add compose health verification for web and reflect it in deployment smoke checks
 - test: cover client-scoped reconnect metrics and stable websocket clientId reuse through realtime and web journeys
 - test: cover cross-session replay recovery under noisy traffic
