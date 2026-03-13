@@ -14,6 +14,11 @@ const TELEMETRY_STALE_MS = 15000;
 const isTelemetryStale = (timestampMs: number | undefined, currentMs: number): boolean =>
   typeof timestampMs === "number" && currentMs - timestampMs > TELEMETRY_STALE_MS;
 type TelemetryFreshness = "fresh" | "stale" | "no telemetry";
+const TELEMETRY_FRESHNESS_LABEL: Record<TelemetryFreshness, string> = {
+  fresh: "정상",
+  stale: "지연",
+  "no telemetry": "미수신"
+};
 const getTelemetryFreshness = (timestampMs: number | undefined, currentMs: number): TelemetryFreshness => {
   if (typeof timestampMs !== "number") {
     return "no telemetry";
@@ -129,7 +134,7 @@ export const WatchClient = ({
                   className={`telemetry-status-chip telemetry-status-chip-${selectedDriverFreshnessClass}`}
                   data-testid="selected-driver-telemetry-status"
                 >
-                  {selectedDriverFreshness}
+                  {TELEMETRY_FRESHNESS_LABEL[selectedDriverFreshness]}
                 </span>
               ) : null}
             </div>

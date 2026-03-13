@@ -266,7 +266,7 @@ describe("watch client HUD isolation", () => {
     render(<WatchClient sessionId="session-1" watchToken="watch-token" />);
 
     expect(screen.getByText("#1 VER")).toBeTruthy();
-    expect(screen.getByTestId("selected-driver-telemetry-status").textContent).toBe("fresh");
+    expect(screen.getByTestId("selected-driver-telemetry-status").textContent).toBe("정상");
 
     act(() => {
       runtimeStore.setState((state) => ({
@@ -281,7 +281,7 @@ describe("watch client HUD isolation", () => {
       }));
     });
 
-    expect(screen.getByTestId("selected-driver-telemetry-status").textContent).toBe("stale");
+    expect(screen.getByTestId("selected-driver-telemetry-status").textContent).toBe("지연");
 
     act(() => {
       runtimeStore.setState((state) => {
@@ -295,7 +295,7 @@ describe("watch client HUD isolation", () => {
       });
     });
 
-    expect(screen.getByTestId("selected-driver-telemetry-status").textContent).toBe("no telemetry");
+    expect(screen.getByTestId("selected-driver-telemetry-status").textContent).toBe("미수신");
   });
 
 });
