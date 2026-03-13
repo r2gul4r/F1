@@ -153,7 +153,8 @@ describe("driver panel", () => {
     expect(screen.getByText("드라이버 선택 필요")).toBeTruthy();
   });
 
-  it("driver list는 번호, 이름, 팀을 함께 보여줌", async () => {
+  it("driver list는 fresh telemetry에서 기존 rank/speed 표시를 유지함", async () => {
+    const now = Date.now();
     useRaceStore.getState().upsertTick({
       sessionId: "session-1",
       driverId: "VER",
@@ -161,7 +162,7 @@ describe("driver panel", () => {
       speedKph: 320,
       lap: 7,
       rank: 2,
-      timestampMs: 1000
+      timestampMs: now
     });
     useRaceStore.getState().upsertTick({
       sessionId: "session-1",
@@ -170,7 +171,7 @@ describe("driver panel", () => {
       speedKph: 325,
       lap: 7,
       rank: 1,
-      timestampMs: 1001
+      timestampMs: now + 1
     });
 
     const { WatchClient } = await import("../src/components/watch-client");
@@ -187,6 +188,124 @@ describe("driver panel", () => {
     expect(rows).toEqual([
       "#4 Lando NorrisMcLarenR1325 kph",
       "#1 Max Verstappen선택됨Red BullR2320 kph"
+    ]);
+    expect(screen.queryByText("지연 텔레메트리")).toBeNull();
+  });
+
+  it("driver list는 stale telemetry에서 지연 상태를 row에 표시함", async () => {
+    vi.useFakeTimers();
+    const now = new Date("2026-03-13T00:00:00.000Z").getTime();
+    vi.setSystemTime(now);
+
+    useRaceStore.getState().upsertTick({
+      sessionId: "session-1",
+      driverId: "VER",
+      position: { x: 1, y: 2, z: 0 },
+      speedKph: 320,
+      lap: 7,
+      rank: 2,
+      timestampMs: now - 17000
+    });
+    useRaceStore.getState().upsertTick({
+      sessionId: "session-1",
+      driverId: "NOR",
+      position: { x: 3, y: 4, z: 0 },
+      speedKph: 325,
+      lap: 7,
+      rank: 1,
+      timestampMs: now - 16000
+    });
+
+    const { WatchClient } = await import("../src/components/watch-client");
+    render(<WatchClient sessionId="session-1" watchToken="watch-token" />);
+
+    const rows = screen
+      .getAllByRole("button")
+      .map((button) => button.textContent?.replace(/\s+/g, " ").trim() ?? "")
+      .filter((text) => text.startsWith("#"));
+
+    expect(rows).toEqual([
+      "#4 Lando NorrisMcLaren지연 텔레메트리지연 R1지연 325 kph",
+      "#1 Max Verstappen선택됨Red Bull지연 텔레메트리지연 R2지연 320 kph"
+    ]);
+  });
+
+  it("driver list는 mixed fresh/stale에서 fresh를 먼저 rank 순으로 보여주고 stale를 뒤로 보냄", async () => {
+    vi.useFakeTimers();
+    const now = new Date("2026-03-13T00:00:00.000Z").getTime();
+    vi.setSystemTime(now);
+
+    useRaceStore.setState((state) => ({
+      ...state,
+      drivers: [
+        {
+          id: "VER",
+          sessionId: "session-1",
+          fullName: "Max Verstappen",
+          number: 1,
+          teamName: "Red Bull",
+          deepLink: "https://f1tv.formula1.com"
+        },
+        {
+          id: "NOR",
+          sessionId: "session-1",
+          fullName: "Lando Norris",
+          number: 4,
+          teamName: "McLaren",
+          deepLink: "https://f1tv.formula1.com"
+        },
+        {
+          id: "HAM",
+          sessionId: "session-1",
+          fullName: "Lewis Hamilton",
+          number: 44,
+          teamName: "Ferrari",
+          deepLink: "https://f1tv.formula1.com"
+        }
+      ],
+      selectedDriverId: "VER"
+    }));
+
+    useRaceStore.getState().upsertTick({
+      sessionId: "session-1",
+      driverId: "VER",
+      position: { x: 1, y: 2, z: 0 },
+      speedKph: 320,
+      lap: 7,
+      rank: 2,
+      timestampMs: now
+    });
+    useRaceStore.getState().upsertTick({
+      sessionId: "session-1",
+      driverId: "HAM",
+      position: { x: 3, y: 4, z: 0 },
+      speedKph: 318,
+      lap: 7,
+      rank: 3,
+      timestampMs: now
+    });
+    useRaceStore.getState().upsertTick({
+      sessionId: "session-1",
+      driverId: "NOR",
+      position: { x: 5, y: 6, z: 0 },
+      speedKph: 325,
+      lap: 7,
+      rank: 1,
+      timestampMs: now - 17000
+    });
+
+    const { WatchClient } = await import("../src/components/watch-client");
+    render(<WatchClient sessionId="session-1" watchToken="watch-token" />);
+
+    const rows = screen
+      .getAllByRole("button")
+      .map((button) => button.textContent?.replace(/\s+/g, " ").trim() ?? "")
+      .filter((text) => text.startsWith("#"));
+
+    expect(rows).toEqual([
+      "#1 Max Verstappen선택됨Red BullR2320 kph",
+      "#44 Lewis HamiltonFerrariR3318 kph",
+      "#4 Lando NorrisMcLaren지연 텔레메트리지연 R1지연 325 kph"
     ]);
   });
 });

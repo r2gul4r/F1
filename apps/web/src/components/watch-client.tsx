@@ -10,6 +10,10 @@ import { SelectedDriverHud } from "@/src/components/selected-driver-hud";
 import { useRaceSocket } from "@/src/lib/use-race-socket";
 import { useRaceStore } from "@/src/store/use-race-store";
 
+const TELEMETRY_STALE_MS = 15000;
+const isTelemetryStale = (timestampMs: number | undefined, currentMs: number): boolean =>
+  typeof timestampMs === "number" && currentMs - timestampMs > TELEMETRY_STALE_MS;
+
 export const WatchClient = ({
   sessionId,
   watchToken
@@ -20,6 +24,7 @@ export const WatchClient = ({
   const { status, reconnectInMs } = useRaceSocket(sessionId, watchToken);
   const [hudEnabled, setHudEnabled] = useState(true);
   const [focusModeEnabled, setFocusModeEnabled] = useState(false);
+  const [nowMs, setNowMs] = useState<number>(() => Date.now());
   const drivers = useRaceStore((state) => state.drivers);
   const selectedDriverId = useRaceStore((state) => state.selectedDriverId);
   const setSelectedDriverId = useRaceStore((state) => state.setSelectedDriverId);
@@ -36,10 +41,37 @@ export const WatchClient = ({
     setSelectedDriverId(drivers[0]?.id ?? null);
   }, [drivers, selectedDriverId, setSelectedDriverId]);
 
+  useEffect(() => {
+    const current = Date.now();
+    const pendingStaleAt = Object.values(ticksByDriver)
+      .map((tick) => tick.timestampMs + TELEMETRY_STALE_MS + 1)
+      .filter((staleAtMs) => staleAtMs > current);
+
+    if (pendingStaleAt.length === 0) {
+      return;
+    }
+
+    const nextStaleAtMs = Math.min(...pendingStaleAt);
+    const timer = setTimeout(() => {
+      setNowMs(Date.now());
+    }, nextStaleAtMs - current);
+
+    return () => clearTimeout(timer);
+  }, [ticksByDriver, nowMs]);
+
   const selectedDriver = drivers.find((driver) => driver.id === selectedDriverId) ?? null;
   const orderedDrivers = [...drivers].sort((left, right) => {
-    const leftRank = ticksByDriver[left.id]?.rank ?? Number.MAX_SAFE_INTEGER;
-    const rightRank = ticksByDriver[right.id]?.rank ?? Number.MAX_SAFE_INTEGER;
+    const leftTick = ticksByDriver[left.id];
+    const rightTick = ticksByDriver[right.id];
+    const leftStale = isTelemetryStale(leftTick?.timestampMs, nowMs);
+    const rightStale = isTelemetryStale(rightTick?.timestampMs, nowMs);
+
+    if (leftStale !== rightStale) {
+      return leftStale ? 1 : -1;
+    }
+
+    const leftRank = leftTick?.rank ?? Number.MAX_SAFE_INTEGER;
+    const rightRank = rightTick?.rank ?? Number.MAX_SAFE_INTEGER;
 
     if (leftRank !== rightRank) {
       return leftRank - rightRank;
@@ -103,6 +135,9 @@ export const WatchClient = ({
         <div className="driver-list">
           {orderedDrivers.map((driver) => {
             const driverTick = ticksByDriver[driver.id];
+            const isStaleTelemetry = isTelemetryStale(driverTick?.timestampMs, nowMs);
+            const rankText = driverTick?.rank ? `R${driverTick.rank}` : "R-";
+            const speedText = driverTick ? `${driverTick.speedKph.toFixed(0)} kph` : "속도 -";
 
             return (
               <button
@@ -118,9 +153,10 @@ export const WatchClient = ({
                   <span className="muted">{driver.id === selectedDriverId ? "선택됨" : ""}</span>
                 </div>
                 <div className="driver-item-meta muted">{driver.teamName}</div>
+                {isStaleTelemetry ? <div className="driver-item-meta muted">지연 텔레메트리</div> : null}
                 <div className="driver-item-stats">
-                  <span className="driver-chip">{driverTick?.rank ? `R${driverTick.rank}` : "R-"}</span>
-                  <span className="driver-chip">{driverTick ? `${driverTick.speedKph.toFixed(0)} kph` : "속도 -"}</span>
+                  <span className="driver-chip">{isStaleTelemetry ? `지연 ${rankText}` : rankText}</span>
+                  <span className="driver-chip">{isStaleTelemetry ? `지연 ${speedText}` : speedText}</span>
                 </div>
               </button>
             );
