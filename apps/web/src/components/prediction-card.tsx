@@ -11,6 +11,26 @@ const formatPredictionTime = (timestampMs: number): string =>
     second: "2-digit"
   });
 
+const formatRelativeElapsed = (timestampMs: number, nowMs: number): string => {
+  const elapsedSeconds = Math.max(0, Math.floor((nowMs - timestampMs) / 1000));
+
+  if (elapsedSeconds === 0) {
+    return "방금 전";
+  }
+
+  if (elapsedSeconds < 60) {
+    return `${elapsedSeconds}초 전`;
+  }
+
+  const elapsedMinutes = Math.floor(elapsedSeconds / 60);
+  if (elapsedMinutes < 60) {
+    return `${elapsedMinutes}분 전`;
+  }
+
+  const elapsedHours = Math.floor(elapsedMinutes / 60);
+  return `${elapsedHours}시간 전`;
+};
+
 export const PredictionCard = () => {
   const predictions = useRaceStore((state) => state.predictions);
   const selectedDriverId = useRaceStore((state) => state.selectedDriverId);
@@ -29,6 +49,22 @@ export const PredictionCard = () => {
     isSelectedPredictionStale && latest !== undefined && selectedDriverPrediction !== null
       ? Math.ceil((latest.timestampMs - selectedDriverPrediction.timestampMs) / 1000)
       : null;
+  const [nowMs, setNowMs] = React.useState(() => Date.now());
+
+  React.useEffect(() => {
+    if (!visiblePrediction) {
+      return;
+    }
+
+    setNowMs(Date.now());
+    const intervalId = window.setInterval(() => {
+      setNowMs(Date.now());
+    }, 1000);
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
+  }, [visiblePrediction]);
 
   if (!visiblePrediction) {
     return <div className="prediction-empty muted">예측 대기 중</div>;
@@ -40,6 +76,8 @@ export const PredictionCard = () => {
       : visiblePrediction.triggerDriverId === selectedDriverId
         ? "선택 드라이버 관련 예측"
         : "다른 드라이버 예측";
+  const predictionTimestamp = formatPredictionTime(visiblePrediction.timestampMs);
+  const relativeElapsed = formatRelativeElapsed(visiblePrediction.timestampMs, nowMs);
 
   return (
     <article className="prediction">
@@ -69,7 +107,9 @@ export const PredictionCard = () => {
           <div className="prediction-value">{visiblePrediction.modelLatencyMs} ms</div>
         </article>
       </div>
-      <p className="muted">생성 시각 {formatPredictionTime(visiblePrediction.timestampMs)}</p>
+      <p className="muted">
+        생성 시각 {predictionTimestamp} · {relativeElapsed}
+      </p>
       <p>{visiblePrediction.reasoningSummary}</p>
     </article>
   );
