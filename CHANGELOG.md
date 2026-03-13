@@ -142,6 +142,7 @@
 - fix: add worker realtime POST timeout so stalled internal delivery fails fast with opaque status
 - feat: warn when selected-driver prediction is older than the latest overall prediction
 - test: cover timeout fallback metrics at both direct predict and telemetry trigger server boundaries
+- feat: surface stale telemetry directly inside selected-driver HUD for focus-mode use
 - test: cover client-scoped reconnect metrics and stable websocket clientId reuse through realtime and web journeys
 - test: cover cross-session replay recovery under noisy traffic
 - test: cover prediction card selection context against newer overall predictions
@@ -153,4 +154,5 @@
 - test: cover focus mode camera target rules and explicit canvas prop wiring
 - test: cover worker realtime client timeout failure path
 - test: cover stale selected-driver prediction warning context
+- test: cover stale selected-driver HUD telemetry display
 - docs: add deployment runbook for mode switching, smoke checks, and rollback starting points

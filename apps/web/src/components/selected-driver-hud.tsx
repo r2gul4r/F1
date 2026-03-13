@@ -1,7 +1,9 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useRaceStore } from "@/src/store/use-race-store";
+
+const TELEMETRY_STALE_MS = 15000;
 
 const formatLastUpdate = (timestampMs: number): string =>
   new Date(timestampMs).toLocaleTimeString("ko-KR", {
@@ -12,6 +14,7 @@ const formatLastUpdate = (timestampMs: number): string =>
   });
 
 export const SelectedDriverHud = () => {
+  const [nowMs, setNowMs] = useState<number>(() => Date.now());
   const drivers = useRaceStore((state) => state.drivers);
   const selectedDriverId = useRaceStore((state) => state.selectedDriverId);
   const ticksByDriver = useRaceStore((state) => state.ticksByDriver);
@@ -20,12 +23,34 @@ export const SelectedDriverHud = () => {
     () => drivers.find((driver) => driver.id === selectedDriverId) ?? null,
     [drivers, selectedDriverId]
   );
+  const tick = selected ? ticksByDriver[selected.id] : undefined;
+
+  useEffect(() => {
+    if (typeof tick?.timestampMs !== "number") {
+      return;
+    }
+
+    const current = Date.now();
+    setNowMs(current);
+    const ageMs = current - tick.timestampMs;
+    if (ageMs >= TELEMETRY_STALE_MS) {
+      return;
+    }
+
+    const timeoutMs = TELEMETRY_STALE_MS - ageMs + 1;
+    const timer = window.setTimeout(() => {
+      setNowMs(Date.now());
+    }, timeoutMs);
+
+    return () => window.clearTimeout(timer);
+  }, [tick?.timestampMs]);
+
+  const isStaleTelemetry = typeof tick?.timestampMs === "number" && nowMs - tick.timestampMs > TELEMETRY_STALE_MS;
 
   if (!selected) {
     return null;
   }
 
-  const tick = ticksByDriver[selected.id];
   if (!tick) {
     return null;
   }
@@ -36,6 +61,7 @@ export const SelectedDriverHud = () => {
         #{selected.number} {selected.fullName}
       </div>
       <div className="selected-hud-team muted">{selected.teamName}</div>
+      {isStaleTelemetry ? <div className="telemetry-stale-alert">지연 텔레메트리</div> : null}
       <div className="selected-hud-stats">
         <span>R{tick.rank}</span>
         <span>L{tick.lap}</span>
