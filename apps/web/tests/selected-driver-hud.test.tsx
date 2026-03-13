@@ -67,6 +67,7 @@ describe("selected driver hud", () => {
     expect(screen.getByText("#1 Max Verstappen")).toBeTruthy();
     expect(screen.getByText("Red Bull")).toBeTruthy();
     expect(screen.getByText("플래그 GREEN")).toBeTruthy();
+    expect(screen.getByText("정상")).toBeTruthy();
     expect(screen.getByText("R1")).toBeTruthy();
     expect(screen.getByText(/업데이트 \d{2}:\d{2}:\d{2}/)).toBeTruthy();
     expect(screen.queryByText("지연 텔레메트리")).toBeNull();
@@ -79,6 +80,7 @@ describe("selected driver hud", () => {
 
     expect(screen.getByText("#4 Lando Norris")).toBeTruthy();
     expect(screen.getByText("McLaren")).toBeTruthy();
+    expect(screen.getByText("정상")).toBeTruthy();
     expect(screen.getByText("R2")).toBeTruthy();
     expect(screen.getByText("309 kph")).toBeTruthy();
     expect(screen.queryByText("지연 텔레메트리")).toBeNull();
@@ -136,6 +138,7 @@ describe("selected driver hud", () => {
 
     render(<SelectedDriverHud />);
 
+    expect(screen.getByText("지연")).toBeTruthy();
     expect(screen.getByText("지연 텔레메트리")).toBeTruthy();
   });
 
@@ -154,12 +157,14 @@ describe("selected driver hud", () => {
     });
 
     render(<SelectedDriverHud />);
+    expect(screen.getByText("정상")).toBeTruthy();
     expect(screen.queryByText("지연 텔레메트리")).toBeNull();
 
     act(() => {
       vi.advanceTimersByTime(10001);
     });
 
+    expect(screen.getByText("지연")).toBeTruthy();
     expect(screen.getByText("지연 텔레메트리")).toBeTruthy();
   });
 
@@ -177,6 +182,7 @@ describe("selected driver hud", () => {
 
     expect(screen.getByText("#1 Max Verstappen")).toBeTruthy();
     expect(screen.getByText("플래그 GREEN")).toBeTruthy();
+    expect(screen.getByText("미수신")).toBeTruthy();
     expect(screen.getByText("텔레메트리 수신 대기 중")).toBeTruthy();
     expect(screen.queryByText("지연 텔레메트리")).toBeNull();
     const onboardLink = screen.getByRole("link", { name: "공식 온보드 열기" });

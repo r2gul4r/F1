@@ -49,25 +49,14 @@ export const SelectedDriverHud = () => {
   const isStaleTelemetry = typeof tick?.timestampMs === "number" && nowMs - tick.timestampMs > TELEMETRY_STALE_MS;
   const flagType = flag?.flagType ?? "GREEN";
   const flagText = flag?.sector ? `${flagType} · ${flag.sector}` : flagType;
+  const telemetryStatus = !tick
+    ? { label: "미수신", className: "telemetry-status-chip-no-telemetry" }
+    : isStaleTelemetry
+      ? { label: "지연", className: "telemetry-status-chip-stale" }
+      : { label: "정상", className: "telemetry-status-chip-fresh" };
 
   if (!selected) {
     return null;
-  }
-
-  if (!tick) {
-    return (
-      <section className="selected-hud">
-        <div className="selected-hud-name">
-          #{selected.number} {selected.fullName}
-        </div>
-        <div className="selected-hud-team muted">{selected.teamName}</div>
-        <div className="selected-hud-team muted">플래그 {flagText}</div>
-        <a className="selected-hud-link" href={selected.deepLink} rel="noopener noreferrer" target="_blank">
-          공식 온보드 열기
-        </a>
-        <div className="selected-hud-update muted">텔레메트리 수신 대기 중</div>
-      </section>
-    );
   }
 
   return (
@@ -77,16 +66,23 @@ export const SelectedDriverHud = () => {
       </div>
       <div className="selected-hud-team muted">{selected.teamName}</div>
       <div className="selected-hud-team muted">플래그 {flagText}</div>
+      <span className={`telemetry-status-chip ${telemetryStatus.className} selected-hud-status`}>{telemetryStatus.label}</span>
       {isStaleTelemetry ? <div className="telemetry-stale-alert">지연 텔레메트리</div> : null}
-      <div className="selected-hud-stats">
-        <span>R{tick.rank}</span>
-        <span>L{tick.lap}</span>
-        <span>{tick.speedKph.toFixed(0)} kph</span>
-      </div>
+      {tick ? (
+        <div className="selected-hud-stats">
+          <span>R{tick.rank}</span>
+          <span>L{tick.lap}</span>
+          <span>{tick.speedKph.toFixed(0)} kph</span>
+        </div>
+      ) : null}
       <a className="selected-hud-link" href={selected.deepLink} rel="noopener noreferrer" target="_blank">
         공식 온보드 열기
       </a>
-      <div className="selected-hud-update muted">업데이트 {formatLastUpdate(tick.timestampMs)}</div>
+      {tick ? (
+        <div className="selected-hud-update muted">업데이트 {formatLastUpdate(tick.timestampMs)}</div>
+      ) : (
+        <div className="selected-hud-update muted">텔레메트리 수신 대기 중</div>
+      )}
     </section>
   );
 };

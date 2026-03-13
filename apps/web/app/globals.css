@@ -108,6 +108,10 @@ main {
   text-decoration: none;
 }
 
+.selected-hud-status {
+  width: fit-content;
+}
+
 .hud-fallback {
   position: absolute;
   top: 12px;
