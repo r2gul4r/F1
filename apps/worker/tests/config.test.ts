@@ -12,7 +12,10 @@ describe("worker config", () => {
     process.env.INTERNAL_API_TOKEN = baseEnv.INTERNAL_API_TOKEN;
     delete process.env.OPENF1_API_KEY;
     delete process.env.DATA_SOURCE;
+    delete process.env.WORKER_POLL_MS;
     delete process.env.WORKER_REALTIME_POST_TIMEOUT_MS;
+    delete process.env.WORKER_RETRY_BACKOFF_MULTIPLIER;
+    delete process.env.WORKER_RETRY_BACKOFF_MAX_MS;
   });
 
   it("openf1 모드에서 api 키 누락 시 실패함", () => {
@@ -54,5 +57,32 @@ describe("worker config", () => {
     const config = readConfig();
 
     expect(config.realtimePostTimeoutMs).toBe(4500);
+  });
+
+  it("retry backoff 기본값을 사용함", () => {
+    const config = readConfig();
+
+    expect(config.retryBackoffMultiplier).toBe(2);
+    expect(config.retryBackoffMaxMs).toBe(10000);
+  });
+
+  it("retry backoff env override를 반영함", () => {
+    process.env.WORKER_RETRY_BACKOFF_MULTIPLIER = "3";
+    process.env.WORKER_RETRY_BACKOFF_MAX_MS = "15000";
+
+    const config = readConfig();
+
+    expect(config.retryBackoffMultiplier).toBe(3);
+    expect(config.retryBackoffMaxMs).toBe(15000);
+  });
+
+  it("retry backoff max는 poll보다 작아지지 않음", () => {
+    process.env.WORKER_POLL_MS = "4000";
+    process.env.WORKER_RETRY_BACKOFF_MAX_MS = "1500";
+
+    const config = readConfig();
+
+    expect(config.pollMs).toBe(4000);
+    expect(config.retryBackoffMaxMs).toBe(4000);
   });
 });

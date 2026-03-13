@@ -1,3 +1,4 @@
+import { getNextPollDelayMs, nextBackoffState, type BackoffOutcome } from "./backoff-policy.js";
 import { readConfig } from "./config.js";
 import { RealtimeClient } from "./realtime-client.js";
 import { MockSource } from "./sources/mock-source.js";
@@ -18,8 +19,16 @@ const start = async (): Promise<void> => {
   const source: TelemetrySource = config.dataSource === "openf1"
     ? new OpenF1Source(config.openF1BaseUrl, config.openF1ApiKey!)
     : mockSource;
+  const backoffPolicy = {
+    baseMs: config.pollMs,
+    maxMs: config.retryBackoffMaxMs,
+    multiplier: config.retryBackoffMultiplier
+  };
+  let backoffState = { consecutiveFailures: 0 };
 
   while (true) {
+    let backoffOutcome: BackoffOutcome = "failure";
+
     try {
       const snapshot = await source.pull();
       await client.syncSession(snapshot.session, snapshot.drivers);
@@ -30,6 +39,8 @@ const start = async (): Promise<void> => {
       if (snapshot.flag) {
         await client.sendFlag(snapshot.flag);
       }
+
+      backoffOutcome = "primary_success";
     } catch (error) {
       if (config.dataSource === "openf1") {
         try {
@@ -39,6 +50,8 @@ const start = async (): Promise<void> => {
           if (fallback.flag) {
             await client.sendFlag(fallback.flag);
           }
+
+          backoffOutcome = "degraded";
         } catch (fallbackError) {
           client.handleFailure(fallbackError);
         }
@@ -47,7 +60,8 @@ const start = async (): Promise<void> => {
       }
     }
 
-    await wait(config.pollMs);
+    backoffState = nextBackoffState(backoffState, backoffOutcome);
+    await wait(getNextPollDelayMs(backoffPolicy, backoffState));
   }
 };
 

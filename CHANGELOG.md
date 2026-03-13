@@ -145,6 +145,7 @@
 - feat: surface stale telemetry directly inside selected-driver HUD for focus-mode use
 - chore: gate web and worker startup on realtime healthy status in compose
 - feat: allow worker realtime POST timeout tuning via environment configuration
+- feat: keep worker retry backoff active through degraded mock-fallback cycles
 - feat: push stale driver rows behind fresh rows and label delayed list telemetry explicitly
 - fix: give AI timeout fallbacks a dedicated user-facing summary instead of generic opaque text
 - feat: keep selected-driver HUD visible with an explicit waiting state before telemetry arrives
