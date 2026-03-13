@@ -144,6 +144,7 @@
 - test: cover timeout fallback metrics at both direct predict and telemetry trigger server boundaries
 - feat: surface stale telemetry directly inside selected-driver HUD for focus-mode use
 - chore: gate web and worker startup on realtime healthy status in compose
+- feat: allow worker realtime POST timeout tuning via environment configuration
 - test: cover client-scoped reconnect metrics and stable websocket clientId reuse through realtime and web journeys
 - test: cover cross-session replay recovery under noisy traffic
 - test: cover prediction card selection context against newer overall predictions

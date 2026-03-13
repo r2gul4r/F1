@@ -8,7 +8,11 @@ const wait = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(
 
 const start = async (): Promise<void> => {
   const config = readConfig();
-  const client = new RealtimeClient(config.realtimeBaseUrl, config.internalApiToken);
+  const client = new RealtimeClient(
+    config.realtimeBaseUrl,
+    config.internalApiToken,
+    config.realtimePostTimeoutMs
+  );
   const mockSource = new MockSource();
 
   const source: TelemetrySource = config.dataSource === "openf1"

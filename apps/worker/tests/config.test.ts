@@ -12,6 +12,7 @@ describe("worker config", () => {
     process.env.INTERNAL_API_TOKEN = baseEnv.INTERNAL_API_TOKEN;
     delete process.env.OPENF1_API_KEY;
     delete process.env.DATA_SOURCE;
+    delete process.env.WORKER_REALTIME_POST_TIMEOUT_MS;
   });
 
   it("openf1 모드에서 api 키 누락 시 실패함", () => {
@@ -39,5 +40,19 @@ describe("worker config", () => {
 
     expect(config.dataSource).toBe("openf1");
     expect(config.openF1ApiKey).toBe("test-api-key");
+  });
+
+  it("realtime POST timeout 기본값은 3000ms임", () => {
+    const config = readConfig();
+
+    expect(config.realtimePostTimeoutMs).toBe(3000);
+  });
+
+  it("realtime POST timeout env override를 반영함", () => {
+    process.env.WORKER_REALTIME_POST_TIMEOUT_MS = "4500";
+
+    const config = readConfig();
+
+    expect(config.realtimePostTimeoutMs).toBe(4500);
   });
 });

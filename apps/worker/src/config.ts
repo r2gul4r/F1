@@ -5,6 +5,7 @@ export type WorkerConfig = {
   openF1BaseUrl: string;
   openF1ApiKey?: string;
   pollMs: number;
+  realtimePostTimeoutMs: number;
   dataSource: "mock" | "openf1";
   internalApiToken: string;
 };
@@ -56,6 +57,7 @@ export const readConfig = (): WorkerConfig => {
     openF1BaseUrl: process.env.OPENF1_BASE_URL ?? "https://api.openf1.org/v1",
     openF1ApiKey,
     pollMs: asNumber(process.env.WORKER_POLL_MS, 1000),
+    realtimePostTimeoutMs: asNumber(process.env.WORKER_REALTIME_POST_TIMEOUT_MS, 3000),
     dataSource,
     internalApiToken
   };

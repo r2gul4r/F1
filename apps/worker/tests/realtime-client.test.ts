@@ -29,6 +29,17 @@ const tick = {
   timestampMs: Date.now()
 };
 
+const createAbortableFetchMock = () =>
+  vi.fn().mockImplementation((_input: unknown, init?: { signal?: AbortSignal }) => {
+    return new Promise((_resolve, reject) => {
+      init?.signal?.addEventListener("abort", () => {
+        const abortError = new Error("aborted");
+        abortError.name = "AbortError";
+        reject(abortError);
+      });
+    });
+  });
+
 describe("realtime client", () => {
   afterEach(() => {
     vi.useRealTimers();
@@ -94,23 +105,11 @@ describe("realtime client", () => {
     }
   });
 
-  it("내부 POST timeout 시 opaque 실패로 빠르게 종료함", async () => {
+  it("내부 POST timeout 기본값은 3000ms를 사용함", async () => {
     vi.useFakeTimers();
+    vi.stubGlobal("fetch", createAbortableFetchMock());
 
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockImplementation((_input: unknown, init?: { signal?: AbortSignal }) => {
-        return new Promise((_resolve, reject) => {
-          init?.signal?.addEventListener("abort", () => {
-            const abortError = new Error("aborted");
-            abortError.name = "AbortError";
-            reject(abortError);
-          });
-        });
-      })
-    );
-
-    const client = new RealtimeClient("http://localhost:4001", "internal-token", 10);
+    const client = new RealtimeClient("http://localhost:4001", "internal-token");
     const pending = client.sendTelemetry(tick);
     const assertion = expect(pending).rejects.toMatchObject({
       code: "REQUEST_FAILED",
@@ -118,7 +117,24 @@ describe("realtime client", () => {
       message: "요청 처리 실패"
     });
 
-    await vi.advanceTimersByTimeAsync(10);
+    await vi.advanceTimersByTimeAsync(3000);
+    await assertion;
+  });
+
+  it("내부 POST timeout override 값을 반영해 실패로 종료함", async () => {
+    vi.useFakeTimers();
+    vi.stubGlobal("fetch", createAbortableFetchMock());
+
+    const timeoutMs = 10;
+    const client = new RealtimeClient("http://localhost:4001", "internal-token", timeoutMs);
+    const pending = client.sendTelemetry(tick);
+    const assertion = expect(pending).rejects.toMatchObject({
+      code: "REQUEST_FAILED",
+      status: 504,
+      message: "요청 처리 실패"
+    });
+
+    await vi.advanceTimersByTimeAsync(timeoutMs);
     await assertion;
   });
 });
