@@ -81,6 +81,8 @@ describe("watch client HUD isolation", () => {
 
   afterEach(() => {
     cleanup();
+    vi.useRealTimers();
+    vi.restoreAllMocks();
     vi.resetModules();
     vi.unstubAllGlobals();
   });
@@ -201,6 +203,99 @@ describe("watch client HUD isolation", () => {
 
     expect(screen.getByText("#4 NOR")).toBeTruthy();
     expect(screen.getByText("#4 Lando Norris")).toBeTruthy();
+  });
+
+  it("선택 드라이버 KPI에서 telemetry freshness를 즉시 표시함", async () => {
+    vi.useFakeTimers();
+    const fixedNow = new Date("2026-03-13T10:00:20.000Z");
+    vi.setSystemTime(fixedNow);
+
+    vi.doMock("@/src/components/selected-driver-hud", () => ({
+      SelectedDriverHud: () => <div>#1 Max Verstappen</div>
+    }));
+
+    const { WatchClient } = await import("../src/components/watch-client");
+    const { useRaceStore: runtimeStore } = await import("../src/store/use-race-store");
+    const nowMs = fixedNow.getTime();
+
+    runtimeStore.setState({
+      drivers: [
+        {
+          id: "VER",
+          sessionId: "session-1",
+          fullName: "Max Verstappen",
+          number: 1,
+          teamName: "Red Bull",
+          deepLink: "https://f1tv.formula1.com"
+        },
+        {
+          id: "NOR",
+          sessionId: "session-1",
+          fullName: "Lando Norris",
+          number: 4,
+          teamName: "McLaren",
+          deepLink: "https://f1tv.formula1.com"
+        }
+      ],
+      ticksByDriver: {
+        VER: {
+          sessionId: "session-1",
+          driverId: "VER",
+          position: { x: 1, y: 2, z: 0 },
+          speedKph: 320,
+          lap: 7,
+          rank: 2,
+          timestampMs: nowMs - 1000
+        },
+        NOR: {
+          sessionId: "session-1",
+          driverId: "NOR",
+          position: { x: 3, y: 4, z: 0 },
+          speedKph: 325,
+          lap: 7,
+          rank: 1,
+          timestampMs: nowMs - 900
+        }
+      },
+      selectedDriverId: "VER",
+      flag: null,
+      predictions: [],
+      fps: 60
+    });
+
+    render(<WatchClient sessionId="session-1" watchToken="watch-token" />);
+
+    expect(screen.getByText("#1 VER")).toBeTruthy();
+    expect(screen.getByTestId("selected-driver-telemetry-status").textContent).toBe("fresh");
+
+    act(() => {
+      runtimeStore.setState((state) => ({
+        ...state,
+        ticksByDriver: {
+          ...state.ticksByDriver,
+          VER: {
+            ...state.ticksByDriver.VER,
+            timestampMs: nowMs - 16000
+          }
+        }
+      }));
+    });
+
+    expect(screen.getByTestId("selected-driver-telemetry-status").textContent).toBe("stale");
+
+    act(() => {
+      runtimeStore.setState((state) => {
+        const nextTicksByDriver = { ...state.ticksByDriver };
+        delete nextTicksByDriver.VER;
+
+        return {
+          ...state,
+          ticksByDriver: nextTicksByDriver
+        };
+      });
+    });
+
+    expect(screen.getByTestId("selected-driver-telemetry-status").textContent).toBe("no telemetry");
   });
 
 });

@@ -13,6 +13,14 @@ import { useRaceStore } from "@/src/store/use-race-store";
 const TELEMETRY_STALE_MS = 15000;
 const isTelemetryStale = (timestampMs: number | undefined, currentMs: number): boolean =>
   typeof timestampMs === "number" && currentMs - timestampMs > TELEMETRY_STALE_MS;
+type TelemetryFreshness = "fresh" | "stale" | "no telemetry";
+const getTelemetryFreshness = (timestampMs: number | undefined, currentMs: number): TelemetryFreshness => {
+  if (typeof timestampMs !== "number") {
+    return "no telemetry";
+  }
+
+  return isTelemetryStale(timestampMs, currentMs) ? "stale" : "fresh";
+};
 const getTelemetryPriority = (
   timestampMs: number | undefined,
   currentMs: number
@@ -70,6 +78,12 @@ export const WatchClient = ({
   }, [ticksByDriver, nowMs]);
 
   const selectedDriver = drivers.find((driver) => driver.id === selectedDriverId) ?? null;
+  const selectedDriverTick = selectedDriver ? ticksByDriver[selectedDriver.id] : undefined;
+  const selectedDriverFreshness = selectedDriver
+    ? getTelemetryFreshness(selectedDriverTick?.timestampMs, nowMs)
+    : null;
+  const selectedDriverFreshnessClass =
+    selectedDriverFreshness === "no telemetry" ? "no-telemetry" : selectedDriverFreshness;
   const orderedDrivers = [...drivers].sort((left, right) => {
     const leftTick = ticksByDriver[left.id];
     const rightTick = ticksByDriver[right.id];
@@ -108,7 +122,17 @@ export const WatchClient = ({
           </div>
           <div className="kpi">
             <div className="muted">선택 드라이버</div>
-            <div>{selectedDriver ? `#${selectedDriver.number} ${selectedDriver.id}` : "-"}</div>
+            <div className="selected-driver-kpi-value">
+              <span>{selectedDriver ? `#${selectedDriver.number} ${selectedDriver.id}` : "-"}</span>
+              {selectedDriverFreshness ? (
+                <span
+                  className={`telemetry-status-chip telemetry-status-chip-${selectedDriverFreshnessClass}`}
+                  data-testid="selected-driver-telemetry-status"
+                >
+                  {selectedDriverFreshness}
+                </span>
+              ) : null}
+            </div>
           </div>
           <div className="kpi">
             <div className="muted">드라이버 수</div>
