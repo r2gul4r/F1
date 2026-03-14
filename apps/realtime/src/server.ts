@@ -59,6 +59,19 @@ const resolveAiRequestTimeoutMs = (value: number | undefined): number | undefine
   return undefined;
 };
 
+const isSchemaValidationError = (error: unknown): boolean => {
+  if (!error || typeof error !== "object") {
+    return false;
+  }
+
+  const candidate = error as {
+    name?: string;
+    issues?: unknown;
+  };
+
+  return candidate.name === "ZodError" || Array.isArray(candidate.issues);
+};
+
 export const buildServer = async (input: BuildServerInput): Promise<{
   app: ReturnType<typeof Fastify>;
   httpServer: Server;
@@ -92,8 +105,13 @@ export const buildServer = async (input: BuildServerInput): Promise<{
   });
 
   app.setErrorHandler((error, _request, reply) => {
+    if (isSchemaValidationError(error)) {
+      app.log.warn("요청 스키마 검증 실패");
+      return reply.status(400).send({ message: toOpaqueError(error).publicMessage });
+    }
+
     app.log.error(error);
-    reply.status(500).send({ message: toOpaqueError(error).publicMessage });
+    return reply.status(500).send({ message: toOpaqueError(error).publicMessage });
   });
 
   app.get("/healthz", async () => ({ status: "ok" }));

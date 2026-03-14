@@ -196,3 +196,5 @@
 - fix: make deployment smoke compose validation honor requested service subsets
 - test: cover subset compose smoke validation for healthy and worker-up status rules
 - docs: document partial compose smoke checks in deployment runbook
+- fix: classify realtime schema validation failures as 400 opaque responses instead of 500
+- test: cover malformed internal session and ai predict payloads as 400 opaque validation failures

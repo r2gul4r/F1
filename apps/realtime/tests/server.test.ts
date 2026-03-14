@@ -190,6 +190,71 @@ describe("realtime api", () => {
       }
     });
 
+    expect(response.statusCode).toBe(400);
+    expect(response.json()).toEqual({
+      message: "요청 처리 실패"
+    });
+  });
+
+  it("ai predict API는 잘못된 schema payload를 400으로 거부함", async () => {
+    const repository = new MemoryRepository();
+    const { app } = await buildServer({
+      repository,
+      oauthUserRepository,
+      internalApiToken,
+      oauthProxyToken,
+      watchTokenSecret,
+      watchTokenTtlSec: 3600,
+      allowedOrigins: ["http://localhost:3000"],
+      wsBufferSize: 100,
+      ollamaBaseUrl: "http://localhost:11434",
+      ollamaModel: "gemma3:12b"
+    });
+
+    const response = await app.inject({
+      method: "POST",
+      url: "/api/v1/ai/predict",
+      headers: {
+        "x-internal-token": internalApiToken
+      },
+      payload: {
+        sessionId: "session-malformed",
+        lap: 4,
+        triggerDriverId: "NOR"
+      }
+    });
+
+    expect(response.statusCode).toBe(400);
+    expect(response.json()).toEqual({
+      message: "요청 처리 실패"
+    });
+  });
+
+  it("일반 예외는 validation이 아니면 500 opaque 응답으로 유지함", async () => {
+    const repository = new MemoryRepository();
+    vi.spyOn(repository, "getCurrentSession").mockRejectedValue(new Error("db transport failed"));
+
+    const { app } = await buildServer({
+      repository,
+      oauthUserRepository,
+      internalApiToken,
+      oauthProxyToken,
+      watchTokenSecret,
+      watchTokenTtlSec: 3600,
+      allowedOrigins: ["http://localhost:3000"],
+      wsBufferSize: 100,
+      ollamaBaseUrl: "http://localhost:11434",
+      ollamaModel: "gemma3:12b"
+    });
+
+    const response = await app.inject({
+      method: "GET",
+      url: "/api/v1/sessions/current",
+      headers: {
+        "x-watch-token": watchToken
+      }
+    });
+
     expect(response.statusCode).toBe(500);
     expect(response.json()).toEqual({
       message: "요청 처리 실패"
