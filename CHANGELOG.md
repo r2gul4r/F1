@@ -240,3 +240,4 @@
 - test: add oauth login bridge coverage for NEXT_PUBLIC_REALTIME_HTTP_BASE fallback when REALTIME_BASE_URL is absent
 - test: add api client coverage for NEXT_PUBLIC_REALTIME_HTTP_BASE at module import time
 - test: add oauth login bridge coverage for localhost default base URL fallback
+- test: add direct watch-session cookie coverage for production secure set-cookie behavior

@@ -52,6 +52,20 @@ describe("watch session cookie helper", () => {
     expect(setCookie).not.toContain("Secure");
   });
 
+  it("setWatchSessionCookie는 production에서 secure 쿠키를 저장함", () => {
+    process.env.NODE_ENV = "production";
+    const response = NextResponse.json({ ok: true });
+
+    setWatchSessionCookie(response, "watch-token", 120);
+
+    const setCookie = response.headers.get("set-cookie");
+    expect(setCookie).toContain(`${watchSessionCookieName}=watch-token`);
+    expect(setCookie).toContain("HttpOnly");
+    expect(setCookie).toContain("SameSite=lax");
+    expect(setCookie).toContain("Max-Age=120");
+    expect(setCookie).toContain("Secure");
+  });
+
   it("clearWatchSessionCookie는 production에서 secure 삭제 쿠키를 저장함", () => {
     process.env.NODE_ENV = "production";
     const response = NextResponse.json({ ok: true });
