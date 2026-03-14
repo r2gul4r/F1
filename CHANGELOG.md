@@ -236,3 +236,4 @@
 - test: cover watch page preview-session precedence over watch-session cookie lookup
 - test: cover realtime migrate CLI success-path logging without exit
 - test: cover realtime env validate CLI success-path logging without exit
+- test: cover worker env validate CLI success-path logging without exit
