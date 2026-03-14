@@ -167,3 +167,4 @@
 [x] plan-driven task: watch-session route의 bridge error와 opaque fallback status를 직접 테스트한다 [slice 46]
 [x] plan-driven task: watch-session cookie helper contract를 직접 테스트한다 [slice 47]
 [x] plan-driven task: deployment smoke helper의 quoted env token parsing 경계를 테스트한다 [slice 48]
+[x] plan-driven task: watch page preview 세션이 cookie lookup보다 우선함을 직접 테스트한다 [slice 49]

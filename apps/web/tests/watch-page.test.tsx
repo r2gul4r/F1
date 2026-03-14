@@ -68,4 +68,19 @@ describe("watch page", () => {
     expect(screen.getByTestId("watch-preview")).toBeTruthy();
     expect(screen.queryByTestId("watch-client")).toBeNull();
   });
+
+  it("preview 세션이면 쿠키가 있어도 cookie lookup 없이 preview client를 우선 렌더링함", async () => {
+    cookiesMock.mockResolvedValue({
+      get: (name: string) => (name === "f1_watch_session" ? { name, value: "watch-cookie-token" } : undefined)
+    });
+
+    const page = await WatchPage({
+      params: Promise.resolve({ sessionId: "preview" })
+    });
+    render(page);
+
+    expect(screen.getByTestId("watch-preview")).toBeTruthy();
+    expect(screen.queryByTestId("watch-client")).toBeNull();
+    expect(cookiesMock).not.toHaveBeenCalled();
+  });
 });

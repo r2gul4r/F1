@@ -233,3 +233,4 @@
 - test: add watch-session route coverage for bridge 403 passthrough and generic opaque 500 fallback
 - test: add direct watch-session cookie helper coverage for trim/null reads and secure cookie flags
 - test: cover deployment smoke helper quoted env token parsing for metrics fallback
+- test: cover watch page preview-session precedence over watch-session cookie lookup
