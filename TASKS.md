@@ -179,3 +179,4 @@
 [x] plan-driven task: watch-session POST route의 production secure set-cookie contract를 직접 테스트한다 [slice 58]
 [x] plan-driven task: autonomous env validation helper의 quoted secret 경계를 직접 테스트한다 [slice 59]
 [x] plan-driven task: local env bootstrap helper의 quoted secret과 Pester 5 테스트 문법을 직접 고정한다 [slice 60]
+[x] plan-driven task: 모바일 폭에서 HUD와 패널 카드 그리드가 덜 눌리도록 프론트 레이아웃을 보강한다 [slice 61]

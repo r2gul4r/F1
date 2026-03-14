@@ -72,6 +72,7 @@ main {
   display: grid;
   gap: 4px;
   min-width: 180px;
+  max-width: min(280px, calc(100% - 24px));
   padding: 10px 12px;
   border: 1px solid rgba(34, 211, 238, 0.3);
   border-radius: 12px;
@@ -90,6 +91,7 @@ main {
 
 .selected-hud-stats {
   display: flex;
+  flex-wrap: wrap;
   gap: 10px;
   color: var(--text-muted);
   font-size: 0.92rem;
@@ -151,6 +153,7 @@ main {
 
 .driver-item-stats {
   display: flex;
+  flex-wrap: wrap;
   gap: 6px;
   margin-top: 8px;
 }
@@ -188,6 +191,7 @@ main {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
   gap: 8px;
 }
 
@@ -323,5 +327,25 @@ main {
 
   .canvas-wrap {
     min-height: 54vh;
+  }
+}
+
+@media (max-width: 640px) {
+  .selected-hud {
+    min-width: 0;
+    right: 12px;
+  }
+
+  .hud-shell {
+    min-height: 420px;
+  }
+
+  .prediction-grid,
+  .telemetry-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .selected-driver-kpi-value {
+    justify-content: flex-start;
   }
 }

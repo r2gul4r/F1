@@ -245,3 +245,4 @@
 - test: add watch-session POST route coverage for production secure set-cookie behavior
 - test: cover autonomous env validation helper behavior for quoted placeholder and quoted valid secrets
 - test: cover local env bootstrap helper behavior for quoted secrets and modernize env-bootstrap Pester syntax
+- feat: tighten mobile dashboard layout by wrapping HUD and KPI content and collapsing telemetry/prediction grids to one column
