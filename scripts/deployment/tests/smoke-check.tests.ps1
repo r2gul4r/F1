@@ -112,6 +112,25 @@ Describe "Deployment smoke check helpers" {
         }
     }
 
+    It "reads quoted INTERNAL_API_TOKEN values from .env" {
+        $tempRoot = Join-Path ([System.IO.Path]::GetTempPath()) ([System.Guid]::NewGuid().ToString())
+        New-Item -ItemType Directory -Path $tempRoot | Out-Null
+
+        try {
+            $envFilePath = Join-Path $tempRoot ".env"
+            Set-Content -Path $envFilePath -Value @(
+                "# comment"
+                "INTERNAL_API_TOKEN='quoted-env-file-token'"
+            )
+
+            (Get-EnvFileValue -Path $envFilePath -Key "INTERNAL_API_TOKEN") | Should -Be "quoted-env-file-token"
+            (Resolve-MetricsToken -Environment @{} -EnvFilePath $envFilePath) | Should -Be "quoted-env-file-token"
+        }
+        finally {
+            Remove-Item -Path $tempRoot -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+
     It "accepts realtime health body when status is ok" {
         {
             Assert-ExpectedJsonStatus -BodyContent '{"status":"ok"}' -ExpectedStatus "ok" -FailureMessage "realtime-health smoke check failed"
