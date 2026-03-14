@@ -204,3 +204,5 @@
 - test: cover worker startup/env/realtime failure logging with opaque-only assertions
 - fix: reset HUD error boundary on selected-driver or session change so transient HUD errors can recover
 - test: cover HUD fallback recovery journey for selected-driver and session transitions
+- fix: clear DriverPanel deep-link error state when selected driver changes to avoid stale fallback warnings
+- test: cover DriverPanel deep-link failure recovery and per-driver fallback link behavior

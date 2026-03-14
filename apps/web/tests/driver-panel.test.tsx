@@ -1,5 +1,5 @@
 import React from "react";
-import { act, cleanup, render, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { DriverPanel } from "../src/components/driver-panel";
 import { useRaceStore } from "../src/store/use-race-store";
@@ -327,5 +327,60 @@ describe("driver panel", () => {
       "#4 Lando NorrisMcLaren지연 텔레메트리지연 R1지연 325 kph",
       "#81 Oscar PiastriMcLaren텔레메트리 미수신순위 미수신속도 미수신"
     ]);
+  });
+
+  it("딥링크 실패 경고는 선택 드라이버 전환 시 초기화됨", () => {
+    vi.stubGlobal("open", vi.fn().mockReturnValue(null));
+    useRaceStore.setState((state) => ({
+      ...state,
+      drivers: state.drivers.map((driver) => ({
+        ...driver,
+        deepLink: driver.id === "VER" ? "https://f1tv.formula1.com/ver" : "https://f1tv.formula1.com/nor"
+      })),
+      selectedDriverId: "VER"
+    }));
+
+    render(<DriverPanel />);
+
+    fireEvent.click(screen.getByRole("button", { name: "공식 온보드 열기" }));
+    expect(screen.getByText("딥링크 실행 실패")).toBeTruthy();
+    const fallbackBeforeSwitch = screen.getByRole("link", { name: "직접 열기" }) as HTMLAnchorElement;
+    expect(fallbackBeforeSwitch.getAttribute("href")).toBe("https://f1tv.formula1.com/ver");
+
+    act(() => {
+      useRaceStore.getState().setSelectedDriverId("NOR");
+    });
+
+    expect(screen.queryByText("딥링크 실행 실패")).toBeNull();
+    expect(screen.queryByRole("link", { name: "직접 열기" })).toBeNull();
+  });
+
+  it("직접 열기 fallback은 실패한 현재 드라이버 링크만 보여줌", () => {
+    const openMock = vi.fn().mockReturnValue(null);
+    vi.stubGlobal("open", openMock);
+    useRaceStore.setState((state) => ({
+      ...state,
+      drivers: state.drivers.map((driver) => ({
+        ...driver,
+        deepLink: driver.id === "VER" ? "https://f1tv.formula1.com/ver" : "https://f1tv.formula1.com/nor"
+      })),
+      selectedDriverId: "VER"
+    }));
+
+    render(<DriverPanel />);
+
+    fireEvent.click(screen.getByRole("button", { name: "공식 온보드 열기" }));
+    let fallbackLink = screen.getByRole("link", { name: "직접 열기" }) as HTMLAnchorElement;
+    expect(fallbackLink.getAttribute("href")).toBe("https://f1tv.formula1.com/ver");
+
+    act(() => {
+      useRaceStore.getState().setSelectedDriverId("NOR");
+    });
+    expect(screen.queryByRole("link", { name: "직접 열기" })).toBeNull();
+
+    fireEvent.click(screen.getByRole("button", { name: "공식 온보드 열기" }));
+    fallbackLink = screen.getByRole("link", { name: "직접 열기" }) as HTMLAnchorElement;
+    expect(fallbackLink.getAttribute("href")).toBe("https://f1tv.formula1.com/nor");
+    expect(openMock).toHaveBeenCalledTimes(2);
   });
 });

@@ -43,6 +43,10 @@ export const DriverPanel = () => {
   const tick = selected ? ticksByDriver[selected.id] : undefined;
 
   useEffect(() => {
+    setLinkError(null);
+  }, [selectedDriverId]);
+
+  useEffect(() => {
     if (typeof tick?.timestampMs !== "number") {
       return;
     }

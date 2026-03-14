@@ -147,3 +147,4 @@
 [x] plan-driven task: realtime 테스트 logger 노이즈를 줄이되 런타임 기본 로깅을 유지한다 [slice 26]
 [x] plan-driven task: worker failure 로그를 opaque 규칙으로 통일하고 테스트로 고정한다 [slice 27]
 [x] plan-driven task: HUD error boundary가 선택 드라이버 또는 세션 변경으로 회복되게 만든다 [slice 28]
+[x] plan-driven task: DriverPanel 딥링크 실패 경고가 선택 드라이버 전환 뒤에 남지 않게 만든다 [slice 29]
