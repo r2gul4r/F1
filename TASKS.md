@@ -157,3 +157,4 @@
 [x] plan-driven task: worker main entrypoint startup failure path를 직접 테스트한다 [slice 36]
 [x] plan-driven task: WatchPreviewClient preview state 주입과 cleanup 경로를 테스트로 고정한다 [slice 37]
 [x] plan-driven task: WatchPreviewClient preview timestamp를 mount 시점 기준으로 갱신한다 [slice 38]
+[x] plan-driven task: telemetry freshness 경계값 규칙을 직접 테스트로 고정한다 [slice 39]
