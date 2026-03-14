@@ -1,3 +1,4 @@
+import { pathToFileURL } from "node:url";
 import { getNextPollDelayMs, nextBackoffState, type BackoffOutcome } from "./backoff-policy.js";
 import { readConfig } from "./config.js";
 import { logWorkerStartupFailure } from "./failure-logging.js";
@@ -9,7 +10,11 @@ import { TelemetrySource } from "./sources/types.js";
 
 const wait = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
 
-const start = async (): Promise<void> => {
+type RunWorkerCliOptions = {
+  exit?: (code: number) => void;
+};
+
+export const startWorkerLoop = async (): Promise<void> => {
   const config = readConfig();
   const client = new RealtimeClient(
     config.realtimeBaseUrl,
@@ -40,7 +45,24 @@ const start = async (): Promise<void> => {
   }
 };
 
-start().catch((error) => {
-  logWorkerStartupFailure(error);
-  process.exit(1);
-});
+export const runWorkerCli = async (options: RunWorkerCliOptions = {}): Promise<void> => {
+  try {
+    await startWorkerLoop();
+  } catch (error) {
+    logWorkerStartupFailure(error);
+    (options.exit ?? process.exit)(1);
+  }
+};
+
+const isDirectRun = (): boolean => {
+  const entryPath = process.argv[1];
+  if (!entryPath) {
+    return false;
+  }
+
+  return import.meta.url === pathToFileURL(entryPath).href;
+};
+
+if (isDirectRun()) {
+  void runWorkerCli();
+}

@@ -218,3 +218,5 @@
 - test: cover worker env validation CLI failure wiring with opaque logging and exit handling
 - refactor: make realtime main CLI callable without auto-running on import
 - test: cover realtime main CLI startup failure wiring with opaque logging and exit handling
+- refactor: make worker main CLI callable without auto-running on import
+- test: cover worker main CLI startup failure wiring with opaque logging and exit handling
