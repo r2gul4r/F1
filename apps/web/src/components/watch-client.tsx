@@ -107,6 +107,7 @@ export const WatchClient = ({
     : null;
   const selectedDriverFreshnessClass =
     selectedDriverFreshness === "no telemetry" ? "no-telemetry" : selectedDriverFreshness;
+  const hudBoundaryKey = `${sessionId}:${selectedDriverId ?? "none"}`;
 
   return (
     <main className={focusModeEnabled ? "dashboard dashboard-focus" : "dashboard"}>
@@ -159,7 +160,7 @@ export const WatchClient = ({
         {status !== "connected" ? <p className="muted">재연결 예정: {Math.ceil(reconnectInMs / 1000)}초</p> : null}
         <div className="hud-shell">
           {hudEnabled ? (
-            <HudErrorBoundary>
+            <HudErrorBoundary key={hudBoundaryKey}>
               <SelectedDriverHud />
             </HudErrorBoundary>
           ) : null}

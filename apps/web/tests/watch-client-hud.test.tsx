@@ -107,6 +107,73 @@ describe("watch client HUD isolation", () => {
     expect(screen.getByText("드라이버 수")).toBeTruthy();
   });
 
+  it("HUD 실패 뒤 선택 드라이버 변경 시 boundary가 회복됨", async () => {
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    let shouldThrow = true;
+
+    vi.doMock("@/src/components/selected-driver-hud", () => ({
+      SelectedDriverHud: () => {
+        if (shouldThrow) {
+          throw new Error("hud transient failure");
+        }
+
+        return <div>HUD recovered</div>;
+      }
+    }));
+
+    const { WatchClient } = await import("../src/components/watch-client");
+    const { useRaceStore: runtimeStore } = await import("../src/store/use-race-store");
+
+    render(<WatchClient sessionId="session-1" watchToken="watch-token" />);
+
+    expect(screen.getByText("HUD 일시 중단")).toBeTruthy();
+
+    shouldThrow = false;
+    act(() => {
+      runtimeStore.setState((state) => ({
+        ...state,
+        selectedDriverId: "NOR"
+      }));
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText("HUD recovered")).toBeTruthy();
+    });
+    expect(screen.queryByText("HUD 일시 중단")).toBeNull();
+
+    consoleErrorSpy.mockRestore();
+  });
+
+  it("HUD 실패 뒤 session 변경 시 boundary가 회복됨", async () => {
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    let shouldThrow = true;
+
+    vi.doMock("@/src/components/selected-driver-hud", () => ({
+      SelectedDriverHud: () => {
+        if (shouldThrow) {
+          throw new Error("hud transient failure");
+        }
+
+        return <div>HUD recovered by session</div>;
+      }
+    }));
+
+    const { WatchClient } = await import("../src/components/watch-client");
+    const view = render(<WatchClient sessionId="session-1" watchToken="watch-token" />);
+
+    expect(screen.getByText("HUD 일시 중단")).toBeTruthy();
+
+    shouldThrow = false;
+    view.rerender(<WatchClient sessionId="session-2" watchToken="watch-token" />);
+
+    await waitFor(() => {
+      expect(screen.getByText("HUD recovered by session")).toBeTruthy();
+    });
+    expect(screen.queryByText("HUD 일시 중단")).toBeNull();
+
+    consoleErrorSpy.mockRestore();
+  });
+
   it("HUD를 꺼도 메인 canvas는 그대로 유지됨", async () => {
     vi.doMock("@/src/components/selected-driver-hud", () => ({
       SelectedDriverHud: () => <div>#1 Max Verstappen</div>

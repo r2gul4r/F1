@@ -202,3 +202,5 @@
 - test: cover logger default-off in tests and explicit loggerEnabled override behavior
 - fix: unify worker startup/env/realtime failure logs to opaque public messages and correct transport log typo
 - test: cover worker startup/env/realtime failure logging with opaque-only assertions
+- fix: reset HUD error boundary on selected-driver or session change so transient HUD errors can recover
+- test: cover HUD fallback recovery journey for selected-driver and session transitions
