@@ -80,6 +80,51 @@ describe("watch session route", () => {
     expect(setCookie).toContain("SameSite=lax");
   });
 
+  it("production OAuth 로그인 성공 시 secure watch 세션 쿠키를 저장함", async () => {
+    process.env.NODE_ENV = "production";
+    process.env.OAUTH_PROXY_TOKEN = "oauth-proxy-token-for-test-123456";
+    process.env.REALTIME_BASE_URL = "http://realtime:4001";
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          accessToken: "watch-token-from-upstream",
+          tokenType: "Bearer",
+          expiresInSec: 120,
+          user: {
+            userId: "user-1",
+            provider: "github",
+            providerUserId: "1234",
+            displayName: "Ray",
+            email: "ray@example.com",
+            avatarUrl: "https://example.com/ray.png"
+          }
+        })
+      })
+    );
+
+    const request = new NextRequest("http://localhost:3000/api/auth/watch-session", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json"
+      },
+      body: JSON.stringify({
+        provider: "github",
+        providerUserId: "1234",
+        displayName: "Ray",
+        email: "ray@example.com",
+        avatarUrl: "https://example.com/ray.png"
+      })
+    });
+
+    const response = await POST(request);
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("set-cookie")).toContain("Secure");
+  });
+
   it("watch 세션 쿠키가 있으면 auth session을 조회함", async () => {
     process.env.REALTIME_BASE_URL = "http://realtime:4001";
 

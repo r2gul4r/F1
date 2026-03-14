@@ -242,3 +242,4 @@
 - test: add oauth login bridge coverage for localhost default base URL fallback
 - test: add direct watch-session cookie coverage for production secure set-cookie behavior
 - test: add watch-session DELETE route coverage for production secure clear-cookie behavior
+- test: add watch-session POST route coverage for production secure set-cookie behavior

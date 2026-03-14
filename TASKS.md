@@ -176,3 +176,4 @@
 [x] plan-driven task: oauth login bridge helper의 localhost 기본 base URL fallback을 직접 테스트한다 [slice 55]
 [x] plan-driven task: watch-session cookie helper의 production secure set-cookie contract를 직접 테스트한다 [slice 56]
 [x] plan-driven task: watch-session DELETE route의 production secure clear-cookie contract를 직접 테스트한다 [slice 57]
+[x] plan-driven task: watch-session POST route의 production secure set-cookie contract를 직접 테스트한다 [slice 58]
