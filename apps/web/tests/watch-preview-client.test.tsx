@@ -27,6 +27,7 @@ describe("watch preview client", () => {
 
   afterEach(() => {
     cleanup();
+    vi.useRealTimers();
     useRaceStore.getState().resetSessionState();
     useRaceStore.getState().setFps(0);
   });
@@ -67,5 +68,29 @@ describe("watch preview client", () => {
     expect(state.flag).toBeNull();
     expect(state.predictions).toHaveLength(0);
     expect(state.fps).toBe(0);
+  });
+
+  it("재마운트하면 preview flag와 prediction timestamp를 새 시각 기준으로 갱신함", async () => {
+    vi.useFakeTimers();
+    const firstNow = new Date("2026-03-14T06:00:00.000Z");
+    vi.setSystemTime(firstNow);
+
+    const { WatchPreviewClient } = await import("../src/components/watch-preview-client");
+    const firstView = render(<WatchPreviewClient />);
+    const firstState = useRaceStore.getState();
+    const firstFlagTimestamp = firstState.flag?.timestampMs;
+    const firstPredictionTimestamp = firstState.predictions[0]?.timestampMs;
+
+    firstView.unmount();
+
+    const secondNow = new Date("2026-03-14T06:05:00.000Z");
+    vi.setSystemTime(secondNow);
+    render(<WatchPreviewClient />);
+    const secondState = useRaceStore.getState();
+
+    expect(firstFlagTimestamp).toBe(firstNow.getTime() - 500);
+    expect(firstPredictionTimestamp).toBe(firstNow.getTime() - 800);
+    expect(secondState.flag?.timestampMs).toBe(secondNow.getTime() - 500);
+    expect(secondState.predictions[0]?.timestampMs).toBe(secondNow.getTime() - 800);
   });
 });

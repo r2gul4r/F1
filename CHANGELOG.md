@@ -221,3 +221,5 @@
 - refactor: make worker main CLI callable without auto-running on import
 - test: cover worker main CLI startup failure wiring with opaque logging and exit handling
 - test: cover WatchPreviewClient preview state seeding, cleanup, and WatchClient preview prop wiring
+- fix: generate WatchPreviewClient preview flag and prediction timestamps at mount time instead of module load
+- test: cover WatchPreviewClient timestamp refresh across remounts

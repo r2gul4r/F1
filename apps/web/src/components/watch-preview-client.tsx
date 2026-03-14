@@ -69,14 +69,14 @@ const createPreviewTicks = (): Record<string, TelemetryTick> => {
   return Object.fromEntries(ticks.map((tick) => [tick.driverId, tick]));
 };
 
-const previewFlag: RaceFlag = {
+const createPreviewFlag = (): RaceFlag => ({
   sessionId: previewSessionId,
   flagType: "GREEN",
   sector: "S2",
   timestampMs: Date.now() - 500
-};
+});
 
-const previewPrediction: AiPrediction = {
+const createPreviewPrediction = (): AiPrediction => ({
   sessionId: previewSessionId,
   lap: 18,
   triggerDriverId: "NOR",
@@ -84,7 +84,7 @@ const previewPrediction: AiPrediction = {
   reasoningSummary: "프로토타입 미리보기용 예측 카드",
   modelLatencyMs: 240,
   timestampMs: Date.now() - 800
-};
+});
 
 export const WatchPreviewClient = () => {
   useEffect(() => {
@@ -92,8 +92,8 @@ export const WatchPreviewClient = () => {
       drivers: previewDrivers.map((driver) => ({ ...driver })),
       ticksByDriver: createPreviewTicks(),
       selectedDriverId: "VER",
-      flag: { ...previewFlag },
-      predictions: [{ ...previewPrediction }],
+      flag: createPreviewFlag(),
+      predictions: [createPreviewPrediction()],
       fps: 0
     });
 
