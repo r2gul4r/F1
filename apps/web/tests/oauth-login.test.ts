@@ -80,6 +80,53 @@ describe("oauth login helper", () => {
     });
   });
 
+  it("watch session 성공 시 parsed payload를 반환하고 oauth header를 붙임", async () => {
+    process.env.OAUTH_PROXY_TOKEN = "oauth-proxy-token-for-test-123456";
+    process.env.REALTIME_BASE_URL = "http://localhost:4001/";
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        accessToken: "watch-token",
+        tokenType: "Bearer",
+        expiresInSec: 3600,
+        user: {
+          userId: "github-123",
+          provider: "github",
+          providerUserId: "123",
+          displayName: "Ray",
+          email: null,
+          avatarUrl: null
+        }
+      })
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const result = await requestWatchSession({
+      provider: "github",
+      providerUserId: "123",
+      displayName: "Ray"
+    });
+
+    expect(result).toMatchObject({
+      accessToken: "watch-token",
+      tokenType: "Bearer",
+      expiresInSec: 3600
+    });
+    expect(fetchMock).toHaveBeenCalledWith("http://localhost:4001/api/v1/auth/oauth/login", {
+      method: "POST",
+      cache: "no-store",
+      headers: {
+        "content-type": "application/json",
+        "x-oauth-token": "oauth-proxy-token-for-test-123456"
+      },
+      body: JSON.stringify({
+        provider: "github",
+        providerUserId: "123",
+        displayName: "Ray"
+      })
+    });
+  });
+
   it("auth session 빈 watch token은 즉시 403 bridge error를 던짐", async () => {
     await expect(requestAuthSession("   ")).rejects.toMatchObject<Partial<OAuthLoginBridgeError>>({
       status: 403
@@ -98,6 +145,39 @@ describe("oauth login helper", () => {
 
     await expect(requestAuthSession("watch-token")).rejects.toMatchObject<Partial<OAuthLoginBridgeError>>({
       status: 502
+    });
+  });
+
+  it("auth session 성공 시 parsed payload를 반환하고 watch token header를 붙임", async () => {
+    process.env.REALTIME_BASE_URL = "http://localhost:4001/";
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        tokenType: "Bearer",
+        issuedAtMs: 1000,
+        expiresAtMs: 2000,
+        authSession: {
+          kind: "oauth",
+          userId: "github-123",
+          displayName: "Ray"
+        }
+      })
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const result = await requestAuthSession("watch-token");
+
+    expect(result).toMatchObject({
+      tokenType: "Bearer",
+      issuedAtMs: 1000,
+      expiresAtMs: 2000
+    });
+    expect(fetchMock).toHaveBeenCalledWith("http://localhost:4001/api/v1/auth/session", {
+      method: "GET",
+      cache: "no-store",
+      headers: {
+        "x-watch-token": "watch-token"
+      }
     });
   });
 });

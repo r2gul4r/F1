@@ -229,3 +229,4 @@
 - test: add direct realtime metrics registry coverage for metric registration and labeled observations
 - test: add direct oauth login bridge coverage for env validation and 403 vs 502 status mapping
 - test: add api client success-path coverage for payload passthrough and driver session path composition
+- test: add oauth login bridge success-path coverage for normalized base URL, headers, and parsed payloads
