@@ -160,3 +160,4 @@
 [x] plan-driven task: telemetry freshness 경계값 규칙을 직접 테스트로 고정한다 [slice 39]
 [x] plan-driven task: HudErrorBoundary fallback과 remount recovery를 직접 테스트한다 [slice 40]
 [x] plan-driven task: shared opaque error contract를 직접 테스트로 고정한다 [slice 41]
+[x] plan-driven task: realtime metrics registry contract를 직접 테스트로 고정한다 [slice 42]
