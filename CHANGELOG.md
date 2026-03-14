@@ -191,3 +191,8 @@
 - test: cover stale selected-driver HUD telemetry display
 - docs: add deployment runbook for mode switching, smoke checks, and rollback starting points
 - docs: end-of-day summary at 2026-03-13 17:01:32
+
+## 2026-03-14
+- fix: make deployment smoke compose validation honor requested service subsets
+- test: cover subset compose smoke validation for healthy and worker-up status rules
+- docs: document partial compose smoke checks in deployment runbook

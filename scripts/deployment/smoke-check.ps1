@@ -58,26 +58,28 @@ function ConvertFrom-ComposeStatusLines {
 function Test-ComposeStatusMap {
     param(
         [Parameter(Mandatory = $true)]
-        [hashtable]$StatusMap
+        [hashtable]$StatusMap,
+        [string[]]$RequiredServices = @("postgres", "redis", "realtime", "worker", "web")
     )
 
     $healthyServices = @("postgres", "redis", "realtime", "web")
-    foreach ($service in $healthyServices) {
+    foreach ($service in $RequiredServices) {
         if (-not $StatusMap.ContainsKey($service)) {
             throw "Compose smoke check failed"
         }
 
-        if ($StatusMap[$service] -notmatch "\(healthy\)") {
+        $status = $StatusMap[$service]
+        if ($healthyServices -contains $service) {
+            if ($status -notmatch "\(healthy\)") {
+                throw "Compose smoke check failed"
+            }
+
+            continue
+        }
+
+        if ($status -notmatch "^Up\b") {
             throw "Compose smoke check failed"
         }
-    }
-
-    if (-not $StatusMap.ContainsKey("worker")) {
-        throw "Compose smoke check failed"
-    }
-
-    if ($StatusMap["worker"] -notmatch "^Up\b") {
-        throw "Compose smoke check failed"
     }
 
     return $true
@@ -305,9 +307,9 @@ function Invoke-ComposeStatusCheck {
     }
 
     $statusMap = ConvertFrom-ComposeStatusLines -Lines $statusLines
-    Test-ComposeStatusMap -StatusMap $statusMap | Out-Null
+    Test-ComposeStatusMap -StatusMap $statusMap -RequiredServices $Services | Out-Null
 
-    foreach ($service in @("postgres", "redis", "realtime", "worker", "web")) {
+    foreach ($service in $Services) {
         if ($statusMap.ContainsKey($service)) {
             Write-Output ("compose:{0} {1}" -f $service, $statusMap[$service])
         }

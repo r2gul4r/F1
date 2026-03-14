@@ -64,10 +64,16 @@ powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/deployment/smoke-c
 ```powershell
 pwsh -NoProfile -ExecutionPolicy Bypass -File ./scripts/deployment/smoke-check.ps1 -SkipCompose -SkipRealtimeHealth -SkipWebWatch -SkipLogs -SkipMetrics
 ```
-3. web 진입 확인
+3. 특정 compose 서비스만 부분 확인할 때
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/deployment/smoke-check.ps1 -ComposeServices realtime,web -SkipLogs -SkipMetrics
+```
+  - `-ComposeServices`에 넘긴 서비스만 상태 검증과 로그 tail 대상이 된다
+  - `postgres`, `redis`, `realtime`, `web`는 `(healthy)`를 요구하고 나머지 서비스는 `Up`이면 통과한다
+4. web 진입 확인
   - `http://localhost:3000/watch/current`
   - 드라이버 목록, canvas, HUD 토글, prediction 카드가 보이는지 확인한다
-4. 데이터 모드 확인
+5. 데이터 모드 확인
   - public 모드면 실데이터가 들어오는지
   - developer 모드면 mock fallback 이 깨지지 않는지
 

@@ -40,6 +40,23 @@ Describe "Deployment smoke check helpers" {
         } | Should -Throw
     }
 
+    It "accepts compose status map when only requested subset services are present" {
+        {
+            Test-ComposeStatusMap -StatusMap @{
+                realtime = "Up 20 seconds (healthy)"
+                web      = "Up 15 seconds (healthy)"
+            } -RequiredServices @("realtime", "web")
+        } | Should -Not -Throw
+    }
+
+    It "rejects compose status map when requested worker service is not up" {
+        {
+            Test-ComposeStatusMap -StatusMap @{
+                worker = "Exited (1)"
+            } -RequiredServices @("worker")
+        } | Should -Throw
+    }
+
     It "prefers explicit metrics token over environment token" {
         $resolved = Resolve-MetricsToken -CandidateToken "manual-token" -Environment @{
             INTERNAL_API_TOKEN = "env-token"
