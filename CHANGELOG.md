@@ -231,3 +231,4 @@
 - test: add api client success-path coverage for payload passthrough and driver session path composition
 - test: add oauth login bridge success-path coverage for normalized base URL, headers, and parsed payloads
 - test: add watch-session route coverage for bridge 403 passthrough and generic opaque 500 fallback
+- test: add direct watch-session cookie helper coverage for trim/null reads and secure cookie flags

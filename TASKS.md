@@ -165,3 +165,4 @@
 [x] plan-driven task: api client success path와 driver path 조합을 직접 테스트한다 [slice 44]
 [x] plan-driven task: oauth login bridge helper의 success path와 request shape를 직접 테스트한다 [slice 45]
 [x] plan-driven task: watch-session route의 bridge error와 opaque fallback status를 직접 테스트한다 [slice 46]
+[x] plan-driven task: watch-session cookie helper contract를 직접 테스트한다 [slice 47]
