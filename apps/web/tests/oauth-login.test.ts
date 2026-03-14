@@ -180,4 +180,32 @@ describe("oauth login helper", () => {
       }
     });
   });
+
+  it("REALTIME_BASE_URL이 없으면 NEXT_PUBLIC_REALTIME_HTTP_BASE를 사용함", async () => {
+    process.env.NEXT_PUBLIC_REALTIME_HTTP_BASE = "http://public-realtime:4001/";
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        tokenType: "Bearer",
+        issuedAtMs: 1000,
+        expiresAtMs: 2000,
+        authSession: {
+          kind: "oauth",
+          userId: "github-123",
+          displayName: "Ray"
+        }
+      })
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await requestAuthSession("watch-token");
+
+    expect(fetchMock).toHaveBeenCalledWith("http://public-realtime:4001/api/v1/auth/session", {
+      method: "GET",
+      cache: "no-store",
+      headers: {
+        "x-watch-token": "watch-token"
+      }
+    });
+  });
 });
