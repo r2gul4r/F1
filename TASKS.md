@@ -153,3 +153,4 @@
 [x] plan-driven task: realtime DB 마이그레이션 실패 로그를 opaque helper로 통일한다 [slice 32]
 [x] plan-driven task: realtime env validate entrypoint failure path를 직접 테스트한다 [slice 33]
 [x] plan-driven task: worker env validate entrypoint failure path를 직접 테스트한다 [slice 34]
+[x] plan-driven task: realtime main entrypoint startup failure path를 직접 테스트한다 [slice 35]

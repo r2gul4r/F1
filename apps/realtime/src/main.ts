@@ -1,4 +1,5 @@
 import { createClient } from "redis";
+import { pathToFileURL } from "node:url";
 import { readConfig } from "./config.js";
 import { logRealtimeStartupFailure } from "./failure-logging.js";
 import { buildServer } from "./server.js";
@@ -7,7 +8,11 @@ import { runDatabaseMigrations } from "./store/migration-runner.js";
 import { OAuthUserRepository } from "./store/oauth-user-repository.js";
 import { PostgresRepository } from "./store/postgres-repository.js";
 
-const start = async (): Promise<void> => {
+type RunRealtimeServerCliOptions = {
+  exit?: (code: number) => void;
+};
+
+export const startRealtimeServer = async (): Promise<void> => {
   const config = readConfig();
   const databaseConnection = createDatabaseConnection({
     connectionString: config.postgresUrl
@@ -54,7 +59,24 @@ const start = async (): Promise<void> => {
   process.on("SIGTERM", shutdown);
 };
 
-start().catch((error) => {
-  logRealtimeStartupFailure(error);
-  process.exit(1);
-});
+export const runRealtimeServerCli = async (options: RunRealtimeServerCliOptions = {}): Promise<void> => {
+  try {
+    await startRealtimeServer();
+  } catch (error) {
+    logRealtimeStartupFailure(error);
+    (options.exit ?? process.exit)(1);
+  }
+};
+
+const isDirectRun = (): boolean => {
+  const entryPath = process.argv[1];
+  if (!entryPath) {
+    return false;
+  }
+
+  return import.meta.url === pathToFileURL(entryPath).href;
+};
+
+if (isDirectRun()) {
+  void runRealtimeServerCli();
+}
