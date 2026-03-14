@@ -220,3 +220,4 @@
 - test: cover realtime main CLI startup failure wiring with opaque logging and exit handling
 - refactor: make worker main CLI callable without auto-running on import
 - test: cover worker main CLI startup failure wiring with opaque logging and exit handling
+- test: cover WatchPreviewClient preview state seeding, cleanup, and WatchClient preview prop wiring
