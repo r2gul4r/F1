@@ -204,4 +204,19 @@ describe("watch session route", () => {
     expect(response.headers.get("set-cookie")).toContain("f1_watch_session=");
     expect(response.headers.get("set-cookie")).toContain("Max-Age=0");
   });
+
+  it("production logout은 secure clear-cookie를 반환함", async () => {
+    process.env.NODE_ENV = "production";
+
+    const request = new NextRequest("http://localhost:3000/api/auth/watch-session", {
+      method: "DELETE"
+    });
+
+    const response = await DELETE(request);
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("set-cookie")).toContain("f1_watch_session=");
+    expect(response.headers.get("set-cookie")).toContain("Max-Age=0");
+    expect(response.headers.get("set-cookie")).toContain("Secure");
+  });
 });

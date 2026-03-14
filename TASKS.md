@@ -175,3 +175,4 @@
 [x] plan-driven task: api client가 NEXT_PUBLIC_REALTIME_HTTP_BASE를 module import 시 반영함을 테스트한다 [slice 54]
 [x] plan-driven task: oauth login bridge helper의 localhost 기본 base URL fallback을 직접 테스트한다 [slice 55]
 [x] plan-driven task: watch-session cookie helper의 production secure set-cookie contract를 직접 테스트한다 [slice 56]
+[x] plan-driven task: watch-session DELETE route의 production secure clear-cookie contract를 직접 테스트한다 [slice 57]
