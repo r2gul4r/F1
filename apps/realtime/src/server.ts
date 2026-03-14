@@ -28,6 +28,7 @@ type OAuthUserRepository = {
 export type BuildServerInput = {
   repository: Repository;
   oauthUserRepository: OAuthUserRepository;
+  loggerEnabled?: boolean;
   internalApiToken: string;
   oauthProxyToken: string;
   watchTokenSecret: string;
@@ -59,6 +60,14 @@ const resolveAiRequestTimeoutMs = (value: number | undefined): number | undefine
   return undefined;
 };
 
+const resolveLoggerEnabled = (value: boolean | undefined): boolean => {
+  if (typeof value === "boolean") {
+    return value;
+  }
+
+  return process.env.NODE_ENV !== "test";
+};
+
 const isSchemaValidationError = (error: unknown): boolean => {
   if (!error || typeof error !== "object") {
     return false;
@@ -76,7 +85,7 @@ export const buildServer = async (input: BuildServerInput): Promise<{
   app: ReturnType<typeof Fastify>;
   httpServer: Server;
 }> => {
-  const app = Fastify({ logger: true });
+  const app = Fastify({ logger: resolveLoggerEnabled(input.loggerEnabled) });
   const metrics = createMetrics();
   const tracker = new TriggerTracker();
   const aiProvider = input.aiProvider ?? "ollama";

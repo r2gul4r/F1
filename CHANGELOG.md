@@ -198,3 +198,5 @@
 - docs: document partial compose smoke checks in deployment runbook
 - fix: classify realtime schema validation failures as 400 opaque responses instead of 500
 - test: cover malformed internal session and ai predict payloads as 400 opaque validation failures
+- fix: disable realtime Fastify logger by default in test environment while keeping runtime default logging enabled
+- test: cover logger default-off in tests and explicit loggerEnabled override behavior

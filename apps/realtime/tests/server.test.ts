@@ -32,6 +32,131 @@ describe("realtime api", () => {
     vi.unstubAllGlobals();
   });
 
+  it("test 환경에서는 logger 기본값이 비활성화됨", async () => {
+    const repository = new MemoryRepository();
+    const { app } = await buildServer({
+      repository,
+      oauthUserRepository,
+      internalApiToken,
+      oauthProxyToken,
+      watchTokenSecret,
+      watchTokenTtlSec: 3600,
+      allowedOrigins: ["http://localhost:3000"],
+      wsBufferSize: 100,
+      ollamaBaseUrl: "http://localhost:11434",
+      ollamaModel: "gemma3:12b"
+    });
+
+    expect(app.log.level).toBeUndefined();
+  });
+
+  it("loggerEnabled=true를 주면 test 환경에서도 logger를 활성화함", async () => {
+    const repository = new MemoryRepository();
+    const { app } = await buildServer({
+      repository,
+      oauthUserRepository,
+      internalApiToken,
+      oauthProxyToken,
+      watchTokenSecret,
+      watchTokenTtlSec: 3600,
+      allowedOrigins: ["http://localhost:3000"],
+      wsBufferSize: 100,
+      ollamaBaseUrl: "http://localhost:11434",
+      ollamaModel: "gemma3:12b",
+      loggerEnabled: true
+    });
+
+    expect(app.log.level).toBe("info");
+  });
+
+  it("NODE_ENV=production이면 logger 기본값이 활성화됨", async () => {
+    const previousNodeEnv = process.env.NODE_ENV;
+    process.env.NODE_ENV = "production";
+
+    try {
+      const repository = new MemoryRepository();
+      const { app } = await buildServer({
+        repository,
+        oauthUserRepository,
+        internalApiToken,
+        oauthProxyToken,
+        watchTokenSecret,
+        watchTokenTtlSec: 3600,
+        allowedOrigins: ["http://localhost:3000"],
+        wsBufferSize: 100,
+        ollamaBaseUrl: "http://localhost:11434",
+        ollamaModel: "gemma3:12b"
+      });
+
+      expect(app.log.level).toBe("info");
+    } finally {
+      if (previousNodeEnv === undefined) {
+        Reflect.deleteProperty(process.env, "NODE_ENV");
+      } else {
+        process.env.NODE_ENV = previousNodeEnv;
+      }
+    }
+  });
+
+  it("NODE_ENV가 unset이면 logger 기본값이 활성화됨", async () => {
+    const previousNodeEnv = process.env.NODE_ENV;
+    Reflect.deleteProperty(process.env, "NODE_ENV");
+
+    try {
+      const repository = new MemoryRepository();
+      const { app } = await buildServer({
+        repository,
+        oauthUserRepository,
+        internalApiToken,
+        oauthProxyToken,
+        watchTokenSecret,
+        watchTokenTtlSec: 3600,
+        allowedOrigins: ["http://localhost:3000"],
+        wsBufferSize: 100,
+        ollamaBaseUrl: "http://localhost:11434",
+        ollamaModel: "gemma3:12b"
+      });
+
+      expect(app.log.level).toBe("info");
+    } finally {
+      if (previousNodeEnv === undefined) {
+        Reflect.deleteProperty(process.env, "NODE_ENV");
+      } else {
+        process.env.NODE_ENV = previousNodeEnv;
+      }
+    }
+  });
+
+  it("loggerEnabled=false를 주면 test 외 환경에서도 logger를 비활성화함", async () => {
+    const previousNodeEnv = process.env.NODE_ENV;
+    process.env.NODE_ENV = "production";
+
+    try {
+      const repository = new MemoryRepository();
+      const { app } = await buildServer({
+        repository,
+        oauthUserRepository,
+        internalApiToken,
+        oauthProxyToken,
+        watchTokenSecret,
+        watchTokenTtlSec: 3600,
+        allowedOrigins: ["http://localhost:3000"],
+        wsBufferSize: 100,
+        ollamaBaseUrl: "http://localhost:11434",
+        ollamaModel: "gemma3:12b",
+        loggerEnabled: false
+      });
+
+      expect(app.log.level).toBeUndefined();
+    } finally {
+      if (previousNodeEnv === undefined) {
+        Reflect.deleteProperty(process.env, "NODE_ENV");
+      } else {
+        process.env.NODE_ENV = previousNodeEnv;
+      }
+    }
+  });
+
   it("세션과 드라이버 조회 API가 동작함", async () => {
     const repository = new MemoryRepository();
     await repository.upsertSession({
