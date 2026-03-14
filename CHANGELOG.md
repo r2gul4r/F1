@@ -210,3 +210,5 @@
 - test: cover realtime startup/env failure logging through shared opaque logger helpers
 - fix: clear DriverPanel deep-link error state when selected driver context changes across sessions
 - test: cover DriverPanel deep-link recovery when the same driver id is reused in a new session
+- fix: route realtime migration failure logging through the shared opaque failure logger
+- test: cover realtime migration failure logging with opaque-only assertions

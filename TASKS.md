@@ -150,3 +150,4 @@
 [x] plan-driven task: DriverPanel 딥링크 실패 경고가 선택 드라이버 전환 뒤에 남지 않게 만든다 [slice 29]
 [x] plan-driven task: realtime startup/env failure 로그를 opaque 규칙으로 통일하고 테스트로 고정한다 [slice 30]
 [x] plan-driven task: DriverPanel 딥링크 실패 경고가 세션 전환 뒤에도 남지 않게 만든다 [slice 31]
+[x] plan-driven task: realtime DB 마이그레이션 실패 로그를 opaque helper로 통일한다 [slice 32]

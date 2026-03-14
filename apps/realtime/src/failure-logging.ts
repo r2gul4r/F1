@@ -12,3 +12,7 @@ export const logRealtimeStartupFailure = (error: unknown): void => {
 export const logRealtimeEnvValidationFailure = (error: unknown): void => {
   logOpaqueFailure("리얼타임 환경 검증 실패", error);
 };
+
+export const logRealtimeMigrationFailure = (error: unknown): void => {
+  logOpaqueFailure("리얼타임 DB 마이그레이션 실패", error);
+};
