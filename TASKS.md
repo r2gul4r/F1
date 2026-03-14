@@ -169,3 +169,4 @@
 [x] plan-driven task: deployment smoke helper의 quoted env token parsing 경계를 테스트한다 [slice 48]
 [x] plan-driven task: watch page preview 세션이 cookie lookup보다 우선함을 직접 테스트한다 [slice 49]
 [x] plan-driven task: realtime migrate CLI success path를 직접 테스트한다 [slice 50]
+[x] plan-driven task: realtime env validate CLI success path를 직접 테스트한다 [slice 51]
