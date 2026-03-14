@@ -206,3 +206,5 @@
 - test: cover HUD fallback recovery journey for selected-driver and session transitions
 - fix: clear DriverPanel deep-link error state when selected driver changes to avoid stale fallback warnings
 - test: cover DriverPanel deep-link failure recovery and per-driver fallback link behavior
+- fix: unify realtime startup and env-validation failure logs to opaque public messages
+- test: cover realtime startup/env failure logging through shared opaque logger helpers

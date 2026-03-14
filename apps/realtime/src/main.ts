@@ -1,5 +1,6 @@
 import { createClient } from "redis";
 import { readConfig } from "./config.js";
+import { logRealtimeStartupFailure } from "./failure-logging.js";
 import { buildServer } from "./server.js";
 import { createDatabaseConnection } from "./store/database-connection.js";
 import { runDatabaseMigrations } from "./store/migration-runner.js";
@@ -54,7 +55,6 @@ const start = async (): Promise<void> => {
 };
 
 start().catch((error) => {
-  // 한국어 로그 메시지 유지
-  console.error("서버 시작 실패", error);
+  logRealtimeStartupFailure(error);
   process.exit(1);
 });
