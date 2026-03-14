@@ -162,3 +162,4 @@
 [x] plan-driven task: shared opaque error contract를 직접 테스트로 고정한다 [slice 41]
 [x] plan-driven task: realtime metrics registry contract를 직접 테스트로 고정한다 [slice 42]
 [x] plan-driven task: oauth login bridge helper의 env parsing과 status mapping을 직접 테스트한다 [slice 43]
+[x] plan-driven task: api client success path와 driver path 조합을 직접 테스트한다 [slice 44]

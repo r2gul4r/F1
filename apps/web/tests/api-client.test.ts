@@ -41,4 +41,34 @@ describe("api client", () => {
       status: 503
     });
   });
+
+  it("성공 응답은 json payload를 그대로 반환함", async () => {
+    const payload = { id: "session-1", name: "Bahrain GP" };
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => payload
+      })
+    );
+
+    await expect(apiClient.getCurrentSession<typeof payload>("watch-token")).resolves.toEqual(payload);
+  });
+
+  it("getDrivers는 session path와 watch token header를 정확히 호출함", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => []
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await apiClient.getDrivers("session-42", "watch-token");
+
+    expect(fetchMock).toHaveBeenCalledWith("http://localhost:4001/api/v1/sessions/session-42/drivers", {
+      cache: "no-store",
+      headers: {
+        "x-watch-token": "watch-token"
+      }
+    });
+  });
 });
