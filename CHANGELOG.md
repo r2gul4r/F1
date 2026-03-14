@@ -208,3 +208,5 @@
 - test: cover DriverPanel deep-link failure recovery and per-driver fallback link behavior
 - fix: unify realtime startup and env-validation failure logs to opaque public messages
 - test: cover realtime startup/env failure logging through shared opaque logger helpers
+- fix: clear DriverPanel deep-link error state when selected driver context changes across sessions
+- test: cover DriverPanel deep-link recovery when the same driver id is reused in a new session

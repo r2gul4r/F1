@@ -41,10 +41,13 @@ export const DriverPanel = () => {
     [drivers, selectedDriverId]
   );
   const tick = selected ? ticksByDriver[selected.id] : undefined;
+  const selectedDriverContextKey = selected
+    ? `${selected.sessionId}:${selected.id}:${selected.deepLink}`
+    : "none";
 
   useEffect(() => {
     setLinkError(null);
-  }, [selectedDriverId]);
+  }, [selectedDriverContextKey]);
 
   useEffect(() => {
     if (typeof tick?.timestampMs !== "number") {

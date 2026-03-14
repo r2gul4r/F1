@@ -383,4 +383,47 @@ describe("driver panel", () => {
     expect(fallbackLink.getAttribute("href")).toBe("https://f1tv.formula1.com/nor");
     expect(openMock).toHaveBeenCalledTimes(2);
   });
+
+  it("딥링크 실패 경고는 같은 driver id의 세션 전환에서도 초기화됨", () => {
+    vi.stubGlobal("open", vi.fn().mockReturnValue(null));
+    useRaceStore.setState((state) => ({
+      ...state,
+      drivers: [
+        {
+          id: "VER",
+          sessionId: "session-1",
+          fullName: "Max Verstappen",
+          number: 1,
+          teamName: "Red Bull",
+          deepLink: "https://f1tv.formula1.com/session-1/ver"
+        }
+      ],
+      selectedDriverId: "VER"
+    }));
+
+    render(<DriverPanel />);
+
+    fireEvent.click(screen.getByRole("button", { name: "공식 온보드 열기" }));
+    expect(screen.getByText("딥링크 실행 실패")).toBeTruthy();
+
+    act(() => {
+      useRaceStore.setState((state) => ({
+        ...state,
+        drivers: [
+          {
+            id: "VER",
+            sessionId: "session-2",
+            fullName: "Max Verstappen",
+            number: 1,
+            teamName: "Red Bull",
+            deepLink: "https://f1tv.formula1.com/session-2/ver"
+          }
+        ],
+        selectedDriverId: "VER"
+      }));
+    });
+
+    expect(screen.queryByText("딥링크 실행 실패")).toBeNull();
+    expect(screen.queryByRole("link", { name: "직접 열기" })).toBeNull();
+  });
 });
