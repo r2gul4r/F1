@@ -208,4 +208,31 @@ describe("oauth login helper", () => {
       }
     });
   });
+
+  it("realtime base env가 모두 없으면 localhost 기본값을 사용함", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        tokenType: "Bearer",
+        issuedAtMs: 1000,
+        expiresAtMs: 2000,
+        authSession: {
+          kind: "oauth",
+          userId: "github-123",
+          displayName: "Ray"
+        }
+      })
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await requestAuthSession("watch-token");
+
+    expect(fetchMock).toHaveBeenCalledWith("http://localhost:4001/api/v1/auth/session", {
+      method: "GET",
+      cache: "no-store",
+      headers: {
+        "x-watch-token": "watch-token"
+      }
+    });
+  });
 });
