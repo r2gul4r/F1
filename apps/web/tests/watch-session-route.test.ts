@@ -126,6 +126,73 @@ describe("watch session route", () => {
     });
   });
 
+  it("OAuth 로그인 upstream 403은 route에서도 opaque 403으로 유지됨", async () => {
+    process.env.OAUTH_PROXY_TOKEN = "oauth-proxy-token-for-test-123456";
+    process.env.REALTIME_BASE_URL = "http://realtime:4001";
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: false,
+        status: 403
+      })
+    );
+
+    const request = new NextRequest("http://localhost:3000/api/auth/watch-session", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json"
+      },
+      body: JSON.stringify({
+        provider: "github",
+        providerUserId: "1234",
+        displayName: "Ray"
+      })
+    });
+
+    const response = await POST(request);
+    expect(response.status).toBe(403);
+    await expect(response.json()).resolves.toEqual({
+      message: "요청 처리 실패"
+    });
+  });
+
+  it("watch 세션 쿠키가 없으면 GET은 opaque 403으로 거부함", async () => {
+    process.env.REALTIME_BASE_URL = "http://realtime:4001";
+
+    const request = new NextRequest("http://localhost:3000/api/auth/watch-session", {
+      method: "GET"
+    });
+
+    const response = await GET(request);
+    expect(response.status).toBe(403);
+    await expect(response.json()).resolves.toEqual({
+      message: "요청 처리 실패"
+    });
+  });
+
+  it("OAuth 로그인 helper가 bridge error가 아닌 예외를 던지면 opaque 500으로 응답함", async () => {
+    process.env.OAUTH_PROXY_TOKEN = "oauth-proxy-token-for-test-123456";
+    process.env.REALTIME_BASE_URL = "://bad-url";
+
+    const request = new NextRequest("http://localhost:3000/api/auth/watch-session", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json"
+      },
+      body: JSON.stringify({
+        provider: "github",
+        providerUserId: "1234",
+        displayName: "Ray"
+      })
+    });
+
+    const response = await POST(request);
+    expect(response.status).toBe(500);
+    await expect(response.json()).resolves.toEqual({
+      message: "요청 처리 실패"
+    });
+  });
+
   it("logout 요청은 watch 세션 쿠키를 지움", async () => {
     const request = new NextRequest("http://localhost:3000/api/auth/watch-session", {
       method: "DELETE"
