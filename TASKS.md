@@ -172,3 +172,4 @@
 [x] plan-driven task: realtime env validate CLI success path를 직접 테스트한다 [slice 51]
 [x] plan-driven task: worker env validate CLI success path를 직접 테스트한다 [slice 52]
 [x] plan-driven task: oauth login bridge helper의 realtime base URL fallback 우선순위를 직접 테스트한다 [slice 53]
+[x] plan-driven task: api client가 NEXT_PUBLIC_REALTIME_HTTP_BASE를 module import 시 반영함을 테스트한다 [slice 54]
