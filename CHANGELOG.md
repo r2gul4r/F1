@@ -214,3 +214,5 @@
 - test: cover realtime migration failure logging with opaque-only assertions
 - refactor: make realtime env validation CLI callable without auto-running on import
 - test: cover realtime env validation CLI failure wiring with opaque logging and exit handling
+- refactor: make worker env validation CLI callable without auto-running on import
+- test: cover worker env validation CLI failure wiring with opaque logging and exit handling
