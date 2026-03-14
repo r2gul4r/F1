@@ -224,3 +224,4 @@
 - fix: generate WatchPreviewClient preview flag and prediction timestamps at mount time instead of module load
 - test: cover WatchPreviewClient timestamp refresh across remounts
 - test: add direct boundary coverage for telemetry freshness and priority threshold rules
+- test: add direct HudErrorBoundary coverage for fallback rendering and key-based remount recovery
