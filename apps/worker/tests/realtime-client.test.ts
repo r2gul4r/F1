@@ -154,4 +154,16 @@ describe("realtime client", () => {
     await vi.advanceTimersByTimeAsync(timeoutMs);
     await assertion;
   });
+
+  it("전송 실패 로그는 오타 없는 opaque 메시지만 남김", () => {
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => undefined);
+
+    try {
+      const client = new RealtimeClient("http://localhost:4001", "internal-token");
+      client.handleFailure(new Error("secret-transport-detail"));
+      expect(consoleErrorSpy).toHaveBeenCalledWith("워커 전송 실패", "요청 처리 실패");
+    } finally {
+      consoleErrorSpy.mockRestore();
+    }
+  });
 });

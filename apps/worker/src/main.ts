@@ -1,5 +1,6 @@
 import { getNextPollDelayMs, nextBackoffState, type BackoffOutcome } from "./backoff-policy.js";
 import { readConfig } from "./config.js";
+import { logWorkerStartupFailure } from "./failure-logging.js";
 import { runMainLoopCycle } from "./main-loop-cycle.js";
 import { RealtimeClient } from "./realtime-client.js";
 import { MockSource } from "./sources/mock-source.js";
@@ -40,7 +41,6 @@ const start = async (): Promise<void> => {
 };
 
 start().catch((error) => {
-  // 한국어 로그 메시지 유지
-  console.error("워커 시작 실패", error);
+  logWorkerStartupFailure(error);
   process.exit(1);
 });

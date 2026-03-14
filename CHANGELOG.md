@@ -200,3 +200,5 @@
 - test: cover malformed internal session and ai predict payloads as 400 opaque validation failures
 - fix: disable realtime Fastify logger by default in test environment while keeping runtime default logging enabled
 - test: cover logger default-off in tests and explicit loggerEnabled override behavior
+- fix: unify worker startup/env/realtime failure logs to opaque public messages and correct transport log typo
+- test: cover worker startup/env/realtime failure logging with opaque-only assertions

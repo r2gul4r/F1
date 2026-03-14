@@ -145,3 +145,4 @@
 [x] plan-driven task: 이중 배포 경로와 운영 준비를 마무리한다 [slice 24]
 [x] plan-driven task: realtime schema validation 실패를 400 opaque 응답으로 분류한다 [slice 25]
 [x] plan-driven task: realtime 테스트 logger 노이즈를 줄이되 런타임 기본 로깅을 유지한다 [slice 26]
+[x] plan-driven task: worker failure 로그를 opaque 규칙으로 통일하고 테스트로 고정한다 [slice 27]

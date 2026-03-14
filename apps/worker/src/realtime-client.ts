@@ -1,4 +1,5 @@
-import { Driver, InternalSessionSyncRequest, RaceFlag, Session, TelemetryTick, toOpaqueError } from "@f1/shared";
+import { Driver, InternalSessionSyncRequest, RaceFlag, Session, TelemetryTick } from "@f1/shared";
+import { logWorkerRealtimeSendFailure } from "./failure-logging.js";
 const opaqueMessage = "요청 처리 실패";
 const requestTimeoutStatus = 504;
 const requestUpstreamFailureStatus = 502;
@@ -73,8 +74,6 @@ export class RealtimeClient {
   }
 
   handleFailure(error: unknown): void {
-    const opaque = toOpaqueError(error);
-    // 한국어 로그 메시지 유지
-    console.error("워크커 전송 실패", opaque.publicMessage);
+    logWorkerRealtimeSendFailure(error);
   }
 }
