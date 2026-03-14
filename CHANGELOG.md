@@ -212,3 +212,5 @@
 - test: cover DriverPanel deep-link recovery when the same driver id is reused in a new session
 - fix: route realtime migration failure logging through the shared opaque failure logger
 - test: cover realtime migration failure logging with opaque-only assertions
+- refactor: make realtime env validation CLI callable without auto-running on import
+- test: cover realtime env validation CLI failure wiring with opaque logging and exit handling
