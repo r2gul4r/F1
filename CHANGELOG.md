@@ -300,3 +300,4 @@
 - feat: add a public-web historical demo entry page and wire landing/download links to the preview vs replay boundary
 - docs: add platform release-track naming and first-run checklist guidance to the download entry and README
 - feat: add a fixed public replay demo route so the historical demo can be opened directly from landing and download surfaces
+- docs: close the deployment/install/public-channel epic now that download, smoke, preview, and replay entry paths are in place
