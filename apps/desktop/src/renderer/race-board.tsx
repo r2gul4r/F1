@@ -3,6 +3,7 @@
 import { buildRendererFrame, type CameraState, type CarState, type SessionSnapshot, type TrackModel } from "@f1/core";
 import React, { useEffect, useMemo, useRef } from "react";
 import { buildCarLabels } from "./car-labels";
+import { buildTrackMarkers } from "./track-markers";
 
 const TRACK_WIDTH = 34;
 const TELEMETRY_STALE_MS = 15_000;
@@ -158,6 +159,23 @@ const drawCarLabels = (context: CanvasRenderingContext2D, cars: CarState[]) => {
   });
 };
 
+const drawTrackMarkers = (context: CanvasRenderingContext2D, track: TrackModel) => {
+  buildTrackMarkers(track).forEach((marker) => {
+    const projected = projectPoint(marker.point.x, marker.point.y, 0);
+    context.save();
+    context.fillStyle = marker.key === "start-finish" ? "rgba(248, 250, 252, 0.94)" : "rgba(103, 232, 249, 0.94)";
+    context.beginPath();
+    context.roundRect(projected.x - 22, projected.y - 16, 44, 14, 7);
+    context.fill();
+    context.fillStyle = "#08111f";
+    context.font = "700 6.5px 'Space Grotesk', sans-serif";
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+    context.fillText(marker.label, projected.x, projected.y - 9);
+    context.restore();
+  });
+};
+
 type RaceBoardProps = {
   focusModeEnabled: boolean;
   onFpsChange: (fps: number) => void;
@@ -280,6 +298,7 @@ export const RaceBoard = ({ focusModeEnabled, onFpsChange, selectedDriverId, sna
       context.setLineDash([]);
       context.restore();
 
+      drawTrackMarkers(context, DESKTOP_TRACK_MODEL);
       drawCars(context, frame.cars);
       drawCarLabels(context, frame.cars);
       rafId = window.requestAnimationFrame(render);

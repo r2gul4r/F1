@@ -322,6 +322,7 @@
 - feat: add a recent prediction history strip to the desktop AI panel so lap-to-lap AI changes are readable at a glance
 - docs: close the slice-4 desktop AI epic and advance the slice-4 deployment/public-channel epic as the current task
 - feat: expose live-stream as a disabled local source option so the desktop shell makes its current support boundary explicit
+- feat: add start/sector track markers directly on the desktop board canvas for faster orientation
 - docs: align the state board with the newly seeded slice-5 queue and surface current runtime source state in the shell hero
 - feat: surface both runtime-default and user-selected local session source state directly in the desktop shell hero
 - docs: close the slice-4 deployment/public-channel epic after preview, history, replay, install, and smoke paths were aligned
