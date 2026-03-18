@@ -345,4 +345,5 @@
 - test: pin stale and missing-telemetry car visual degradation in core renderer-frame tests
 - test: pin selected stale and no-telemetry cars so focus and halo survive freshness-based dimming
 - test: pin renderer-frame fallback camera lerp and same-pulse halo attenuation comparisons
+- test: pin renderer-frame track-center fallback when neither current nor previous selected position exists
 - test: pin the real `fallbackFocusTarget` path and same-pulse no-telemetry halo comparisons in renderer-frame
