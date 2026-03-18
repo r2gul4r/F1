@@ -19,18 +19,6 @@
 - `AI_REQUEST_TIMEOUT_MS`
   - AI provider 요청 timeout(ms)
   - 기본값 예시: `5000`
-- `WORKER_REALTIME_POST_TIMEOUT_MS`
-  - worker가 realtime 내부 endpoint로 전송할 때 요청 timeout(ms)
-  - 기본값 예시: `3000`
-- `WORKER_OPENF1_REQUEST_TIMEOUT_MS`
-  - worker의 OpenF1 API 요청 timeout(ms)
-  - 기본값 예시: `5000`
-- `WORKER_RETRY_BACKOFF_MULTIPLIER`
-  - worker 재시도 backoff 배수
-  - 기본값 예시: `2`
-- `WORKER_RETRY_BACKOFF_MAX_MS`
-  - worker 재시도 backoff 최대 대기(ms)
-  - 기본값 예시: `10000`
 
 ## 배포 전 점검
 1. `.env`가 public 모드 값인지 확인한다
@@ -39,7 +27,7 @@
 4. `docker compose up --build -d`
 5. compose startup gating 확인
   - `realtime`은 `postgres`, `redis` healthcheck가 `healthy`가 된 뒤에만 시작된다
-  - `web`, `worker`는 `realtime` healthcheck가 `healthy`가 된 뒤에만 시작된다
+  - `web`는 `realtime` healthcheck가 `healthy`가 된 뒤에만 시작된다
 
 ## 배포 직후 smoke check
 1. 통합 smoke 명령 실행
@@ -49,7 +37,7 @@ pnpm deployment:smoke
   - `pnpm deployment:smoke`는 Windows PowerShell 엔트리포인트다
   - Linux 또는 pwsh 환경은 `pnpm deployment:smoke:pwsh`를 사용한다
   - Windows PowerShell 명시 호출은 `pnpm deployment:smoke:windows`와 동일하다
-  - compose 상태(`postgres`, `redis`, `realtime`, `web`는 `(healthy)`, `worker`는 `Up`)를 확인한다
+  - 기본 compose 상태(`postgres`, `redis`, `realtime`, `web`)를 확인한다
   - realtime `healthz`의 HTTP 200뿐 아니라 본문 `{"status":"ok"}`도 확인한다
   - web `watch/current`를 확인한다
   - startup gating 로그 tail(`--tail=120`)를 실제로 출력한다
@@ -92,4 +80,3 @@ powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/deployment/smoke-c
 ## 메모
 - 이 저장소의 기준 preflight 는 `pnpm validate:preflight` 이다
 - realtime metrics 조회에는 항상 `x-internal-token` 이 필요하다
-- worker 와 realtime 은 `.env` 기준으로 같은 provider 설정을 공유한다

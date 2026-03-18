@@ -10,7 +10,7 @@
 
 ## 이번 슬라이스에서 해결할 질문
 - WebSocket reconnect 뒤에 클라이언트가 얼마나 빨리 화면을 복구하는가
-- worker 실패 또는 OpenF1 실패 시 mock fallback이 session or driver state를 깨뜨리지 않는가
+- mock 또는 live source adapter 실패 시 session or driver state를 깨뜨리지 않는가
 - 서버와 클라이언트 양쪽에서 재연결과 지연 상태를 추적할 수 있는가
 - reviewer가 보기에도 계약 위반이나 회귀 위험이 없는가
 
@@ -32,7 +32,7 @@
 
 - `data_ai`
 필수
-`apps/worker`, `packages/shared`, 필요 시 AI or trigger contract 확인
+`packages/shared`, 필요 시 AI or trigger contract 확인
 
 - `reviewer`
 필수
@@ -51,16 +51,14 @@ reconnect state 노출이나 driver load 보강이 꼭 필요할 때만 호출
 - `apps/realtime/src/ws/ring-buffer.ts`
 - `apps/realtime/src/server.ts`
 - `apps/realtime/src/metrics.ts`
-- `apps/worker/src/main.ts`
-- `apps/worker/src/realtime-client.ts`
-- `apps/worker/src/sources/openf1-source.ts`
+- `packages/shared/src/index.ts`
 - `apps/web/src/lib/use-race-socket.ts`
 
 ## 부모 세션 실행 순서
 1. `data_ai`와 `realtime_backend`에 먼저 읽기와 분석을 맡긴다
 2. 둘 중 하나가 shared contract 변경이 필요하다고 판단하면 `data_ai`가 먼저 잠근다
 3. 계약 변경이 없으면 `realtime_backend`가 서버 쪽 reconnect and replay 안정화부터 처리한다
-4. `data_ai`가 worker fallback and ingestion path를 정리한다
+4. `data_ai`가 shared contract와 source adapter 경계를 정리한다
 5. 부모가 diff 범위를 읽고 겹치는 변경을 정리한다
 6. UI 상태 노출이 부족하면 그때만 `frontend_ui`를 추가 호출한다
 7. 마지막에 `reviewer`를 read-only로 호출한다
@@ -106,12 +104,9 @@ reconnect state 노출이나 driver load 보강이 꼭 필요할 때만 호출
 역할: data_ai
 
 작업:
-- apps/worker와 packages/shared 관점에서 reconnect, fallback, ingestion 안정성을 점검하고 필요한 최소 수정만 수행하라
+- packages/shared 관점에서 reconnect, fallback, ingestion 안정성을 점검하고 필요한 최소 수정만 수행하라
 
 먼저 읽을 파일:
-- apps/worker/src/main.ts
-- apps/worker/src/realtime-client.ts
-- apps/worker/src/sources/openf1-source.ts
 - packages/shared/src/index.ts
 
 수용 기준:
@@ -120,7 +115,6 @@ reconnect state 노출이나 driver load 보강이 꼭 필요할 때만 호출
 - UI or backend 범위까지 불필요하게 확장하지 않는다
 
 수정 가능 범위:
-- apps/worker
 - packages/shared
 - 필요 시 parent 승인 후 AI or trigger contract 연동 파일
 
@@ -151,14 +145,13 @@ reconnect state 노출이나 driver load 보강이 꼭 필요할 때만 호출
 수용 기준:
 - reconnect 뒤 상태 복구 경로가 더 명확해져야 한다
 - replay, lag, reconnect 상태 중 최소 하나는 더 잘 관측 가능해야 한다
-- worker or shared contract 변경이 필요하면 parent에 명확히 넘겨야 한다
+- shared contract 변경이 필요하면 parent에 명확히 넘겨야 한다
 
 수정 가능 범위:
 - apps/realtime
 
 수정 금지:
 - apps/web 대시보드 레이아웃
-- apps/worker
 - packages/shared 직접 수정
 
 출력:
@@ -192,7 +185,7 @@ reconnect state 노출이나 driver load 보강이 꼭 필요할 때만 호출
 - apps/web/src/store
 
 수정 금지:
-- race-canvas.tsx 중심의 Three.js 품질 작업
+- race-canvas.tsx 중심의 Canvas 렌더러 품질 작업
 - backend, worker, shared contract 수정
 ```
 
@@ -224,4 +217,4 @@ reconnect state 노출이나 driver load 보강이 꼭 필요할 때만 호출
 - telemetry panel 확장
 - gap and interval 시각화
 - tire, RPM, gear 추가
-- Three.js map fidelity 개선
+- Canvas track fidelity 개선

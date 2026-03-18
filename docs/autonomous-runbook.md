@@ -31,6 +31,28 @@ pnpm autonomous:start:suggest
 - dependency sync via `pnpm install --frozen-lockfile`
 - timeout-based failure instead of indefinite waiting
 
+## Direct App Workday Commands
+
+One-time local installation:
+```powershell
+pnpm autonomous:app-workday:install
+```
+
+Register the current direct app `!출근` session for auto-continue:
+```powershell
+pnpm autonomous:app-workday:activate
+```
+
+Stop the app auto-continue loop:
+```powershell
+pnpm autonomous:app-workday:deactivate
+```
+
+Show current app auto-continue state:
+```powershell
+pnpm autonomous:app-workday:status
+```
+
 ## Toolchain Recovery Command
 ```powershell
 pnpm autonomous:ensure-toolchain

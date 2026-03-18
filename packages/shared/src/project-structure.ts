@@ -43,13 +43,13 @@ const requiredRootPaths = [
 ] as const;
 
 const requiredWorkspaces: readonly WorkspaceRequirement[] = [
+  { packageJsonPath: "apps/desktop/package.json", expectedName: "@f1/desktop" },
   { packageJsonPath: "apps/web/package.json", expectedName: "@f1/web" },
   {
     packageJsonPath: "apps/realtime/package.json",
     expectedName: "@f1/realtime",
     requiredScripts: ["db:migrate"]
   },
-  { packageJsonPath: "apps/worker/package.json", expectedName: "@f1/worker" },
   { packageJsonPath: "packages/shared/package.json", expectedName: "@f1/shared" }
 ];
 

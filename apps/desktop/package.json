@@ -1,0 +1,31 @@
+{
+  "name": "@f1/desktop",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/main.js",
+  "scripts": {
+    "dev": "pnpm exec concurrently -k \"pnpm exec tsc -p tsconfig.json --watch --preserveWatchOutput\" \"pnpm exec vite\" \"pnpm exec wait-on file:dist/main.js tcp:5173 && pnpm exec electron .\"",
+    "build": "pnpm exec tsc -p tsconfig.json && pnpm exec vite build",
+    "start": "pnpm exec electron .",
+    "test": "pnpm exec vitest run --passWithNoTests",
+    "typecheck": "pnpm exec tsc -p tsconfig.json --noEmit && pnpm exec tsc -p tsconfig.renderer.json --noEmit"
+  },
+  "dependencies": {
+    "@f1/shared": "workspace:*",
+    "react": "19.0.0",
+    "react-dom": "19.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.9",
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4",
+    "@vitejs/plugin-react": "^4.3.4",
+    "concurrently": "^9.1.2",
+    "electron": "^35.3.0",
+    "typescript": "^5.8.2",
+    "vite": "^5.4.21",
+    "vitest": "^2.1.8",
+    "wait-on": "^8.0.3"
+  }
+}

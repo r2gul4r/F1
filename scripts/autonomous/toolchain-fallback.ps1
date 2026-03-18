@@ -31,7 +31,6 @@ function Get-FallbackTypecheckCommands {
     return @(
         "node_modules\\.bin\\tsc.cmd -p packages/shared/tsconfig.json",
         "node_modules\\.bin\\tsc.cmd -p apps/realtime/tsconfig.json --noEmit",
-        "node_modules\\.bin\\tsc.cmd -p apps/worker/tsconfig.json --noEmit",
         "node_modules\\.bin\\tsc.cmd -p apps/web/tsconfig.json --noEmit"
     )
 }

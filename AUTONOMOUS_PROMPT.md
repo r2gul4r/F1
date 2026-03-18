@@ -6,6 +6,7 @@ Rules:
 - Follow `ARCHITECTURE.md` before implementing any task
 - Follow `PLAN.md` milestones
 - Follow `TEAM_GUIDE.md` as the default multi-agent operating contract
+- If this run started from a direct app `!출근`, run `pnpm autonomous:app-workday:activate` first so the local continue loop can resume this same session until 17:00 KST
 - Prefer the first unfinished task in `TASKS.md`, but keep working until 17:00 KST even when the queue is temporarily empty
 - Use OAuth as the authentication approach when auth work is involved
 - Keep changes incremental and safe
@@ -35,7 +36,7 @@ Agent routing rules:
 - Use `data_ai` first when shared contracts, worker ingestion, trigger rules, AI adapter work, or cross-service payload changes are involved
 - Use `realtime_backend` first when reconnect, replay, auth, buffering, metrics, or WebSocket delivery are the main risks
 - Use `frontend_ui` for layout, telemetry readability, driver panels, prediction cards, and responsive dashboard polish outside the canvas
-- Use `threejs_map` for track rendering, camera, interpolation, selected-driver focus, and HUD or chase-cam rendering
+- Use `threejs_map` for canvas track rendering, viewport control, interpolation, selected-driver focus, and HUD rendering
 - Use `reviewer` only after implementation, always read-only
 - If a reviewer finds issues, return only the affected area to the owning implementer instead of re-running the entire team
 

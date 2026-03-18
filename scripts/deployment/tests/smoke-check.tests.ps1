@@ -8,21 +8,19 @@ Describe "Deployment smoke check helpers" {
             "postgres`tUp 32 seconds (healthy)"
             "redis`tUp 30 seconds (healthy)"
             "realtime`tUp 20 seconds (healthy)"
-            "worker`tUp 18 seconds"
             "web`tUp 15 seconds (healthy)"
         )
 
         $statusMap["postgres"] | Should -Be "Up 32 seconds (healthy)"
-        $statusMap["worker"] | Should -Be "Up 18 seconds"
+        $statusMap["web"] | Should -Be "Up 15 seconds (healthy)"
     }
 
-    It "accepts compose status map when required healthy services and worker up are present" {
+    It "accepts compose status map when 기본 서비스가 healthy이면 통과함" {
         {
             Test-ComposeStatusMap -StatusMap @{
                 postgres = "Up 30 seconds (healthy)"
                 redis    = "Up 30 seconds (healthy)"
                 realtime = "Up 20 seconds (healthy)"
-                worker   = "Up 20 seconds"
                 web      = "Up 15 seconds (healthy)"
             }
         } | Should -Not -Throw
@@ -34,7 +32,6 @@ Describe "Deployment smoke check helpers" {
                 postgres = "Up 30 seconds (healthy)"
                 redis    = "Up 30 seconds (healthy)"
                 realtime = "Up 20 seconds (healthy)"
-                worker   = "Up 20 seconds"
                 web      = "Up 15 seconds"
             }
         } | Should -Throw
@@ -49,11 +46,11 @@ Describe "Deployment smoke check helpers" {
         } | Should -Not -Throw
     }
 
-    It "rejects compose status map when requested worker service is not up" {
+    It "rejects compose status map when requested auxiliary service is not up" {
         {
             Test-ComposeStatusMap -StatusMap @{
-                worker = "Exited (1)"
-            } -RequiredServices @("worker")
+                aux = "Exited (1)"
+            } -RequiredServices @("aux")
         } | Should -Throw
     }
 

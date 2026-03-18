@@ -10,7 +10,7 @@ param(
     [string]$RealtimeHealthUrl = "http://localhost:4001/healthz",
     [string]$WebWatchUrl = "http://localhost:3000/watch/current",
     [string]$MetricsUrl = "http://localhost:4001/metrics",
-    [string[]]$ComposeServices = @("postgres", "redis", "realtime", "worker", "web")
+    [string[]]$ComposeServices = @("postgres", "redis", "realtime", "web")
 )
 
 Set-StrictMode -Version Latest
@@ -59,7 +59,7 @@ function Test-ComposeStatusMap {
     param(
         [Parameter(Mandatory = $true)]
         [hashtable]$StatusMap,
-        [string[]]$RequiredServices = @("postgres", "redis", "realtime", "worker", "web")
+        [string[]]$RequiredServices = @("postgres", "redis", "realtime", "web")
     )
 
     $healthyServices = @("postgres", "redis", "realtime", "web")

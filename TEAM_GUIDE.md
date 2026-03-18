@@ -7,10 +7,10 @@
 
 ## 현재 기준 스택
 - Frontend UI: Next.js, React, Zustand
-- 2.5D Renderer: Three.js
+- 2D Renderer: Canvas
 - Backend API: Fastify
 - Realtime transport: native `ws`
-- Worker ingestion: Node.js TypeScript
+- Optional worker: Python preferred when offline analysis or external ingestion needs appear
 - Shared contracts: `packages/shared`
 - Data: Redis, PostgreSQL
 - AI: local Ollama plus Gemma 3, cloud Gemini adapter
@@ -32,8 +32,8 @@
 레이아웃, 패널, 카드, 반응형, 가독성을 맡는다
 
 - `threejs_map`
-Three.js 캔버스 담당이다
-카메라, 트랙, 차량 렌더링, 보간, HUD 렌더링을 맡는다
+레거시 이름만 남은 canvas renderer 담당이다
+2D 트랙, 차량 렌더링, 보간, focus viewport, HUD 시각화 경로를 맡는다
 
 - `realtime_backend`
 실시간 백엔드 담당이다
@@ -41,7 +41,7 @@ Fastify, WebSocket 전달, 인증, 메트릭, reconnect 관련 서버 로직을 
 
 - `data_ai`
 수집, 공유 계약, AI adapter 담당이다
-OpenF1 ingestion, worker fallback, `packages/shared`, trigger, deterministic context, provider switching을 맡는다
+optional ingestion, shared contracts, `packages/shared`, trigger, deterministic context, provider switching을 맡는다
 
 - `reviewer`
 검수 담당이다
@@ -58,7 +58,7 @@ OpenF1 ingestion, worker fallback, `packages/shared`, trigger, deterministic con
 - `apps/realtime`
 기본 소유자는 `realtime_backend`
 
-- `apps/worker`
+- 이후 추가될 `workers/python`
 기본 소유자는 `data_ai`
 
 - `packages/shared`
@@ -88,6 +88,8 @@ OpenF1 ingestion, worker fallback, `packages/shared`, trigger, deterministic con
 ## 메인 스레드 시작 명령
 - `!출근`은 메인 스레드 작업 시작 신호다
 - 부모 세션은 `!출근`을 받으면 `ARCHITECTURE.md`, `PLAN.md`, `TEAM_GUIDE.md`, `TASKS.md`, `CHANGELOG.md`를 먼저 읽는다
+- Codex 앱에서 직접 `!출근`을 쓴 경우에는 시작 직후 `pnpm autonomous:app-workday:activate`를 먼저 실행해 현재 세션을 앱 자동 근무 세션으로 등록한다
+- 앱 직접 실행은 브리지 duty 루프가 없으므로, 로컬에 `pnpm autonomous:app-workday:install`이 한 번 설치돼 있어야 17:00 KST 전까지 자동으로 다음 턴이 이어진다
 - `docs/reports` 아래에 관련 보고서가 있으면 최신 `blocker` 또는 최신 `inspection` 보고서 1개만 추가로 확인한다
 - 보고서는 맥락 복원용이다. 전부 읽지 말고 현재 미완료 작업과 가장 가까운 최신 보고서만 본다
 - 그 다음 현재 작업을 슬라이스로 동적으로 정의하고, 필요할 때만 멀티 에이전트를 사용한다
@@ -105,7 +107,7 @@ OpenF1 ingestion, worker fallback, `packages/shared`, trigger, deterministic con
 ## 표준 실행 순서
 1. 부모가 작업을 분류한다
 작업이 어느 영역 중심인지 먼저 결정한다
-UI 중심인지, Three.js 중심인지, realtime 중심인지, 계약 or AI 중심인지 분류한다
+UI 중심인지, canvas renderer 중심인지, realtime 중심인지, 계약 or AI 중심인지 분류한다
 
 2. 계약 잠금이 필요한지 확인한다
 새 telemetry 필드, 새 WS 이벤트, 새 AI payload, 타입 변경이 있으면 `data_ai`가 선행한다
@@ -205,7 +207,7 @@ API or WS 전달 경로 반영
 - `apps/web/src/components/race-canvas.tsx`
 - 이후 추가될 `canvas`, `renderer`, `hud` 관련 파일
 - 강점:
-- Orthographic camera
+- Canvas 2D viewport
 - smoothing and interpolation
 - track and car rendering
 - selected driver visual focus
@@ -227,12 +229,12 @@ API or WS 전달 경로 반영
 
 ## `data_ai`
 - 우선 파일:
-- `apps/worker`
+- `workers/python`
 - `packages/shared`
 - AI adapter 관련 서버 or worker 연동 지점
 - 강점:
 - ingestion reliability
-- OpenF1 fallback
+- optional source adapter
 - shared schema ownership
 - deterministic race context
 - provider switching by environment
@@ -277,6 +279,7 @@ API or WS 전달 경로 반영
 - blocker는 아니지만 다음 시작점이 모호할 수 있으면 최신 inspection or handoff 성격의 보고서를 남긴다
 - 다음 날 새 스레드에서 `!출근`을 쓰면 부모 세션은 기본 문서와 최신 관련 보고서를 함께 읽고 현재 슬라이스를 다시 정의한다
 - 작업 재개 판단의 기준 원본은 `TASKS.md`이고, 보고서는 왜 멈췄는지와 주의점을 복원하는 보조 근거다
+- 앱 자동 근무를 강제로 멈추려면 `pnpm autonomous:app-workday:deactivate`를 실행한다
 
 ## 부모 세션용 빠른 체크리스트
 - 이 작업의 주 소유 에이전트는 누구인가

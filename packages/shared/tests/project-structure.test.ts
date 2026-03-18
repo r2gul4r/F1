@@ -15,8 +15,14 @@ describe("project structure", () => {
 
   it("필수 앱 워크스페이스가 누락되면 실패함", () => {
     const tempRoot = mkdtempSync(join(tmpdir(), "f1-structure-"));
+    mkdirSync(join(tempRoot, "apps", "desktop"), { recursive: true });
     mkdirSync(join(tempRoot, "apps", "web"), { recursive: true });
     mkdirSync(join(tempRoot, "packages", "shared"), { recursive: true });
+    writeFileSync(
+      join(tempRoot, "apps", "desktop", "package.json"),
+      JSON.stringify({ name: "@f1/desktop" }),
+      "utf8"
+    );
     writeFileSync(
       join(tempRoot, "apps", "web", "package.json"),
       JSON.stringify({ name: "@f1/web" }),
@@ -42,9 +48,9 @@ describe("project structure", () => {
 
   it("realtime migration 진입점이 없으면 실패함", () => {
     const tempRoot = mkdtempSync(join(tmpdir(), "f1-structure-"));
+    mkdirSync(join(tempRoot, "apps", "desktop"), { recursive: true });
     mkdirSync(join(tempRoot, "apps", "web"), { recursive: true });
     mkdirSync(join(tempRoot, "apps", "realtime", "src"), { recursive: true });
-    mkdirSync(join(tempRoot, "apps", "worker"), { recursive: true });
     mkdirSync(join(tempRoot, "packages", "shared"), { recursive: true });
 
     writeFileSync(join(tempRoot, "package.json"), JSON.stringify({ scripts: { test: "pnpm -r test" } }), "utf8");
@@ -53,13 +59,13 @@ describe("project structure", () => {
     writeFileSync(join(tempRoot, "PLAN.md"), "# Plan\n", "utf8");
     writeFileSync(join(tempRoot, "TASKS.md"), "# Tasks\n", "utf8");
     writeFileSync(join(tempRoot, "CHANGELOG.md"), "# Changelog\n", "utf8");
+    writeFileSync(join(tempRoot, "apps", "desktop", "package.json"), JSON.stringify({ name: "@f1/desktop" }), "utf8");
     writeFileSync(join(tempRoot, "apps", "web", "package.json"), JSON.stringify({ name: "@f1/web" }), "utf8");
     writeFileSync(
       join(tempRoot, "apps", "realtime", "package.json"),
       JSON.stringify({ name: "@f1/realtime", scripts: { build: "pnpm exec tsc -p tsconfig.json" } }),
       "utf8"
     );
-    writeFileSync(join(tempRoot, "apps", "worker", "package.json"), JSON.stringify({ name: "@f1/worker" }), "utf8");
     writeFileSync(join(tempRoot, "packages", "shared", "package.json"), JSON.stringify({ name: "@f1/shared" }), "utf8");
 
     const result = inspectProjectStructure(tempRoot);

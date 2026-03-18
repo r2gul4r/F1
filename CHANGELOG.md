@@ -246,3 +246,17 @@
 - test: cover autonomous env validation helper behavior for quoted placeholder and quoted valid secrets
 - test: cover local env bootstrap helper behavior for quoted secrets and modernize env-bootstrap Pester syntax
 - feat: tighten mobile dashboard layout by wrapping HUD and KPI content and collapsing telemetry/prediction grids to one column
+
+## 2026-03-16
+- docs: retarget product plan toward a web-based 2D race board with lap-based podium prediction AI
+- docs: align architecture and README with 2D track, 2D car interpolation, selected-driver HUD, and lap-end prediction flow
+- docs: seed new task queue slices for 2D renderer, HUD rebuild, lap-boundary prediction trigger, and smoke checks
+- refactor: replace web race renderer Three.js path with Canvas 2D drawing and update supporting tests and docs
+- refactor: make root development and deployment paths center on TypeScript web plus realtime and treat worker as optional
+- refactor: remove legacy TypeScript worker package and clean worker-specific compose, env, script, and doc references
+
+## 2026-03-17
+- docs: retarget product plan from web-based 2D race board to local desktop 2.5D app with web landing support
+- docs: replace remaining web 2D queue slices with desktop shell, renderer-core, non-relay, and local smoke-check tasks
+- feat: add initial Electron desktop shell workspace with typed main, preload, and renderer bootstrap
+- docs: retarget the web home page toward desktop download and preview-only landing flow
