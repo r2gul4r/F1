@@ -163,6 +163,13 @@ export const App = () => {
           `{effectiveRuntime.sessionSource}` 소스로 서킷과 차량 보간 레이어를 검증 중이며, public web relay는
           `{runtime.publicWebRelay ? "enabled" : "disabled"}` 상태다.
         </p>
+        <div className="hud-chip-row">
+          <span className="hud-chip">Runtime default {runtime.sessionSource}</span>
+          <span className="hud-chip">
+            Source override {sessionSourceOverride ?? "none"}
+          </span>
+          <span className="hud-chip">Public relay {runtime.publicWebRelay ? "enabled" : "disabled"}</span>
+        </div>
       </section>
 
       <section className="desktop-board">
