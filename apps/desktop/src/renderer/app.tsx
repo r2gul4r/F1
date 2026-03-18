@@ -5,6 +5,7 @@ import { buildDriverRailItems } from "./driver-rail";
 import { getNextSelectedDriverId, isFocusToggleKey } from "./keyboard-controls";
 import { toAiProviderLabel, toPredictionContextLabel } from "./prediction-status";
 import { buildPodiumStripItems } from "./podium-strip";
+import { buildSelectedDriverDetails } from "./selected-driver-details";
 import { getSupportedLocalSessionSources } from "./session-source-controls";
 import { RaceBoard } from "./race-board";
 import { SelectedDriverHud } from "./selected-driver-hud";
@@ -94,6 +95,10 @@ export const App = () => {
   const predictionViewModel = useMemo(
     () => toPredictionViewModel(resolvePredictionContext(deferredSnapshot.predictions, selectedDriverId), Date.now()),
     [deferredSnapshot.predictions, selectedDriverId]
+  );
+  const selectedDriverDetails = useMemo(
+    () => buildSelectedDriverDetails(selectedDriver, selectedTick),
+    [selectedDriver, selectedTick]
   );
   const aiProviderLabel = toAiProviderLabel(runtime.aiProvider);
   const predictionContextLabel = toPredictionContextLabel({
@@ -213,6 +218,12 @@ export const App = () => {
                 <span className="muted-label">Flag</span>
                 <strong>{flagLabel}</strong>
               </article>
+              {selectedDriverDetails.map((detail) => (
+                <article key={detail.label}>
+                  <span className="muted-label">{detail.label}</span>
+                  <strong>{detail.value}</strong>
+                </article>
+              ))}
             </div>
             <div className="info-note">
               이 레일은 다음 슬라이스에서 tire, gap, interval, RPM, gear 카드로 확장된다.

@@ -207,6 +207,7 @@
 [x] plan-driven task: desktop replay-buffer와 web replay route가 같은 fixed replay fixture를 공유하게 만든다 [slice 86]
 [x] plan-driven task: desktop shell에서 mock/replay local session source를 즉시 전환할 수 있게 만든다 [slice 87]
 [x] plan-driven task: desktop stage 상단에 podium strip을 추가해 상위 3대를 즉시 읽게 만든다 [slice 88]
+[x] plan-driven task: selected driver 카드에 gap, interval, gear, RPM, tire 파생값을 추가한다 [slice 89]
 
 [x] plan-driven task: 로컬 앱 전환에 필요한 셸, 계약, 코어 분리 경계를 고정한다 [slice 1]
 [x] plan-driven task: 2.5D 레이스 보드 MVP 를 완성한다 [slice 1]
