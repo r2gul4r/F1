@@ -1,12 +1,23 @@
 "use client";
 
-import type { CameraState, CarState, SessionSnapshot } from "@f1/core";
+import { buildRendererFrame, type CameraState, type CarState, type SessionSnapshot, type TrackModel } from "@f1/core";
 import React, { useEffect, useMemo, useRef } from "react";
-import { buildRaceBoardFrame, DESKTOP_TRACK_MODEL } from "./race-board-visuals";
 
 const TRACK_WIDTH = 34;
 const TELEMETRY_STALE_MS = 15_000;
 const CAR_COLORS = ["#7dd3fc", "#f472b6", "#facc15", "#4ade80", "#fb7185", "#a78bfa"];
+const DESKTOP_TRACK_MODEL: TrackModel = {
+  center: { x: 0, y: 0 },
+  halfHeight: 190,
+  points: Array.from({ length: 160 }).map((_, index) => {
+    const theta = (index / 160) * Math.PI * 2;
+    const radius = 180 + Math.sin(theta * 2) * 22;
+    return {
+      x: Math.cos(theta) * radius,
+      y: Math.sin(theta) * 118 + Math.cos(theta * 3) * 18
+    };
+  })
+};
 
 const projectPoint = (
   x: number,
@@ -22,12 +33,12 @@ const getDriverColor = (driverId: string): string => {
   return CAR_COLORS[hash % CAR_COLORS.length] ?? CAR_COLORS[0];
 };
 
-const drawTrackRibbon = (context: CanvasRenderingContext2D, points: typeof DESKTOP_TRACK_MODEL.points, width: number) => {
+const drawTrackRibbon = (context: CanvasRenderingContext2D, points: TrackModel["points"], width: number) => {
   if (points.length === 0) {
     return;
   }
 
-  const outer = points.map((point, index, source) => {
+  const outer = points.map((point: TrackModel["points"][number], index: number, source: TrackModel["points"]) => {
     const next = source[(index + 1) % source.length] ?? source[0] ?? point;
     const dx = next.x - point.x;
     const dy = next.y - point.y;
@@ -38,7 +49,7 @@ const drawTrackRibbon = (context: CanvasRenderingContext2D, points: typeof DESKT
     };
   });
 
-  const inner = points.map((point, index, source) => {
+  const inner = points.map((point: TrackModel["points"][number], index: number, source: TrackModel["points"]) => {
     const next = source[(index + 1) % source.length] ?? source[0] ?? point;
     const dx = next.x - point.x;
     const dy = next.y - point.y;
@@ -50,7 +61,7 @@ const drawTrackRibbon = (context: CanvasRenderingContext2D, points: typeof DESKT
   });
 
   context.beginPath();
-  outer.forEach((point, index) => {
+  outer.forEach((point: TrackModel["points"][number], index: number) => {
     const projected = projectPoint(point.x, point.y, 0);
     if (index === 0) {
       context.moveTo(projected.x, projected.y);
@@ -58,7 +69,7 @@ const drawTrackRibbon = (context: CanvasRenderingContext2D, points: typeof DESKT
     }
     context.lineTo(projected.x, projected.y);
   });
-  [...inner].reverse().forEach((point) => {
+  [...inner].reverse().forEach((point: TrackModel["points"][number]) => {
     const projected = projectPoint(point.x, point.y, 0);
     context.lineTo(projected.x, projected.y);
   });
@@ -191,7 +202,7 @@ export const RaceBoard = ({ focusModeEnabled, onFpsChange, selectedDriverId, sna
         fpsStartedAt = now;
       }
 
-      const frame = buildRaceBoardFrame({
+      const frame = buildRendererFrame({
         nowMs: Date.now(),
         telemetryStaleMs: TELEMETRY_STALE_MS,
         selectedDriverId: selectedDriverIdRef.current,
@@ -229,7 +240,7 @@ export const RaceBoard = ({ focusModeEnabled, onFpsChange, selectedDriverId, sna
       context.strokeStyle = "#f8fafc";
       context.setLineDash([10, 12]);
       context.beginPath();
-      DESKTOP_TRACK_MODEL.points.forEach((point, index) => {
+      DESKTOP_TRACK_MODEL.points.forEach((point: TrackModel["points"][number], index: number) => {
         const projected = projectPoint(point.x, point.y, 0);
         if (index === 0) {
           context.moveTo(projected.x, projected.y);

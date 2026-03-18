@@ -1,6 +1,15 @@
+import { resolveFreshnessSummary } from "@f1/core";
 import React, { useDeferredValue, useMemo, useState } from "react";
 import { RaceBoard } from "./race-board";
 import { useMockSession } from "./mock-session";
+import { SelectedDriverHud } from "./selected-driver-hud";
+
+const TELEMETRY_STALE_MS = 15_000;
+const FRESHNESS_LABEL = {
+  fresh: "정상",
+  stale: "지연",
+  "no telemetry": "미수신"
+} as const;
 
 export const App = () => {
   const [fps, setFps] = useState(0);
@@ -17,6 +26,11 @@ export const App = () => {
     () => (selectedDriver ? deferredSnapshot.latestTicksByDriver[selectedDriver.id] : undefined),
     [deferredSnapshot.latestTicksByDriver, selectedDriver]
   );
+  const telemetryFreshness = resolveFreshnessSummary(selectedTick?.timestampMs, Date.now(), TELEMETRY_STALE_MS);
+  const telemetryFreshnessLabel = FRESHNESS_LABEL[telemetryFreshness.freshness];
+  const flagLabel = deferredSnapshot.flag?.sector
+    ? `${deferredSnapshot.flag.flagType} · ${deferredSnapshot.flag.sector}`
+    : deferredSnapshot.flag?.flagType ?? "GREEN";
 
   return (
     <main className="shell">
@@ -33,24 +47,37 @@ export const App = () => {
         <article className="board-panel board-stage">
           <div className="stage-toolbar">
             <div>
-              <div className="muted-label">Renderer</div>
-              <strong>{focusModeEnabled ? "Focus camera on" : "Orbit overview"}</strong>
+              <div className="muted-label">Desktop Race Board</div>
+              <strong>{focusModeEnabled ? "Focus camera on selected driver" : "Overview orbit with live HUD"}</strong>
             </div>
             <button className="mode-toggle" onClick={() => setFocusModeEnabled((value) => !value)} type="button">
               {focusModeEnabled ? "집중 모드 끄기" : "집중 모드 켜기"}
             </button>
           </div>
-          <RaceBoard
-            focusModeEnabled={focusModeEnabled}
-            onFpsChange={setFps}
-            selectedDriverId={selectedDriverId}
-            snapshot={deferredSnapshot}
-          />
+          <div className="stage-view">
+            <RaceBoard
+              focusModeEnabled={focusModeEnabled}
+              onFpsChange={setFps}
+              selectedDriverId={selectedDriverId}
+              snapshot={deferredSnapshot}
+            />
+            <SelectedDriverHud
+              flag={deferredSnapshot.flag}
+              focusModeEnabled={focusModeEnabled}
+              selectedDriver={selectedDriver}
+              selectedTick={selectedTick}
+            />
+            <div className="stage-bottom-bar">
+              <span className="hud-chip">Telemetry {telemetryFreshnessLabel}</span>
+              <span className="hud-chip">Race Control {flagLabel}</span>
+              <span className="hud-chip">Renderer {fps.toFixed(1)} FPS</span>
+            </div>
+          </div>
         </article>
 
         <aside className="board-panel board-sidebar">
           <section className="info-card">
-            <div className="muted-label">Selected Driver</div>
+            <div className="muted-label">Telemetry Focus</div>
             <h2>{selectedDriver ? `${selectedDriver.number} ${selectedDriver.fullName}` : "선택 없음"}</h2>
             <p className="team-name">{selectedDriver?.teamName ?? "Driver unavailable"}</p>
             <div className="stat-grid">
@@ -70,11 +97,22 @@ export const App = () => {
                 <span className="muted-label">FPS</span>
                 <strong>{fps.toFixed(1)}</strong>
               </article>
+              <article>
+                <span className="muted-label">Telemetry</span>
+                <strong>{telemetryFreshnessLabel}</strong>
+              </article>
+              <article>
+                <span className="muted-label">Flag</span>
+                <strong>{flagLabel}</strong>
+              </article>
+            </div>
+            <div className="info-note">
+              이 레일은 다음 슬라이스에서 tire, gap, interval, RPM, gear 카드로 확장된다.
             </div>
           </section>
 
           <section className="info-card">
-            <div className="muted-label">Mock Grid</div>
+            <div className="muted-label">Driver Rail</div>
             <div className="driver-pill-list">
               {deferredSnapshot.drivers.map((driver) => {
                 const tick = deferredSnapshot.latestTicksByDriver[driver.id];
@@ -92,6 +130,28 @@ export const App = () => {
                   </button>
                 );
               })}
+            </div>
+          </section>
+
+          <section className="info-card">
+            <div className="muted-label">Race Control</div>
+            <div className="stat-grid">
+              <article>
+                <span className="muted-label">Flag</span>
+                <strong>{flagLabel}</strong>
+              </article>
+              <article>
+                <span className="muted-label">Camera</span>
+                <strong>{focusModeEnabled ? "Selected focus" : "Circuit overview"}</strong>
+              </article>
+              <article>
+                <span className="muted-label">Update Mode</span>
+                <strong>90ms mock cadence</strong>
+              </article>
+              <article>
+                <span className="muted-label">Prediction</span>
+                <strong>slice 67 arm</strong>
+              </article>
             </div>
           </section>
 

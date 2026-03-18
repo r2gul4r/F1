@@ -270,3 +270,5 @@
 - feat: render a mock 2.5D desktop circuit with interpolated car motion inside the Electron shell
 - feat: add `@f1/core` renderer-frame helpers for freshness, focus camera, and smoothed car-state projection
 - test: lock renderer-frame helper behavior and guard the desktop renderer through typecheck and production build
+- feat: overlay a selected-driver HUD directly on the desktop race board with freshness and race-control status
+- feat: reorganize the desktop sidebar around telemetry focus, driver rail, race control, and runtime panels
