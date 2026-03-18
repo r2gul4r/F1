@@ -327,3 +327,4 @@
 - feat: surface both runtime-default and user-selected local session source state directly in the desktop shell hero
 - docs: close the slice-4 deployment/public-channel epic after preview, history, replay, install, and smoke paths were aligned
 - docs: close the slice-5 shell/contracts epic and advance the slice-5 board MVP epic as the current task
+- docs: close the slice-5 board MVP epic and advance the slice-5 desktop AI epic as the current task
