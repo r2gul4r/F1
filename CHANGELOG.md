@@ -297,3 +297,4 @@
 - feat: add `isFallback` metadata to prediction contracts and reflect it through realtime, web, and desktop AI surfaces
 - fix: disable incremental caching in web typecheck so shared prediction-schema updates do not leave stale diagnostics behind
 - docs: close the desktop lap-based AI epic and advance the deployment/install/public-channel epic as the current task
+- feat: add a public-web historical demo entry page and wire landing/download links to the preview vs replay boundary

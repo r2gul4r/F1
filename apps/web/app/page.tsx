@@ -23,9 +23,12 @@ export default function HomePage() {
           <article className="panel" style={{ padding: 14 }}>
             <h2 style={{ marginTop: 0 }}>Web Demo</h2>
             <p className="muted" style={{ marginBottom: 12 }}>
-              현재 웹은 미리보기와 랜딩 경계만 유지한다.
+              현재 웹은 preview-only 미리보기와 히스토리컬 데모 진입점만 유지한다.
             </p>
-            <Link href="/watch/preview">프로토타입 미리보기</Link>
+            <div style={{ display: "grid", gap: 6 }}>
+              <Link href="/watch/preview">프로토타입 미리보기</Link>
+              <Link href="/history">히스토리컬 데모 진입점</Link>
+            </div>
           </article>
         </div>
       </section>

@@ -38,6 +38,7 @@ export default function DownloadPage() {
         </div>
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
           <Link href="/">랜딩으로 돌아가기</Link>
+          <Link href="/history">히스토리컬 데모 진입점</Link>
           <Link href="/watch/preview">프로토타입 미리보기</Link>
         </div>
       </section>

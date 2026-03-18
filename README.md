@@ -32,6 +32,7 @@
 
 - Desktop renderer: `pnpm dev:desktop` 실행 후 Electron 창
 - Web preview only: `http://localhost:3000/watch/preview`
+- Historical demo entry: `http://localhost:3000/history`
 - Public web non-preview watch 경로와 `/api/auth/watch-session`은 의도적으로 비활성화되어 있다
 - Realtime API: `http://localhost:4001/api/v1/sessions/current` (`x-watch-token` 필요)
 - WebSocket: `ws://localhost:4001/ws` (`token` 쿼리 필요)
@@ -43,6 +44,7 @@
 3. Electron 창에서 2.5D race board, 차량 보간 이동, 선택 드라이버 HUD가 보이는지 확인
 4. 집중 모드 토글과 드라이버 선택 전환이 동작하는지 확인
 5. 웹은 `http://localhost:3000/watch/preview`만 확인하고 non-preview watch 경로가 비활성화 상태인지 확인
+6. `http://localhost:3000/history`에서 preview/demo entry와 replay demo placeholder가 보이는지 확인
 
 참고
 
