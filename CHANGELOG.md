@@ -317,3 +317,4 @@
 - feat: persist the desktop local session-source selection so mock vs replay survives restart
 - docs: close the slice-3 desktop AI epic and advance the slice-3 deployment/public-channel epic as the current task
 - docs: close the slice-3 deployment/public-channel epic after preview, history, replay, install, and smoke paths were aligned
+- fix: rebase replay-demo timestamps against the current clock so replay telemetry and predictions do not look permanently stale

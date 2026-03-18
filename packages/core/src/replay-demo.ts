@@ -3,6 +3,8 @@ import { createSessionSnapshot, reduceSessionSnapshot } from "./session-snapshot
 
 export const REPLAY_DEMO_SESSION_ID = "desktop-replay-session";
 export const REPLAY_DEMO_TIMESTAMP_MS = new Date("2026-03-15T06:32:10.000Z").getTime();
+const REPLAY_TELEMETRY_AGE_MS = 1_200;
+const REPLAY_FLAG_AGE_MS = 700;
 
 export const replayDemoDrivers: Driver[] = [
   { id: "NOR", fullName: "Lando Norris", number: 4, teamName: "McLaren" },
@@ -53,7 +55,10 @@ const replayFlag: RaceFlag = {
   timestampMs: REPLAY_DEMO_TIMESTAMP_MS
 };
 
-export const buildReplayDemoSnapshot = (): SessionSnapshot => {
+export const buildReplayDemoSnapshot = (baseNowMs: number = Date.now()): SessionSnapshot => {
+  const telemetryTimestampMs = baseNowMs - REPLAY_TELEMETRY_AGE_MS;
+  const flagTimestampMs = baseNowMs - REPLAY_FLAG_AGE_MS;
+
   let snapshot = reduceSessionSnapshot(createSessionSnapshot(REPLAY_DEMO_SESSION_ID), {
     type: "drivers.set",
     drivers: replayDemoDrivers
@@ -69,7 +74,7 @@ export const buildReplayDemoSnapshot = (): SessionSnapshot => {
         speedKph: tick.speedKph,
         lap: tick.lap,
         rank: tick.rank,
-        timestampMs: REPLAY_DEMO_TIMESTAMP_MS
+        timestampMs: telemetryTimestampMs
       }
     });
   });
@@ -77,12 +82,18 @@ export const buildReplayDemoSnapshot = (): SessionSnapshot => {
   replayPredictions.forEach((prediction) => {
     snapshot = reduceSessionSnapshot(snapshot, {
       type: "prediction.add",
-      prediction
+      prediction: {
+        ...prediction,
+        timestampMs: baseNowMs - (REPLAY_DEMO_TIMESTAMP_MS - prediction.timestampMs)
+      }
     });
   });
 
   return reduceSessionSnapshot(snapshot, {
     type: "flag.set",
-    flag: replayFlag
+    flag: {
+      ...replayFlag,
+      timestampMs: flagTimestampMs
+    }
   });
 };
