@@ -341,3 +341,5 @@
 - test: pin fresh, stale, and no-telemetry driver-rail freshness states in desktop renderer helpers
 - test: extract the desktop driver rail list and pin freshness badge markup in a render-level test
 - test: pin desktop driver rail button click wiring so selection forwarding survives the rail extraction
+- feat: make renderer-frame dim stale and no-telemetry cars directly through visual opacity and scale
+- test: pin stale and missing-telemetry car visual degradation in core renderer-frame tests

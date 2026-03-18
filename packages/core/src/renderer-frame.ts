@@ -37,40 +37,65 @@ export const resolveFreshnessSummary = (
 
 export const resolveCarVisualState = (input: {
   driverId: string;
+  freshness: FreshnessSummary["freshness"];
   selectedDriverId: string | null;
   nowMs: number;
 }): CarVisualState => {
-  if (!input.selectedDriverId) {
+  const applyFreshness = (visual: CarVisualState): CarVisualState => {
+    if (input.freshness === "fresh") {
+      return visual;
+    }
+
+    if (input.freshness === "stale") {
+      return {
+        ...visual,
+        haloOpacity: visual.haloOpacity * 0.75,
+        haloScale: visual.haloScale * 0.96,
+        opacity: Math.max(visual.opacity * (visual.selected ? 0.82 : 0.72), visual.selected ? 0.68 : 0.24),
+        scale: visual.scale * (visual.selected ? 0.94 : 0.92)
+      };
+    }
+
     return {
+      ...visual,
+      haloOpacity: visual.haloOpacity * 0.45,
+      haloScale: visual.haloScale * 0.88,
+      opacity: Math.max(visual.opacity * (visual.selected ? 0.58 : 0.5), visual.selected ? 0.46 : 0.16),
+      scale: visual.scale * (visual.selected ? 0.84 : 0.88)
+    };
+  };
+
+  if (!input.selectedDriverId) {
+    return applyFreshness({
       selected: false,
       focus: false,
       haloOpacity: 0,
       haloScale: 0,
       opacity: 1,
       scale: 1
-    };
+    });
   }
 
   if (input.driverId === input.selectedDriverId) {
     const pulse = (Math.sin(input.nowMs * 0.008) + 1) * 0.5;
-    return {
+    return applyFreshness({
       selected: true,
       focus: true,
       haloOpacity: 0.22 + pulse * 0.3,
       haloScale: 1.7 + pulse * 0.28,
       opacity: 1,
       scale: 1.35
-    };
+    });
   }
 
-  return {
+  return applyFreshness({
     selected: false,
     focus: false,
     haloOpacity: 0,
     haloScale: 0,
     opacity: 0.4,
     scale: 0.88
-  };
+  });
 };
 
 const toSmoothedPosition = (
@@ -111,6 +136,7 @@ export const buildRendererFrame = (input: RendererFrameInput): RendererFrameStat
       freshness: freshnessSummary.freshness,
       visual: resolveCarVisualState({
         driverId: driver.id,
+        freshness: freshnessSummary.freshness,
         selectedDriverId: input.selectedDriverId,
         nowMs: input.nowMs
       })

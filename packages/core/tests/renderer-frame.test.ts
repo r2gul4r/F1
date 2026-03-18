@@ -115,6 +115,45 @@ describe("renderer frame", () => {
     expect(frame.camera.x).toBeGreaterThan(0);
   });
 
+  it("freshness lowers non-selected car opacity as telemetry gets stale", () => {
+    const snapshot = toSnapshot();
+    const freshFrame = buildRendererFrame({
+      nowMs: 1_500,
+      telemetryStaleMs: 15_000,
+      selectedDriverId: "VER",
+      snapshot,
+      previousCarsByDriver: {},
+      camera: { x: 0, y: 0, focusModeEnabled: false },
+      track: {
+        center: { x: 0, y: 0 },
+        halfHeight: 160,
+        points: []
+      }
+    });
+
+    const staleFrame = buildRendererFrame({
+      nowMs: 20_000,
+      telemetryStaleMs: 15_000,
+      selectedDriverId: "VER",
+      snapshot,
+      previousCarsByDriver: freshFrame.carsByDriver,
+      camera: freshFrame.camera,
+      track: {
+        center: { x: 0, y: 0 },
+        halfHeight: 160,
+        points: []
+      }
+    });
+
+    const freshOther = freshFrame.cars.find((car) => car.driverId === "NOR");
+    const staleOther = staleFrame.cars.find((car) => car.driverId === "NOR");
+
+    expect(freshOther?.freshness).toBe("fresh");
+    expect(staleOther?.freshness).toBe("stale");
+    expect(staleOther?.visual.opacity ?? 0).toBeLessThan(freshOther?.visual.opacity ?? 1);
+    expect(staleOther?.visual.scale ?? 0).toBeLessThan(freshOther?.visual.scale ?? 1);
+  });
+
   it("smoothed position lerps from the previous rendered frame", () => {
     const snapshot = toSnapshot();
     const firstFrame = buildRendererFrame({
@@ -198,6 +237,11 @@ describe("renderer frame", () => {
       }
     });
 
+    const firstSelected = firstFrame.cars.find((car) => car.driverId === "VER");
+    const secondSelected = secondFrame.cars.find((car) => car.driverId === "VER");
+
     expect(secondFrame.camera.x).toBeGreaterThan(0);
+    expect(secondSelected?.freshness).toBe("no telemetry");
+    expect(secondSelected?.visual.opacity ?? 0).toBeLessThan(firstSelected?.visual.opacity ?? 1);
   });
 });
