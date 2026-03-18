@@ -190,3 +190,8 @@
 [x] plan-driven task: 랩 경계 기준 포디움 예측 트리거와 결정론적 입력 특징량을 desktop 흐름에 고정한다 [slice 67]
 [x] plan-driven task: 실시간 본체의 계정, 토큰, 라이브 데이터 비중계 원칙을 코드 경계로 고정한다 [slice 69]
 [x] plan-driven task: optional Python worker 초안 대신 desktop 배포와 local smoke check 절차를 문서화한다 [slice 70]
+
+[ ] plan-driven task: 로컬 앱 전환에 필요한 셸, 계약, 코어 분리 경계를 고정한다 [slice 1]
+[ ] plan-driven task: 2.5D 레이스 보드 MVP 를 완성한다 [slice 1]
+[ ] plan-driven task: 랩 단위 포디움 예측 AI 를 데스크톱 흐름 위에 단단하게 만든다 [slice 1]
+[ ] plan-driven task: 배포, 설치, 랜딩, 히스토리컬 데모를 포함한 공개 채널 준비를 마무리한다 [slice 1]
