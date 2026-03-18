@@ -29,7 +29,17 @@ describe("desktop runtime context", () => {
       dataSource: "openf1",
       aiProvider: "gemini",
       publicWebRelay: true,
-      sessionSource: "live-stream"
+      sessionSource: "live-stream",
+      sessionSourceOptions: [
+        { key: "mock-session", label: "Mock session", disabled: false, disabledReason: null },
+        { key: "replay-buffer", label: "Replay session", disabled: false, disabledReason: null },
+        {
+          key: "live-stream",
+          label: "Live stream",
+          disabled: true,
+          disabledReason: "local live-stream adapter is not wired yet."
+        }
+      ]
     });
   });
 
@@ -56,7 +66,17 @@ describe("desktop runtime context", () => {
       dataSource: "unknown",
       aiProvider: "unknown",
       publicWebRelay: false,
-      sessionSource: "unknown"
+      sessionSource: "unknown",
+      sessionSourceOptions: [
+        { key: "mock-session", label: "Mock session", disabled: false, disabledReason: null },
+        { key: "replay-buffer", label: "Replay session", disabled: false, disabledReason: null },
+        {
+          key: "live-stream",
+          label: "Live stream",
+          disabled: true,
+          disabledReason: "local live-stream adapter is not wired yet."
+        }
+      ]
     });
   });
 
@@ -99,6 +119,62 @@ describe("desktop runtime context", () => {
     expect(runtimeForPreload).toEqual(runtimeFromMain);
   });
 
+  it("legacy runtime arg payload에 sessionSourceOptions가 없어도 preload에서 기본 option contract를 복원함", () => {
+    const runtimeForPreload = buildDesktopRuntimeForPreload({
+      argv: [
+        `--desktop-runtime-context=${encodeURIComponent(
+          JSON.stringify({
+            platform: "win32",
+            versions: {
+              chrome: "123.0.0.0",
+              electron: "35.3.0",
+              node: "22.0.0"
+            },
+            mode: "development",
+            dataSource: "mock",
+            aiProvider: "ollama",
+            publicWebRelay: false,
+            sessionSource: "mock-session"
+          })
+        )}`
+      ],
+      fallback: {
+        platform: "linux",
+        versions: {
+          chrome: "0",
+          electron: "0",
+          node: "0"
+        },
+        isPackaged: false,
+        env: {
+          DATA_SOURCE: "openf1",
+          AI_PROVIDER: "gemini",
+          PUBLIC_WEB_RELAY: "true",
+          DESKTOP_SESSION_SOURCE: "live-stream"
+        }
+      }
+    });
+
+    expect(runtimeForPreload).toMatchObject({
+      platform: "win32",
+      mode: "development",
+      dataSource: "mock",
+      aiProvider: "ollama",
+      publicWebRelay: false,
+      sessionSource: "mock-session",
+      sessionSourceOptions: [
+        { key: "mock-session", label: "Mock session", disabled: false, disabledReason: null },
+        { key: "replay-buffer", label: "Replay session", disabled: false, disabledReason: null },
+        {
+          key: "live-stream",
+          label: "Live stream",
+          disabled: true,
+          disabledReason: "local live-stream adapter is not wired yet."
+        }
+      ]
+    });
+  });
+
   it("runtime arg가 없으면 preload fallback 규칙으로 bridge payload를 구성함", () => {
     const runtimeForPreload = buildDesktopRuntimeForPreload({
       argv: ["--another-arg=value"],
@@ -125,7 +201,17 @@ describe("desktop runtime context", () => {
       dataSource: "mock",
       aiProvider: "disabled",
       publicWebRelay: false,
-      sessionSource: "mock-session"
+      sessionSource: "mock-session",
+      sessionSourceOptions: [
+        { key: "mock-session", label: "Mock session", disabled: false, disabledReason: null },
+        { key: "replay-buffer", label: "Replay session", disabled: false, disabledReason: null },
+        {
+          key: "live-stream",
+          label: "Live stream",
+          disabled: true,
+          disabledReason: "local live-stream adapter is not wired yet."
+        }
+      ]
     });
   });
 });

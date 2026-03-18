@@ -8,6 +8,12 @@ export type DesktopRuntimeMode = "development" | "packaged";
 export type DesktopDataSource = "mock" | "openf1" | "unknown";
 export type DesktopAiProvider = "disabled" | "ollama" | "gemini" | "unknown";
 export type DesktopSessionSource = "mock-session" | "replay-buffer" | "live-stream" | "unknown";
+export type DesktopSessionSourceOption = {
+  key: DesktopSessionSource;
+  label: string;
+  disabled: boolean;
+  disabledReason: string | null;
+};
 
 export type DesktopRuntimeContext = {
   platform: string;
@@ -17,6 +23,7 @@ export type DesktopRuntimeContext = {
   aiProvider: DesktopAiProvider;
   publicWebRelay: boolean;
   sessionSource: DesktopSessionSource;
+  sessionSourceOptions: DesktopSessionSourceOption[];
 };
 
 const desktopRuntimeArgumentPrefix = "--desktop-runtime-context=";
@@ -29,6 +36,27 @@ type ResolveDesktopRuntimeContextInput = {
   isPackaged: boolean;
   env?: RuntimeProcessEnv;
 };
+
+const defaultDesktopSessionSourceOptions: DesktopSessionSourceOption[] = [
+  {
+    key: "mock-session",
+    label: "Mock session",
+    disabled: false,
+    disabledReason: null
+  },
+  {
+    key: "replay-buffer",
+    label: "Replay session",
+    disabled: false,
+    disabledReason: null
+  },
+  {
+    key: "live-stream",
+    label: "Live stream",
+    disabled: true,
+    disabledReason: "local live-stream adapter is not wired yet."
+  }
+];
 
 const asLowerText = (value: string | undefined): string => (value ?? "").trim().toLowerCase();
 
@@ -106,6 +134,29 @@ const isDesktopAiProvider = (value: unknown): value is DesktopAiProvider =>
 const isDesktopSessionSource = (value: unknown): value is DesktopSessionSource =>
   value === "mock-session" || value === "replay-buffer" || value === "live-stream" || value === "unknown";
 
+const isDesktopSessionSourceOption = (value: unknown): value is DesktopSessionSourceOption => {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const candidate = value as {
+    key?: unknown;
+    label?: unknown;
+    disabled?: unknown;
+    disabledReason?: unknown;
+  };
+
+  return (
+    isDesktopSessionSource(candidate.key) &&
+    typeof candidate.label === "string" &&
+    typeof candidate.disabled === "boolean" &&
+    (typeof candidate.disabledReason === "string" || candidate.disabledReason === null)
+  );
+};
+
+const buildDesktopSessionSourceOptions = (): DesktopSessionSourceOption[] =>
+  defaultDesktopSessionSourceOptions.map((option) => ({ ...option }));
+
 const toDesktopRuntimeContext = (value: unknown): DesktopRuntimeContext | null => {
   if (!value || typeof value !== "object") {
     return null;
@@ -123,6 +174,7 @@ const toDesktopRuntimeContext = (value: unknown): DesktopRuntimeContext | null =
     aiProvider?: unknown;
     publicWebRelay?: unknown;
     sessionSource?: unknown;
+    sessionSourceOptions?: unknown;
   };
 
   const versions = candidate.versions;
@@ -141,6 +193,11 @@ const toDesktopRuntimeContext = (value: unknown): DesktopRuntimeContext | null =
     return null;
   }
 
+  const sessionSourceOptions =
+    Array.isArray(candidate.sessionSourceOptions) && candidate.sessionSourceOptions.every(isDesktopSessionSourceOption)
+      ? candidate.sessionSourceOptions.map((option) => ({ ...option }))
+      : buildDesktopSessionSourceOptions();
+
   return {
     platform: candidate.platform,
     versions: {
@@ -152,7 +209,8 @@ const toDesktopRuntimeContext = (value: unknown): DesktopRuntimeContext | null =
     dataSource: candidate.dataSource,
     aiProvider: candidate.aiProvider,
     publicWebRelay: candidate.publicWebRelay,
-    sessionSource: candidate.sessionSource
+    sessionSource: candidate.sessionSource,
+    sessionSourceOptions
   };
 };
 
@@ -169,7 +227,8 @@ export const resolveDesktopRuntimeContext = (input: ResolveDesktopRuntimeContext
     dataSource,
     aiProvider: toAiProvider(env),
     publicWebRelay: toPublicWebRelay(env),
-    sessionSource: toSessionSource(env, dataSource)
+    sessionSource: toSessionSource(env, dataSource),
+    sessionSourceOptions: buildDesktopSessionSourceOptions()
   };
 };
 

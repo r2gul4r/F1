@@ -334,3 +334,6 @@
 - test: pin the exact approved public entry href sets and reject deprecated public watch/watch-session links
 - fix: align the landing-page public web boundary copy with the routes actually exposed
 - docs: close the slice-5 deployment/public-channel epic and seed the slice-6 queue
+- feat: freeze session-source option metadata and disabled reasons inside the desktop runtime contract
+- fix: make the desktop session adapter and unavailable guidance honor contract-disabled sources before fallback dispatch
+- docs: close the slice-6 shell/contracts epic and advance the slice-6 board MVP epic as the current task

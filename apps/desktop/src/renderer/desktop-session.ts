@@ -20,17 +20,26 @@ export type DesktopSessionState =
 export const resolveDesktopSessionAvailability = (
   runtime: DesktopRuntimeContext
 ): DesktopSessionAvailability => {
-  if (runtime.sessionSource === "mock-session" || runtime.sessionSource === "replay-buffer") {
+  const selectedOption = runtime.sessionSourceOptions.find((option) => option.key === runtime.sessionSource);
+
+  if (selectedOption?.disabled) {
+    return {
+      available: false,
+      message: selectedOption.disabledReason ?? `${runtime.sessionSource} session source is unavailable.`
+    };
+  }
+
+  if (selectedOption && (runtime.sessionSource === "mock-session" || runtime.sessionSource === "replay-buffer")) {
     return {
       available: true,
       message: null
     };
   }
 
-  if (runtime.sessionSource === "live-stream") {
+  if (selectedOption) {
     return {
       available: false,
-      message: "live-stream session source wiring is not connected yet."
+      message: `${selectedOption.label} adapter is not wired yet.`
     };
   }
 

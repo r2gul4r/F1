@@ -7,7 +7,7 @@ import { buildPredictionHistory } from "./prediction-history";
 import { toAiProviderLabel, toPredictionContextLabel } from "./prediction-status";
 import { buildPodiumStripItems } from "./podium-strip";
 import { buildSelectedDriverDetails } from "./selected-driver-details";
-import { getSupportedLocalSessionSources } from "./session-source-controls";
+import { buildSessionSourceRecoveryMessage, getSupportedLocalSessionSources } from "./session-source-controls";
 import {
   DESKTOP_SESSION_SOURCE_STORAGE_KEY,
   resolveInitialSessionSourceOverride,
@@ -32,7 +32,17 @@ export const App = () => {
   const effectiveRuntime = sessionSourceOverride
     ? { ...runtime, sessionSource: sessionSourceOverride }
     : runtime;
-  const sessionSourceOptions = getSupportedLocalSessionSources(runtime.sessionSource);
+  const sessionSourceOptions = getSupportedLocalSessionSources(runtime);
+  const disabledSessionSourceNotes = sessionSourceOptions.filter((option) => option.disabled && option.disabledReason);
+  const runtimeDefaultOption = sessionSourceOptions.find((option) => option.key === runtime.sessionSource);
+  const canFollowRuntimeDefault = Boolean(
+    sessionSourceOverride !== null && runtimeDefaultOption && !runtimeDefaultOption.disabled
+  );
+  const sessionSourceRecoveryMessage = buildSessionSourceRecoveryMessage({
+    sessionSource: runtime.sessionSource,
+    sessionSourceOptions: runtime.sessionSourceOptions,
+    currentSource: effectiveRuntime.sessionSource
+  });
   const session = useDesktopSession(effectiveRuntime);
 
   if (session.kind === "unavailable") {
@@ -42,7 +52,7 @@ export const App = () => {
           <div className="eyebrow">F1 Pulse Desktop</div>
           <h1>Desktop session source unavailable</h1>
           <p className="lead">
-            Runtime contract is pinned, but `{effectiveRuntime.sessionSource}` is not wired to a local session adapter yet.
+            Runtime contract is pinned. Source `{effectiveRuntime.sessionSource}` is currently unavailable: {session.message}
             Public web relay remains `{runtime.publicWebRelay ? "enabled" : "disabled"}`.
           </p>
         </section>
@@ -58,23 +68,31 @@ export const App = () => {
               <div className="info-card" style={{ maxWidth: 420 }}>
                 <div className="muted-label">Unavailable</div>
                 <h2>{session.message}</h2>
-                <p className="team-name">Switch `DESKTOP_SESSION_SOURCE=mock-session` or `replay-buffer`, or wire the next session adapter slice.</p>
+                <p className="team-name">{sessionSourceRecoveryMessage}</p>
                 <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 12 }}>
-                  <button className="mode-toggle" onClick={() => setSessionSourceOverride(null)} type="button">
-                    Runtime default
-                  </button>
+                  {canFollowRuntimeDefault ? (
+                    <button className="mode-toggle" onClick={() => setSessionSourceOverride(null)} type="button">
+                      Runtime default
+                    </button>
+                  ) : null}
                   {sessionSourceOptions.map((option) => (
                     <button
                       className="mode-toggle"
                       key={option.key}
                       disabled={option.disabled}
                       onClick={() => setSessionSourceOverride(option.key)}
+                      title={option.disabledReason ?? undefined}
                       type="button"
                     >
                       {option.label}{option.disabled ? " (disabled)" : ""}
                     </button>
                   ))}
                 </div>
+                {disabledSessionSourceNotes.map((option) => (
+                  <div className="info-note" key={option.key}>
+                    {option.label}: {option.disabledReason}
+                  </div>
+                ))}
               </div>
             </div>
           </article>
@@ -302,21 +320,29 @@ export const App = () => {
               </article>
             </div>
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 12 }}>
-              <button className="mode-toggle" onClick={() => setSessionSourceOverride(null)} type="button">
-                Runtime default
-              </button>
+              {canFollowRuntimeDefault ? (
+                <button className="mode-toggle" onClick={() => setSessionSourceOverride(null)} type="button">
+                  Runtime default
+                </button>
+              ) : null}
               {sessionSourceOptions.map((option) => (
                 <button
                   className="mode-toggle"
                   key={option.key}
                   disabled={option.disabled}
                   onClick={() => setSessionSourceOverride(option.key)}
+                  title={option.disabledReason ?? undefined}
                   type="button"
                 >
                   {option.label}{option.disabled ? " (disabled)" : ""}
                 </button>
               ))}
             </div>
+            {disabledSessionSourceNotes.map((option) => (
+              <div className="info-note" key={`disabled-${option.key}`}>
+                {option.label}: {option.disabledReason}
+              </div>
+            ))}
           </section>
 
           <section className="info-card">
