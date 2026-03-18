@@ -162,4 +162,42 @@ describe("renderer frame", () => {
     expect(movedCar?.smoothedPosition?.x).toBeGreaterThan(100);
     expect(movedCar?.smoothedPosition?.x).toBeLessThan(130);
   });
+
+  it("focus camera keeps the previous selected position when the selected tick is temporarily missing", () => {
+    const snapshot = toSnapshot();
+    const firstFrame = buildRendererFrame({
+      nowMs: 1_500,
+      telemetryStaleMs: 15_000,
+      selectedDriverId: "VER",
+      snapshot,
+      previousCarsByDriver: {},
+      camera: { x: 0, y: 0, focusModeEnabled: true },
+      track: {
+        center: { x: 0, y: 0 },
+        halfHeight: 160,
+        points: []
+      }
+    });
+
+    const snapshotWithoutSelectedTick = reduceSessionSnapshot(createSessionSnapshot(sessionId), {
+      type: "drivers.set",
+      drivers
+    });
+
+    const secondFrame = buildRendererFrame({
+      nowMs: 1_650,
+      telemetryStaleMs: 15_000,
+      selectedDriverId: "VER",
+      snapshot: snapshotWithoutSelectedTick,
+      previousCarsByDriver: firstFrame.carsByDriver,
+      camera: firstFrame.camera,
+      track: {
+        center: { x: 0, y: 0 },
+        halfHeight: 160,
+        points: []
+      }
+    });
+
+    expect(secondFrame.camera.x).toBeGreaterThan(0);
+  });
 });

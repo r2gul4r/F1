@@ -119,11 +119,13 @@ export const buildRendererFrame = (input: RendererFrameInput): RendererFrameStat
     return car;
   });
 
+  const previousSelectedCar = input.selectedDriverId ? input.previousCarsByDriver[input.selectedDriverId] : undefined;
   const selectedCar = cars.find(
     (car) => car.driverId === input.selectedDriverId && car.smoothedPosition !== null
   );
-  const targetCamera = input.camera.focusModeEnabled && selectedCar?.smoothedPosition
-    ? selectedCar.smoothedPosition
+  const fallbackFocusTarget = previousSelectedCar?.smoothedPosition ?? previousSelectedCar?.position ?? null;
+  const targetCamera = input.camera.focusModeEnabled
+    ? selectedCar?.smoothedPosition ?? fallbackFocusTarget ?? { x: input.track.center.x, y: input.track.center.y, z: 0 }
     : { x: input.track.center.x, y: input.track.center.y, z: 0 };
   const cameraAlpha = input.camera.focusModeEnabled ? FOCUS_CAMERA_ALPHA : RESET_CAMERA_ALPHA;
 
