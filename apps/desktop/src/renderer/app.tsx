@@ -4,6 +4,7 @@ import { useDesktopSession } from "./desktop-session";
 import { buildDriverRailItems } from "./driver-rail";
 import { getNextSelectedDriverId, isFocusToggleKey } from "./keyboard-controls";
 import { toAiProviderLabel, toPredictionContextLabel } from "./prediction-status";
+import { getSupportedLocalSessionSources } from "./session-source-controls";
 import { RaceBoard } from "./race-board";
 import { SelectedDriverHud } from "./selected-driver-hud";
 
@@ -16,8 +17,13 @@ const FRESHNESS_LABEL = {
 
 export const App = () => {
   const [fps, setFps] = useState(0);
+  const [sessionSourceOverride, setSessionSourceOverride] = useState<typeof window.desktopShell.sessionSource | null>(null);
   const runtime = window.desktopShell;
-  const session = useDesktopSession(runtime);
+  const effectiveRuntime = sessionSourceOverride
+    ? { ...runtime, sessionSource: sessionSourceOverride }
+    : runtime;
+  const sessionSourceOptions = getSupportedLocalSessionSources(runtime.sessionSource);
+  const session = useDesktopSession(effectiveRuntime);
 
   if (session.kind === "unavailable") {
     return (
@@ -26,7 +32,7 @@ export const App = () => {
           <div className="eyebrow">F1 Pulse Desktop</div>
           <h1>Desktop session source unavailable</h1>
           <p className="lead">
-            Runtime contract is pinned, but `{runtime.sessionSource}` is not wired to a local session adapter yet.
+            Runtime contract is pinned, but `{effectiveRuntime.sessionSource}` is not wired to a local session adapter yet.
             Public web relay remains `{runtime.publicWebRelay ? "enabled" : "disabled"}`.
           </p>
         </section>
@@ -35,7 +41,7 @@ export const App = () => {
             <div className="stage-toolbar">
               <div>
                 <div className="muted-label">Desktop Shell Boundary</div>
-                <strong>{runtime.mode} · {runtime.sessionSource}</strong>
+                <strong>{runtime.mode} · {effectiveRuntime.sessionSource}</strong>
               </div>
             </div>
             <div className="stage-view" style={{ display: "grid", placeItems: "center", minHeight: 520 }}>
@@ -43,6 +49,18 @@ export const App = () => {
                 <div className="muted-label">Unavailable</div>
                 <h2>{session.message}</h2>
                 <p className="team-name">Switch `DESKTOP_SESSION_SOURCE=mock-session` or `replay-buffer`, or wire the next session adapter slice.</p>
+                <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 12 }}>
+                  {sessionSourceOptions.map((option) => (
+                    <button
+                      className="mode-toggle"
+                      key={option.key}
+                      onClick={() => setSessionSourceOverride(option.key)}
+                      type="button"
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           </article>
@@ -114,7 +132,7 @@ export const App = () => {
         <h1>2.5D race board MVP</h1>
         <p className="lead">
           로컬 앱 경계는 preload runtime contract를 기준으로 고정되어 있다. 현재 `{runtime.mode}` 모드에서
-          `{runtime.sessionSource}` 소스로 서킷과 차량 보간 레이어를 검증 중이며, public web relay는
+          `{effectiveRuntime.sessionSource}` 소스로 서킷과 차량 보간 레이어를 검증 중이며, public web relay는
           `{runtime.publicWebRelay ? "enabled" : "disabled"}` 상태다.
         </p>
       </section>
@@ -227,12 +245,24 @@ export const App = () => {
               </article>
               <article>
                 <span className="muted-label">Update Mode</span>
-                <strong>{runtime.sessionSource}</strong>
+                <strong>{effectiveRuntime.sessionSource}</strong>
               </article>
               <article>
                 <span className="muted-label">Prediction</span>
                 <strong>{aiProviderLabel}</strong>
               </article>
+            </div>
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 12 }}>
+              {sessionSourceOptions.map((option) => (
+                <button
+                  className="mode-toggle"
+                  key={option.key}
+                  onClick={() => setSessionSourceOverride(option.key)}
+                  type="button"
+                >
+                  {option.label}
+                </button>
+              ))}
             </div>
           </section>
 

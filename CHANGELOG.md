@@ -309,3 +309,4 @@
 - docs: close the slice-2 deployment/public-channel epic after landing, download, preview, history, and replay paths were aligned
 - docs: align the state board with the newly seeded slice-3 queue
 - feat: unify desktop replay-buffer and public replay route on the same fixed replay fixture
+- feat: add local mock and replay session-source controls directly to the desktop shell
