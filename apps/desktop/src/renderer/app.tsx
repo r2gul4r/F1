@@ -4,6 +4,7 @@ import { useDesktopSession } from "./desktop-session";
 import { buildDriverRailItems } from "./driver-rail";
 import { getNextSelectedDriverId, isFocusToggleKey } from "./keyboard-controls";
 import { toAiProviderLabel, toPredictionContextLabel } from "./prediction-status";
+import { buildPodiumStripItems } from "./podium-strip";
 import { getSupportedLocalSessionSources } from "./session-source-controls";
 import { RaceBoard } from "./race-board";
 import { SelectedDriverHud } from "./selected-driver-hud";
@@ -79,6 +80,7 @@ export const App = () => {
   } = session;
   const deferredSnapshot = useDeferredValue(snapshot);
   const driverRailItems = useMemo(() => buildDriverRailItems(deferredSnapshot), [deferredSnapshot]);
+  const podiumStripItems = useMemo(() => buildPodiumStripItems(driverRailItems), [driverRailItems]);
   const orderedDriverIds = useMemo(() => driverRailItems.map((item) => item.driver.id), [driverRailItems]);
   const selectedTick = useMemo(
     () => (selectedDriver ? deferredSnapshot.latestTicksByDriver[selectedDriver.id] : undefined),
@@ -154,6 +156,13 @@ export const App = () => {
             </button>
           </div>
           <div className="stage-view">
+            <div className="hud-chip-row" style={{ marginBottom: 12 }}>
+              {podiumStripItems.map((item) => (
+                <span className="hud-chip" key={item.driverId}>
+                  P{item.rank} {item.driverId} {item.speedKph ? `· ${item.speedKph.toFixed(0)} kph` : ""}
+                </span>
+              ))}
+            </div>
             <RaceBoard
               focusModeEnabled={focusModeEnabled}
               onFpsChange={setFps}

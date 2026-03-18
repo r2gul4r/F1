@@ -310,4 +310,4 @@
 - docs: align the state board with the newly seeded slice-3 queue
 - feat: unify desktop replay-buffer and public replay route on the same fixed replay fixture
 - feat: add local mock and replay session-source controls directly to the desktop shell
-- docs: close the slice-3 shell/contracts epic and advance the slice-3 board MVP epic as the current task
+- feat: add a podium strip to the desktop board stage so the top three cars are readable at a glance
