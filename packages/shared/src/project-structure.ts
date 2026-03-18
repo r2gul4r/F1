@@ -50,6 +50,7 @@ const requiredWorkspaces: readonly WorkspaceRequirement[] = [
     expectedName: "@f1/realtime",
     requiredScripts: ["db:migrate"]
   },
+  { packageJsonPath: "packages/core/package.json", expectedName: "@f1/core" },
   { packageJsonPath: "packages/shared/package.json", expectedName: "@f1/shared" }
 ];
 

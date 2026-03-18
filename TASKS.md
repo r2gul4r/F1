@@ -184,7 +184,7 @@
 [x] plan-driven task: legacy TypeScript worker 와 관련 참조를 정리한다 [slice 71]
 [x] plan-driven task: desktop 셸 초안과 web 랜딩 전용 경계를 고정한다 [slice 62]
 [x] plan-driven task: current web 와 realtime 에서 재사용할 core 로직 후보를 추출한다 [slice 63]
-[ ] plan-driven task: 2.5D renderer-core 용 세션 스냅샷, 차량 상태, HUD view-model 계약을 고정한다 [slice 64]
+[x] plan-driven task: 2.5D renderer-core 용 세션 스냅샷, 차량 상태, HUD view-model 계약을 고정한다 [slice 64]
 [ ] plan-driven task: desktop renderer 에 2.5D 서킷과 차량 보간 레이어 MVP 를 도입한다 [slice 65]
 [ ] plan-driven task: 선택 드라이버 HUD 와 정보 패널을 desktop 정보 구조 기준으로 새로 설계한다 [slice 66]
 [ ] plan-driven task: 랩 경계 기준 포디움 예측 트리거와 결정론적 입력 특징량을 desktop 흐름에 고정한다 [slice 67]

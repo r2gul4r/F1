@@ -264,3 +264,6 @@
 ## 2026-03-18
 - docs: extract reusable core-logic candidates from current web and realtime for the upcoming `packages/core` split
 - chore: add `STATE.md` and pin slice 64 renderer-core contract freeze as the next active task
+- feat: add new `@f1/core` workspace and freeze shared renderer-core and HUD contract types for slice 64
+- feat: implement pure session snapshot initializer/reducer and prediction selection context helpers in `packages/core`
+- test: add direct `@f1/core` contract coverage and require `packages/core` in project structure validation

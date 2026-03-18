@@ -17,6 +17,7 @@ describe("project structure", () => {
     const tempRoot = mkdtempSync(join(tmpdir(), "f1-structure-"));
     mkdirSync(join(tempRoot, "apps", "desktop"), { recursive: true });
     mkdirSync(join(tempRoot, "apps", "web"), { recursive: true });
+    mkdirSync(join(tempRoot, "packages", "core"), { recursive: true });
     mkdirSync(join(tempRoot, "packages", "shared"), { recursive: true });
     writeFileSync(
       join(tempRoot, "apps", "desktop", "package.json"),
@@ -26,6 +27,11 @@ describe("project structure", () => {
     writeFileSync(
       join(tempRoot, "apps", "web", "package.json"),
       JSON.stringify({ name: "@f1/web" }),
+      "utf8"
+    );
+    writeFileSync(
+      join(tempRoot, "packages", "core", "package.json"),
+      JSON.stringify({ name: "@f1/core" }),
       "utf8"
     );
     writeFileSync(
@@ -51,6 +57,7 @@ describe("project structure", () => {
     mkdirSync(join(tempRoot, "apps", "desktop"), { recursive: true });
     mkdirSync(join(tempRoot, "apps", "web"), { recursive: true });
     mkdirSync(join(tempRoot, "apps", "realtime", "src"), { recursive: true });
+    mkdirSync(join(tempRoot, "packages", "core"), { recursive: true });
     mkdirSync(join(tempRoot, "packages", "shared"), { recursive: true });
 
     writeFileSync(join(tempRoot, "package.json"), JSON.stringify({ scripts: { test: "pnpm -r test" } }), "utf8");
@@ -66,6 +73,7 @@ describe("project structure", () => {
       JSON.stringify({ name: "@f1/realtime", scripts: { build: "pnpm exec tsc -p tsconfig.json" } }),
       "utf8"
     );
+    writeFileSync(join(tempRoot, "packages", "core", "package.json"), JSON.stringify({ name: "@f1/core" }), "utf8");
     writeFileSync(join(tempRoot, "packages", "shared", "package.json"), JSON.stringify({ name: "@f1/shared" }), "utf8");
 
     const result = inspectProjectStructure(tempRoot);
