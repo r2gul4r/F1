@@ -67,10 +67,11 @@ export const App = () => {
                     <button
                       className="mode-toggle"
                       key={option.key}
+                      disabled={option.disabled}
                       onClick={() => setSessionSourceOverride(option.key)}
                       type="button"
                     >
-                      {option.label}
+                      {option.label}{option.disabled ? " (disabled)" : ""}
                     </button>
                   ))}
                 </div>
@@ -308,10 +309,11 @@ export const App = () => {
                 <button
                   className="mode-toggle"
                   key={option.key}
+                  disabled={option.disabled}
                   onClick={() => setSessionSourceOverride(option.key)}
                   type="button"
                 >
-                  {option.label}
+                  {option.label}{option.disabled ? " (disabled)" : ""}
                 </button>
               ))}
             </div>

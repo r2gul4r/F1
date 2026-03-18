@@ -212,6 +212,7 @@
 [x] plan-driven task: replay demo timestamp를 현재 시각 기준으로 재기준화해 stale처럼 보이지 않게 만든다 [slice 91]
 [x] plan-driven task: desktop AI panel에 최근 예측 이력 strip을 추가해 lap 흐름을 바로 읽게 만든다 [slice 92]
 [x] plan-driven task: shell hero에서 runtime default 와 local source override 상태를 명시적으로 노출한다 [slice 93]
+[x] plan-driven task: live-stream source를 disabled option으로 명시해 local session 지원 범위를 UI에 고정한다 [slice 94]
 
 [x] plan-driven task: 로컬 앱 전환에 필요한 셸, 계약, 코어 분리 경계를 고정한다 [slice 1]
 [x] plan-driven task: 2.5D 레이스 보드 MVP 를 완성한다 [slice 1]
