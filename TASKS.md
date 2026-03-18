@@ -226,6 +226,7 @@
 [x] plan-driven task: renderer-frame fallbackFocusTarget 경로와 same-pulse no-telemetry halo 비교를 직접 테스트로 고정한다 [slice 105]
 [x] plan-driven task: renderer-frame가 current/previous selected 위치가 모두 없을 때 track center fallback을 직접 테스트로 고정한다 [slice 106]
 [x] plan-driven task: renderer-frame가 selected driver는 남아 있지만 current/previous position이 모두 null일 때도 track center fallback을 직접 테스트로 고정한다 [slice 107]
+[x] plan-driven task: renderer-frame focus target priority가 non-selected positioned car보다 selected fallback target을 우선함을 직접 테스트로 고정한다 [slice 108]
 
 [x] plan-driven task: 로컬 앱 전환에 필요한 셸, 계약, 코어 분리 경계를 고정한다 [slice 1]
 [x] plan-driven task: 2.5D 레이스 보드 MVP 를 완성한다 [slice 1]
