@@ -219,6 +219,7 @@
 [x] plan-driven task: desktop runtime contract에 session source option metadata와 disabled reason을 고정한다 [slice 98]
 [x] plan-driven task: desktop driver rail에 드라이버별 telemetry freshness badge를 추가한다 [slice 99]
 [x] plan-driven task: desktop driver rail freshness badge render path를 직접 테스트로 고정한다 [slice 100]
+[x] plan-driven task: desktop driver rail selection click wiring을 직접 테스트로 고정한다 [slice 101]
 
 [x] plan-driven task: 로컬 앱 전환에 필요한 셸, 계약, 코어 분리 경계를 고정한다 [slice 1]
 [x] plan-driven task: 2.5D 레이스 보드 MVP 를 완성한다 [slice 1]

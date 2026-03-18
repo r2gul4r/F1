@@ -46,4 +46,26 @@ describe("driver rail list", () => {
     expect(markup).toContain(">Leader<");
     expect(markup).toContain(">P-<");
   });
+
+  it("wires driver selection clicks through to onSelectDriver", () => {
+    const onSelectDriver = vi.fn();
+    const element = DriverRailList({
+      items,
+      onSelectDriver,
+      selectedDriverId: null
+    });
+
+    expect(React.isValidElement(element)).toBe(true);
+    if (!React.isValidElement(element)) {
+      throw new Error("DriverRailList did not return a valid element");
+    }
+
+    const listElement = element as React.ReactElement<{ children: React.ReactNode }>;
+    const buttons = React.Children.toArray(listElement.props.children).filter(
+      (child): child is React.ReactElement<{ onClick: () => void }> => React.isValidElement(child)
+    );
+
+    buttons[1]?.props.onClick();
+    expect(onSelectDriver).toHaveBeenCalledWith("VER");
+  });
 });
