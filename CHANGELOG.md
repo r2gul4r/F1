@@ -312,3 +312,4 @@
 - feat: add local mock and replay session-source controls directly to the desktop shell
 - feat: add a podium strip to the desktop board stage so the top three cars are readable at a glance
 - feat: add selected-driver gap, interval, gear, RPM, and tire detail cards to the desktop board
+- docs: close the slice-3 board MVP epic and advance the slice-3 desktop AI epic as the current task
