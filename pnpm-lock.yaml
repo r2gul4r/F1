@@ -106,6 +106,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@f1/core':
+        specifier: workspace:*
+        version: link:../../packages/core
       '@f1/shared':
         specifier: workspace:*
         version: link:../../packages/shared
