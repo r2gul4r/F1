@@ -1,10 +1,9 @@
 import React from "react";
-import { WatchClient } from "@/src/components/watch-client";
 import { WatchPreviewClient } from "@/src/components/watch-preview-client";
-import { readWatchSessionToken } from "@/src/lib/watch-session-cookie";
 
 export const dynamic = "force-dynamic";
 const fallbackMessage = "요청 처리 실패";
+const unavailableMessage = "공개 웹에서는 preview 세션만 지원합니다.";
 
 export default async function WatchPage({
   params
@@ -16,10 +15,14 @@ export default async function WatchPage({
     return <WatchPreviewClient />;
   }
 
-  const watchToken = await readWatchSessionToken();
-  if (!watchToken) {
-    return fallbackMessage;
-  }
-
-  return <WatchClient sessionId={sessionId} watchToken={watchToken} />;
+  return (
+    <main style={{ display: "grid", placeItems: "center", minHeight: "100vh", padding: 24 }}>
+      <section className="panel" style={{ width: "min(560px, 92vw)", display: "grid", gap: 8 }}>
+        <h1 style={{ margin: 0 }}>{fallbackMessage}</h1>
+        <p className="muted" style={{ margin: 0 }}>
+          {unavailableMessage}
+        </p>
+      </section>
+    </main>
+  );
 }

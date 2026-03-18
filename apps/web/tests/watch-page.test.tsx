@@ -12,12 +12,6 @@ vi.mock("next/headers", () => ({
 
 import WatchPage from "../app/watch/[sessionId]/page";
 
-vi.mock("@/src/components/watch-client", () => ({
-  WatchClient: ({ sessionId, watchToken }: { sessionId: string; watchToken: string }) => (
-    <div data-testid="watch-client">{`${sessionId}:${watchToken}`}</div>
-  )
-}));
-
 vi.mock("@/src/components/watch-preview-client", () => ({
   WatchPreviewClient: () => <div data-testid="watch-preview">preview</div>
 }));
@@ -28,7 +22,7 @@ describe("watch page", () => {
     cookiesMock.mockReset();
   });
 
-  it("watch 세션 쿠키가 있으면 watch client를 렌더링함", async () => {
+  it("preview가 아닌 세션은 공개 웹 unavailable 메시지를 렌더링함", async () => {
     cookiesMock.mockResolvedValue({
       get: (name: string) => (name === "f1_watch_session" ? { name, value: "watch-cookie-token" } : undefined)
     });
@@ -38,21 +32,9 @@ describe("watch page", () => {
     });
     render(page);
 
-    expect(screen.getByTestId("watch-client").textContent).toBe("current:watch-cookie-token");
-  });
-
-  it("watch 세션 쿠키가 없으면 fallback을 렌더링함", async () => {
-    cookiesMock.mockResolvedValue({
-      get: () => undefined
-    });
-
-    const page = await WatchPage({
-      params: Promise.resolve({ sessionId: "current" })
-    });
-    render(page);
-
     expect(screen.getByText("요청 처리 실패")).toBeTruthy();
-    expect(screen.queryByTestId("watch-client")).toBeNull();
+    expect(screen.getByText("공개 웹에서는 preview 세션만 지원합니다.")).toBeTruthy();
+    expect(cookiesMock).not.toHaveBeenCalled();
   });
 
   it("preview 세션이면 watch 세션 쿠키 없이도 preview client를 렌더링함", async () => {

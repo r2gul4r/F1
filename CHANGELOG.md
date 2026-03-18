@@ -277,3 +277,6 @@
 - test: lock deterministic feature-note prompt propagation in core and realtime trigger/AI service tests
 - fix: exclude invalid and negative speed samples from deterministic prediction feature aggregates unless all samples are invalid
 - fix: align telemetry-trigger feature snapshot `generatedAtMs` with actual feature build time semantics
+- refactor: make public web watch route preview-only and remove live watch token/cookie relay path
+- refactor: disable public web `/api/auth/watch-session` bridge with opaque unavailable responses across POST/GET/DELETE
+- test: lock preview-only watch page and disabled oauth/watch-session bridge contracts in web tests
