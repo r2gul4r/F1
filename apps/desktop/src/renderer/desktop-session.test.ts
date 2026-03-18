@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { buildReplaySnapshot } from "./replay-session.js";
 import { resolveDesktopSessionAvailability } from "./desktop-session.js";
 
 describe("desktop session adapter", () => {
@@ -23,7 +24,7 @@ describe("desktop session adapter", () => {
     });
   });
 
-  it("non-mock session source returns explicit unavailable guidance", () => {
+  it("replay-buffer source is now available", () => {
     const availability = resolveDesktopSessionAvailability({
       platform: "linux",
       versions: {
@@ -38,7 +39,18 @@ describe("desktop session adapter", () => {
       sessionSource: "replay-buffer"
     });
 
-    expect(availability.available).toBe(false);
-    expect(availability.message).toContain("replay-buffer");
+    expect(availability).toEqual({
+      available: true,
+      message: null
+    });
+  });
+
+  it("replay session snapshot is fixed and carries prediction history", () => {
+    const snapshot = buildReplaySnapshot();
+
+    expect(snapshot.sessionId).toBe("desktop-replay-session");
+    expect(snapshot.drivers).toHaveLength(4);
+    expect(snapshot.predictions.map((prediction) => prediction.lap)).toEqual([26, 27]);
+    expect(snapshot.latestTicksByDriver.NOR?.rank).toBe(1);
   });
 });

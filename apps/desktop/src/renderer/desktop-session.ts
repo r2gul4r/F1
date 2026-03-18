@@ -1,5 +1,6 @@
 import type { DesktopRuntimeContext } from "../runtime/runtime-context.js";
 import { useMockSession } from "./mock-session";
+import { useReplaySession } from "./replay-session";
 
 export type DesktopSessionAvailability = {
   available: boolean;
@@ -19,17 +20,10 @@ export type DesktopSessionState =
 export const resolveDesktopSessionAvailability = (
   runtime: DesktopRuntimeContext
 ): DesktopSessionAvailability => {
-  if (runtime.sessionSource === "mock-session") {
+  if (runtime.sessionSource === "mock-session" || runtime.sessionSource === "replay-buffer") {
     return {
       available: true,
       message: null
-    };
-  }
-
-  if (runtime.sessionSource === "replay-buffer") {
-    return {
-      available: false,
-      message: "replay-buffer session source wiring is not connected yet."
     };
   }
 
@@ -48,7 +42,8 @@ export const resolveDesktopSessionAvailability = (
 
 export const useDesktopSession = (runtime: DesktopRuntimeContext): DesktopSessionState => {
   const availability = resolveDesktopSessionAvailability(runtime);
-  const mockSession = useMockSession(availability.available);
+  const mockSession = useMockSession(runtime.sessionSource === "mock-session");
+  const replaySession = useReplaySession(runtime.sessionSource === "replay-buffer");
 
   if (!availability.available) {
     return {
@@ -60,6 +55,6 @@ export const useDesktopSession = (runtime: DesktopRuntimeContext): DesktopSessio
 
   return {
     kind: "ready",
-    ...mockSession
+    ...(runtime.sessionSource === "replay-buffer" ? replaySession : mockSession)
   };
 };

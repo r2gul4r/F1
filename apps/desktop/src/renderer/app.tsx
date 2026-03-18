@@ -42,7 +42,7 @@ export const App = () => {
               <div className="info-card" style={{ maxWidth: 420 }}>
                 <div className="muted-label">Unavailable</div>
                 <h2>{session.message}</h2>
-                <p className="team-name">Switch `DESKTOP_SESSION_SOURCE=mock-session` or wire the next session adapter slice.</p>
+                <p className="team-name">Switch `DESKTOP_SESSION_SOURCE=mock-session` or `replay-buffer`, or wire the next session adapter slice.</p>
               </div>
             </div>
           </article>

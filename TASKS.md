@@ -202,6 +202,7 @@
 [x] plan-driven task: public web에 historical demo 진입점을 추가해 preview/replay 공개 경계를 명시한다 [slice 81]
 [x] plan-driven task: download page와 README에 플랫폼별 release track 및 first-run checklist를 추가한다 [slice 82]
 [x] plan-driven task: public web에 fixed replay demo entry를 추가해 historical demo를 바로 열 수 있게 만든다 [slice 83]
+[x] plan-driven task: desktop replay-buffer session source를 fixed replay session으로 연결한다 [slice 84]
 
 [x] plan-driven task: 로컬 앱 전환에 필요한 셸, 계약, 코어 분리 경계를 고정한다 [slice 1]
 [x] plan-driven task: 2.5D 레이스 보드 MVP 를 완성한다 [slice 1]
