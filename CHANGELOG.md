@@ -293,3 +293,4 @@
 - feat: overlay leader and focused-driver labels directly on the desktop race board canvas
 - docs: close the 2.5D race board MVP epic and advance the lap-based desktop AI epic as the current task
 - feat: surface lap-based mock prediction context directly inside the desktop shell so AI trigger state is visible
+- feat: expose desktop AI provider mode, selected/latest prediction context, and reasoning summary directly in the shell panel

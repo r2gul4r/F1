@@ -3,6 +3,7 @@ import React, { useDeferredValue, useEffect, useMemo, useState } from "react";
 import { useDesktopSession } from "./desktop-session";
 import { buildDriverRailItems } from "./driver-rail";
 import { getNextSelectedDriverId, isFocusToggleKey } from "./keyboard-controls";
+import { toAiProviderLabel, toPredictionContextLabel } from "./prediction-status";
 import { RaceBoard } from "./race-board";
 import { SelectedDriverHud } from "./selected-driver-hud";
 
@@ -74,6 +75,11 @@ export const App = () => {
     () => toPredictionViewModel(resolvePredictionContext(deferredSnapshot.predictions, selectedDriverId), Date.now()),
     [deferredSnapshot.predictions, selectedDriverId]
   );
+  const aiProviderLabel = toAiProviderLabel(runtime.aiProvider);
+  const predictionContextLabel = toPredictionContextLabel({
+    selectedDriverPriority: predictionViewModel.context.selectedDriverPriority,
+    selectedPredictionStale: predictionViewModel.context.selectedPredictionStale
+  });
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -233,26 +239,33 @@ export const App = () => {
           <section className="info-card">
             <div className="muted-label">Lap AI Context</div>
             {predictionViewModel.context.visiblePrediction ? (
-              <div className="stat-grid">
-                <article>
-                  <span className="muted-label">Lap</span>
-                  <strong>{predictionViewModel.context.visiblePrediction.lap}</strong>
-                </article>
-                <article>
-                  <span className="muted-label">Trigger</span>
-                  <strong>{predictionViewModel.context.visiblePrediction.triggerDriverId}</strong>
-                </article>
-                <article>
-                  <span className="muted-label">P1</span>
-                  <strong>{Math.round(predictionViewModel.context.visiblePrediction.podiumProb[0] * 100)}%</strong>
-                </article>
-                <article>
-                  <span className="muted-label">Age</span>
-                  <strong>
-                    {predictionViewModel.elapsedSeconds === null ? "-" : `${predictionViewModel.elapsedSeconds}s`}
-                  </strong>
-                </article>
-              </div>
+              <>
+                <div className="hud-chip-row" style={{ marginTop: 12 }}>
+                  <span className="hud-chip">Provider {aiProviderLabel}</span>
+                  <span className="hud-chip">Context {predictionContextLabel}</span>
+                </div>
+                <div className="stat-grid">
+                  <article>
+                    <span className="muted-label">Lap</span>
+                    <strong>{predictionViewModel.context.visiblePrediction.lap}</strong>
+                  </article>
+                  <article>
+                    <span className="muted-label">Trigger</span>
+                    <strong>{predictionViewModel.context.visiblePrediction.triggerDriverId}</strong>
+                  </article>
+                  <article>
+                    <span className="muted-label">P1</span>
+                    <strong>{Math.round(predictionViewModel.context.visiblePrediction.podiumProb[0] * 100)}%</strong>
+                  </article>
+                  <article>
+                    <span className="muted-label">Age</span>
+                    <strong>
+                      {predictionViewModel.elapsedSeconds === null ? "-" : `${predictionViewModel.elapsedSeconds}s`}
+                    </strong>
+                  </article>
+                </div>
+                <div className="info-note">{predictionViewModel.context.visiblePrediction.reasoningSummary}</div>
+              </>
             ) : (
               <div className="info-note">Lap-boundary prediction is waiting for the next deterministic update.</div>
             )}
