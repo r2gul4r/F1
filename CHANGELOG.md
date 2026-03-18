@@ -280,3 +280,7 @@
 - refactor: make public web watch route preview-only and remove live watch token/cookie relay path
 - refactor: disable public web `/api/auth/watch-session` bridge with opaque unavailable responses across POST/GET/DELETE
 - test: lock preview-only watch page and disabled oauth/watch-session bridge contracts in web tests
+- docs: document desktop build and local smoke procedures as the default path and mark Python worker as optional-only
+- docs: align deployment/autonomous runbooks with preview-only public web boundary and desktop-first validation flow
+- docs: update download entry and task board state for slice 70 completion
+- fix: align deployment smoke-check default web target with preview-only boundary (`/watch/preview`)

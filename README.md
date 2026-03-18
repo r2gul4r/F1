@@ -11,12 +11,11 @@
 5. Gemini를 사용할 경우 `AI_PROVIDER=gemini` 와 `GEMINI_API_KEY`를 함께 설정한다
 6. 필요하면 `.env`에서 `INTERNAL_API_TOKEN`, `OAUTH_PROXY_TOKEN`, `WATCH_TOKEN_SECRET` 값을 직접 지정한다
 7. `pnpm install`
-8. `pnpm validate:env`
-9. 전체 사전 점검은 `pnpm validate:preflight`
-10. `docker compose up --build`
-11. 데스크톱 셸 초안은 `pnpm dev:desktop`으로 실행한다
+8. `pnpm validate:preflight`
+9. `pnpm build:desktop`
+10. `pnpm dev:desktop`
 
-## 로컬 개발
+## Desktop 로컬 개발
 
 1. `cp .env.example .env`
 2. `pnpm env:bootstrap:local`로 `.env`를 보강한다 (`INTERNAL_API_TOKEN`, `OAUTH_PROXY_TOKEN`, `WATCH_TOKEN_SECRET` placeholder를 로컬 강한 값으로 교체)
@@ -25,29 +24,30 @@
 5. Gemini를 사용할 경우 `AI_PROVIDER=gemini` 와 `GEMINI_API_KEY`를 함께 설정한다
 6. 필요하면 `.env`에서 `INTERNAL_API_TOKEN`, `OAUTH_PROXY_TOKEN`, `WATCH_TOKEN_SECRET` 값을 직접 지정한다
 7. `pnpm install`
-8. `pnpm validate:env`
-9. 전체 사전 점검은 `pnpm validate:preflight`
-10. `pnpm dev`
-11. 데스크톱 셸 초안은 `pnpm dev:desktop`
+8. `pnpm validate:preflight`
+9. `pnpm build:desktop`
+10. `pnpm dev:desktop`
 
 기본 접속 경로
 
-- Web: `http://localhost:3000/watch/current`
+- Desktop renderer: `pnpm dev:desktop` 실행 후 Electron 창
+- Web preview only: `http://localhost:3000/watch/preview`
+- Public web non-preview watch 경로와 `/api/auth/watch-session`은 의도적으로 비활성화되어 있다
 - Realtime API: `http://localhost:4001/api/v1/sessions/current` (`x-watch-token` 필요)
 - WebSocket: `ws://localhost:4001/ws` (`token` 쿼리 필요)
 
-로컬 기능 점검
+로컬 smoke check
 
-1. `http://localhost:3000/watch/current` 접속
-2. 2D 트랙과 2D 차량이 실시간으로 갱신되는지 확인
-3. 차량 움직임이 보간되어 튀지 않는지 확인
-4. 드라이버 클릭 후 기본 HUD 와 패널 정보가 동기화되는지 확인
-5. 새 랩 완료 뒤 포디움 예측 카드가 갱신되는지 확인
+1. `pnpm build:desktop`
+2. `pnpm dev:desktop`
+3. Electron 창에서 2.5D race board, 차량 보간 이동, 선택 드라이버 HUD가 보이는지 확인
+4. 집중 모드 토글과 드라이버 선택 전환이 동작하는지 확인
+5. 웹은 `http://localhost:3000/watch/preview`만 확인하고 non-preview watch 경로가 비활성화 상태인지 확인
 
 참고
 
-- 기본 MVP 경로는 web + realtime + shared 만으로 개발 가능하다
-- 외부 수집이나 분석 worker 는 필요해질 때 별도 Python 서비스로 추가한다
+- 기본 제품 경로는 `desktop + realtime + shared (+ core)` 이다
+- `workers/python`은 현재 기본 경로가 아니며, offline 분석/ingestion 필요 시 별도 서비스로 추가한다
 - `.env` 기본 시크릿 자동 보강은 `pnpm env:bootstrap:local`
 - 로컬 개발에서 외부 데이터 없이 보려면 `DATA_SOURCE=mock` 을 쓴다
 - 로컬 AI나 Gemini API가 없으면 `AI_PROVIDER=disabled` 로 두고 fallback 예측만 확인할 수 있다
@@ -65,13 +65,15 @@
 ## 배포와 운영
 
 - public 과 developer 모드는 `.env` 값만 바꿔서 전환한다
+- desktop build: `pnpm build:desktop`
+- desktop local smoke: `pnpm build:desktop` 후 `pnpm dev:desktop`
 - 배포 전 점검, smoke check, rollback 시작점은 `docs/deployment-runbook.md` 를 따른다
 - AI 요청 안정화 주요 환경 변수
   - `AI_REQUEST_TIMEOUT_MS`: AI provider 요청 timeout(ms)
 - compose health 빠른 확인 경로
   - 상태: `docker compose ps realtime web`
   - realtime: `http://localhost:4001/healthz`
-  - web: `http://localhost:3000/watch/current`
+  - web preview: `http://localhost:3000/watch/preview`
   - 상세 기준: `docs/deployment-runbook.md` 의 `배포 직후 smoke check`, `운영 중 확인 포인트`
 
 ## 멀티 에이전트 워크플로우

@@ -1,7 +1,7 @@
 # State
 
 current_task
-- `plan-driven task: optional Python worker 초안 대신 desktop 배포와 local smoke check 절차를 문서화한다 [slice 70]`
+- `none`
 
 next_tasks
 - `none`

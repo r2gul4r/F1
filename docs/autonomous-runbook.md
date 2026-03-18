@@ -90,6 +90,17 @@ pnpm autonomous:security
 pnpm autonomous:quality
 ```
 
+## Desktop-First Validation Shortcut
+Use these when the active slice is desktop delivery/smoke documentation or desktop runtime verification:
+```powershell
+pnpm build:desktop
+pnpm dev:desktop
+```
+
+Public web validation stays preview-only:
+- `http://localhost:3000/watch/preview`
+- `http://localhost:3000/watch/current` and `/api/auth/watch-session` are intentionally disabled in public web mode
+
 ## End-of-Day Command
 ```powershell
 pnpm autonomous:eod

@@ -3,6 +3,7 @@
 ## 목적
 - public 배포와 developer 로컬 실행을 같은 코드베이스에서 환경 변수만으로 전환한다
 - 배포 전 점검, 배포 직후 smoke check, 실패 시 rollback 시작점을 짧게 고정한다
+- optional Python worker는 기본 제품 경로가 아니며 필요할 때 별도 서비스로 붙인다
 
 ## 모드 구분
 - developer 모드
@@ -29,6 +30,22 @@
   - `realtime`은 `postgres`, `redis` healthcheck가 `healthy`가 된 뒤에만 시작된다
   - `web`는 `realtime` healthcheck가 `healthy`가 된 뒤에만 시작된다
 
+## Desktop build and local smoke
+1. desktop 빌드
+```powershell
+pnpm build:desktop
+```
+2. desktop 실행
+```powershell
+pnpm dev:desktop
+```
+3. local smoke checklist
+  - Electron 창이 뜨고 race board가 렌더링된다
+  - 차량 이동이 보간되어 끊기지 않는다
+  - 선택 드라이버 HUD와 focus 토글이 동작한다
+  - 공개 웹에서는 `http://localhost:3000/watch/preview`만 확인한다
+  - `http://localhost:3000/watch/current`와 `/api/auth/watch-session`은 preview-only 정책상 비활성화 상태여야 한다
+
 ## 배포 직후 smoke check
 1. 통합 smoke 명령 실행
 ```powershell
@@ -39,7 +56,7 @@ pnpm deployment:smoke
   - Windows PowerShell 명시 호출은 `pnpm deployment:smoke:windows`와 동일하다
   - 기본 compose 상태(`postgres`, `redis`, `realtime`, `web`)를 확인한다
   - realtime `healthz`의 HTTP 200뿐 아니라 본문 `{"status":"ok"}`도 확인한다
-  - web `watch/current`를 확인한다
+  - web `watch/preview`를 확인한다
   - startup gating 로그 tail(`--tail=120`)를 실제로 출력한다
   - metrics 토큰 우선순위는 `-MetricsToken` > 프로세스 환경 변수 `INTERNAL_API_TOKEN` > `.env`의 `INTERNAL_API_TOKEN`이다
   - metrics 토큰이 끝까지 없거나 `-SkipMetrics`를 주면 `/metrics` 확인을 skip 한다
@@ -59,8 +76,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/deployment/smoke-c
   - `-ComposeServices`에 넘긴 서비스만 상태 검증과 로그 tail 대상이 된다
   - `postgres`, `redis`, `realtime`, `web`는 `(healthy)`를 요구하고 나머지 서비스는 `Up`이면 통과한다
 4. web 진입 확인
-  - `http://localhost:3000/watch/current`
-  - 드라이버 목록, canvas, HUD 토글, prediction 카드가 보이는지 확인한다
+  - `http://localhost:3000/watch/preview`
+  - 공개 웹은 preview-only 경계를 유지해야 한다 (`watch/current`, `api/auth/watch-session` 비활성화)
 5. 데이터 모드 확인
   - public 모드면 실데이터가 들어오는지
   - developer 모드면 mock fallback 이 깨지지 않는지
@@ -68,14 +85,15 @@ powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/deployment/smoke-c
 ## 운영 중 확인 포인트
 - `docker compose ps realtime web`의 `STATUS`가 `(healthy)`를 유지하는지 본다
 - realtime `healthz`는 `{"status":"ok"}` 를 반환해야 한다
-- web `watch/current` 요청이 성공해야 한다
+- web `watch/preview` 요청이 성공해야 한다
+- web non-preview watch 경로와 `/api/auth/watch-session`는 disabled 경계를 유지해야 한다
 - `/metrics`에서 websocket, replay, AI fallback, session sync 계수가 증가하는지 본다
-- `watch/current`에서 선택 드라이버 HUD, focus mode, prediction 카드가 함께 동작하는지 본다
+- desktop 앱에서 선택 드라이버 HUD, focus mode, prediction 카드가 함께 동작하는지 본다
 
 ## rollback 시작점
-1. 새 배포에서 `validate:preflight`, realtime `healthz`, web `watch/current` 중 하나라도 실패하면 즉시 이전 정상 리비전 또는 이미지를 다시 배포한다
+1. 새 배포에서 `validate:preflight`, realtime `healthz`, web `watch/preview` 중 하나라도 실패하면 즉시 이전 정상 리비전 또는 이미지를 다시 배포한다
 2. rollback 에서는 `.env`를 함께 되돌리지 말고 현재 운영 비밀값을 유지한 채 애플리케이션 리비전만 되돌린다
-3. rollback 뒤에는 다시 realtime `healthz`, web `watch/current`, `/metrics` smoke check 를 반복한다
+3. rollback 뒤에는 다시 realtime `healthz`, web `watch/preview`, `/metrics` smoke check 를 반복한다
 
 ## 메모
 - 이 저장소의 기준 preflight 는 `pnpm validate:preflight` 이다

@@ -12,15 +12,27 @@ export default function DownloadPage() {
         </p>
         <div style={{ display: "grid", gap: 8 }}>
           <div className="panel" style={{ padding: 12 }}>
-            <strong>로컬 개발</strong>
+            <strong>Desktop 빌드</strong>
+            <div className="muted" style={{ marginTop: 6 }}>
+              `pnpm build:desktop`
+            </div>
+          </div>
+          <div className="panel" style={{ padding: 12 }}>
+            <strong>Desktop 실행</strong>
             <div className="muted" style={{ marginTop: 6 }}>
               `pnpm dev:desktop`
             </div>
           </div>
           <div className="panel" style={{ padding: 12 }}>
-            <strong>현재 웹 데모</strong>
-            <div className="muted" style={{ marginTop: 6 }}>
-              히스토리컬/프로토타입 경로만 유지한다
+            <strong>로컬 smoke check</strong>
+            <div className="muted" style={{ marginTop: 6, lineHeight: 1.6 }}>
+              Electron 창에서 race board, 차량 보간 이동, 선택 드라이버 HUD, focus 토글 동작 확인
+            </div>
+          </div>
+          <div className="panel" style={{ padding: 12 }}>
+            <strong>공개 웹 경계</strong>
+            <div className="muted" style={{ marginTop: 6, lineHeight: 1.6 }}>
+              public web은 preview-only 경로(`/watch/preview`)만 유지하고 non-preview watch와 watch-session bridge는 비활성화된다
             </div>
           </div>
         </div>

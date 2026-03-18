@@ -8,7 +8,7 @@ param(
     [string]$MetricsToken,
     [string]$EnvFilePath,
     [string]$RealtimeHealthUrl = "http://localhost:4001/healthz",
-    [string]$WebWatchUrl = "http://localhost:3000/watch/current",
+    [string]$WebWatchUrl = "http://localhost:3000/watch/preview",
     [string]$MetricsUrl = "http://localhost:4001/metrics",
     [string[]]$ComposeServices = @("postgres", "redis", "realtime", "web")
 )
