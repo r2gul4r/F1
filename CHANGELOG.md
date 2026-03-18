@@ -272,3 +272,8 @@
 - test: lock renderer-frame helper behavior and guard the desktop renderer through typecheck and production build
 - feat: overlay a selected-driver HUD directly on the desktop race board with freshness and race-control status
 - feat: reorganize the desktop sidebar around telemetry focus, driver rail, race control, and runtime panels
+- feat: add `@f1/core` deterministic prediction feature snapshot and note builders for lap-boundary trigger context
+- feat: wire realtime telemetry-trigger AI prediction flow to use core-built deterministic feature notes instead of inline rank text
+- test: lock deterministic feature-note prompt propagation in core and realtime trigger/AI service tests
+- fix: exclude invalid and negative speed samples from deterministic prediction feature aggregates unless all samples are invalid
+- fix: align telemetry-trigger feature snapshot `generatedAtMs` with actual feature build time semantics

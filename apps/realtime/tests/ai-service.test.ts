@@ -285,4 +285,31 @@ describe("ai service", () => {
     expect(timeoutSpy).toHaveBeenCalled();
     expect(timeoutSpy.mock.calls[0]?.[1]).toBe(5000);
   });
+
+  it("ollama prompt는 deterministic snapshot note를 포함함", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        response: "0.6,0.3,0.1\nOllama summary"
+      })
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const service = new AiService({
+      baseUrl: "http://localhost:11434",
+      model: "gemma3:12b"
+    });
+
+    const result = await service.predictWithStatus({
+      ...request,
+      snapshot: {
+        ...request.snapshot,
+        note: "rank 6 -> 5 | ticks=2 | avg=313.0 | top=314.0 | min=312.0"
+      }
+    });
+
+    expect(result.status).toBe("ok");
+    const body = JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body)) as { prompt?: string };
+    expect(body.prompt).toContain("note=rank 6 -&gt; 5 | ticks=2 | avg=313.0 | top=314.0 | min=312.0");
+  });
 });

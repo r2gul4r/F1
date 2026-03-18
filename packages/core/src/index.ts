@@ -24,5 +24,7 @@ export type {
 } from "./contracts.js";
 export { createSessionSnapshot, initializeSelectionState, reconcileSelectionState, reduceSessionSnapshot } from "./session-snapshot.js";
 export { resolvePredictionContext, toPredictionViewModel } from "./prediction-context.js";
+export { buildPredictionFeatureSnapshot, toPredictionFeatureNote } from "./prediction-feature.js";
+export type { BuildPredictionFeatureSnapshotInput } from "./prediction-feature.js";
 export { buildRendererFrame, resolveCarVisualState, resolveFreshnessSummary } from "./renderer-frame.js";
 export type { RendererFrameState } from "./renderer-frame.js";

@@ -1216,6 +1216,70 @@ describe("realtime api", () => {
     expect(fetchMock).toHaveBeenCalledTimes(invalidTimeoutInputs.length);
   });
 
+  it("telemetry trigger는 deterministic feature note를 AI prompt로 전달함", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        response: "0.6,0.3,0.1\ntrigger deterministic note"
+      })
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const repository = new MemoryRepository();
+    const { app } = await buildServer({
+      repository,
+      oauthUserRepository,
+      internalApiToken,
+      oauthProxyToken,
+      watchTokenSecret,
+      watchTokenTtlSec: 3600,
+      allowedOrigins: ["http://localhost:3000"],
+      wsBufferSize: 100,
+      ollamaBaseUrl: "http://localhost:11434",
+      ollamaModel: "gemma3:12b"
+    });
+
+    const firstTick = await app.inject({
+      method: "POST",
+      url: "/internal/events/telemetry",
+      headers: {
+        "x-internal-token": internalApiToken
+      },
+      payload: {
+        sessionId: "session-feature-note",
+        driverId: "NOR",
+        position: { x: 1, y: 2, z: 0 },
+        speedKph: 312,
+        lap: 8,
+        rank: 6,
+        timestampMs: 1000
+      }
+    });
+    expect(firstTick.statusCode).toBe(202);
+
+    const triggerTick = await app.inject({
+      method: "POST",
+      url: "/internal/events/telemetry",
+      headers: {
+        "x-internal-token": internalApiToken
+      },
+      payload: {
+        sessionId: "session-feature-note",
+        driverId: "NOR",
+        position: { x: 2, y: 3, z: 0 },
+        speedKph: 314,
+        lap: 8,
+        rank: 5,
+        timestampMs: 1100
+      }
+    });
+    expect(triggerTick.statusCode).toBe(202);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+
+    const promptBody = JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body)) as { prompt?: string };
+    expect(promptBody.prompt).toContain("note=rank 6 -&gt; 5 | ticks=2 | avg=313.0 | top=314.0 | min=312.0");
+  });
+
   it("metrics는 telemetry trigger 경로의 ai fallback inference에 provider 라벨을 포함함", async () => {
     vi.stubGlobal(
       "fetch",

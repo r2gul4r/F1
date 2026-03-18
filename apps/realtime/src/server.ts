@@ -12,6 +12,7 @@ import {
   toOpaqueError
 } from "@f1/shared";
 import { createWatchToken, readWatchToken, verifyWatchToken } from "@f1/shared/watch-token";
+import { buildPredictionFeatureSnapshot } from "@f1/core";
 import cors from "@fastify/cors";
 import Fastify from "fastify";
 import { createMetrics } from "./metrics.js";
@@ -256,13 +257,23 @@ export const buildServer = async (input: BuildServerInput): Promise<{
 
     const tasks = triggers.map(async (trigger) => {
       const ticks = await input.repository.getRecentSessionTicks(trigger.sessionId, 80);
+      const predictionFeature = buildPredictionFeatureSnapshot({
+        sessionId: trigger.sessionId,
+        lap: trigger.lap,
+        triggerDriverId: trigger.triggerDriverId,
+        rankTransition: {
+          beforeRank: trigger.beforeRank,
+          afterRank: trigger.afterRank
+        },
+        ticks
+      });
       const result = await aiService.predictWithStatus({
         sessionId: trigger.sessionId,
         lap: trigger.lap,
         triggerDriverId: trigger.triggerDriverId,
         snapshot: {
           ticks,
-          note: `rank ${trigger.beforeRank} -> ${trigger.afterRank}`
+          note: predictionFeature.note
         }
       });
       const prediction = result.prediction;
