@@ -267,3 +267,6 @@
 - feat: add new `@f1/core` workspace and freeze shared renderer-core and HUD contract types for slice 64
 - feat: implement pure session snapshot initializer/reducer and prediction selection context helpers in `packages/core`
 - test: add direct `@f1/core` contract coverage and require `packages/core` in project structure validation
+- feat: render a mock 2.5D desktop circuit with interpolated car motion inside the Electron shell
+- feat: add `@f1/core` renderer-frame helpers for freshness, focus camera, and smoothed car-state projection
+- test: lock renderer-frame helper behavior and guard the desktop renderer through typecheck and production build

@@ -2,6 +2,7 @@
   color: #f8fafc;
   background: #07111f;
   font-family: "Space Grotesk", "Noto Sans KR", sans-serif;
+  color-scheme: dark;
 }
 
 * {
@@ -25,14 +26,14 @@ body {
 
 .shell {
   display: grid;
-  gap: 24px;
+  gap: 22px;
   padding: 32px;
 }
 
 .hero {
   display: grid;
   gap: 12px;
-  max-width: 760px;
+  max-width: 860px;
 }
 
 .eyebrow {
@@ -57,35 +58,149 @@ body {
 }
 
 .grid {
+  display: none;
+}
+
+.desktop-board {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: minmax(0, 1.7fr) minmax(320px, 0.8fr);
+  gap: 18px;
+}
+
+.board-panel {
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 24px;
+  background: rgba(7, 17, 31, 0.78);
+  backdrop-filter: blur(18px);
+  box-shadow: 0 24px 60px rgba(3, 7, 18, 0.34);
+}
+
+.board-stage {
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+  min-height: 640px;
+}
+
+.board-sidebar {
+  display: grid;
+  gap: 14px;
+}
+
+.stage-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   gap: 16px;
 }
 
-.card {
-  border: 1px solid rgba(148, 163, 184, 0.18);
-  border-radius: 18px;
-  padding: 20px;
-  background: rgba(15, 23, 42, 0.68);
-  backdrop-filter: blur(10px);
+.mode-toggle {
+  border: 1px solid rgba(34, 211, 238, 0.32);
+  border-radius: 999px;
+  padding: 10px 16px;
+  background: linear-gradient(135deg, rgba(34, 211, 238, 0.22), rgba(125, 211, 252, 0.08));
+  color: #f8fafc;
+  cursor: pointer;
+  font: inherit;
 }
 
-.card h2 {
-  margin: 0 0 12px;
-  font-size: 1rem;
+.mode-toggle:hover {
+  border-color: rgba(34, 211, 238, 0.55);
 }
 
-.card ul {
+.race-board-shell {
+  position: relative;
+  min-height: 560px;
+  border-radius: 22px;
+  overflow: hidden;
+  border: 1px solid rgba(125, 211, 252, 0.14);
+  background:
+    radial-gradient(circle at top, rgba(34, 211, 238, 0.08), transparent 42%),
+    linear-gradient(180deg, rgba(15, 23, 42, 0.6), rgba(2, 6, 23, 0.92));
+}
+
+.race-board-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.info-card {
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-radius: 20px;
+  padding: 18px;
+  background: rgba(15, 23, 42, 0.74);
+}
+
+.info-card h2 {
+  margin: 6px 0 4px;
+  font-size: 1.4rem;
+}
+
+.team-name {
   margin: 0;
-  padding-left: 18px;
   color: #cbd5e1;
-  line-height: 1.7;
 }
 
-.meta {
+.muted-label {
+  color: #94a3b8;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.stat-grid {
   display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
-  margin: 0;
+  margin-top: 16px;
+}
+
+.stat-grid article {
+  display: grid;
+  gap: 4px;
+  padding: 12px;
+  border-radius: 16px;
+  background: rgba(30, 41, 59, 0.7);
+}
+
+.stat-grid strong {
+  font-size: 1.05rem;
+}
+
+.driver-pill-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.driver-pill {
+  display: grid;
+  grid-template-columns: 40px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 16px;
+  padding: 12px;
+  background: rgba(15, 23, 42, 0.56);
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
+.driver-pill.active {
+  border-color: rgba(34, 211, 238, 0.46);
+  background: linear-gradient(135deg, rgba(34, 211, 238, 0.18), rgba(14, 116, 144, 0.12));
+}
+
+.driver-pill-rank {
+  color: #cbd5e1;
+}
+
+.runtime-card .meta {
+  margin-top: 12px;
 }
 
 .meta div {
@@ -103,4 +218,28 @@ body {
 .meta dd {
   margin: 0;
   font-weight: 700;
+}
+
+@media (max-width: 1100px) {
+  .desktop-board {
+    grid-template-columns: 1fr;
+  }
+
+  .board-stage {
+    min-height: 520px;
+  }
+}
+
+@media (max-width: 720px) {
+  .shell {
+    padding: 18px;
+  }
+
+  .race-board-shell {
+    min-height: 420px;
+  }
+
+  .stat-grid {
+    grid-template-columns: 1fr;
+  }
 }

@@ -2,6 +2,7 @@ export type {
   AiPrediction,
   CameraState,
   CarState,
+  CarVisualState,
   Driver,
   FreshnessSummary,
   HudViewModel,
@@ -23,3 +24,5 @@ export type {
 } from "./contracts.js";
 export { createSessionSnapshot, initializeSelectionState, reconcileSelectionState, reduceSessionSnapshot } from "./session-snapshot.js";
 export { resolvePredictionContext, toPredictionViewModel } from "./prediction-context.js";
+export { buildRendererFrame, resolveCarVisualState, resolveFreshnessSummary } from "./renderer-frame.js";
+export type { RendererFrameState } from "./renderer-frame.js";
