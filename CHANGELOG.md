@@ -314,3 +314,4 @@
 - feat: add selected-driver gap, interval, gear, RPM, and tire detail cards to the desktop board
 - docs: close the slice-3 board MVP epic and advance the slice-3 desktop AI epic as the current task
 - docs: close the slice-3 desktop AI epic and advance the slice-3 deployment/public-channel epic as the current task
+- docs: close the slice-3 deployment/public-channel epic after preview, history, replay, install, and smoke paths were aligned
