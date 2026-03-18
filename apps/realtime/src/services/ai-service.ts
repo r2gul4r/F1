@@ -65,6 +65,7 @@ const fallbackPrediction = (request: AiPredictRequest, latencyMs: number): AiPre
     lap: request.lap,
     triggerDriverId: request.triggerDriverId,
     podiumProb: [normalized[0] ?? 0, normalized[1] ?? 0, normalized[2] ?? 0],
+    isFallback: true,
     reasoningSummary: sanitizeUserHtml("모델 응답 실패로 보수적 추정 사용"),
     modelLatencyMs: latencyMs,
     timestampMs: Date.now()
@@ -213,6 +214,7 @@ export class AiService {
           lap: request.lap,
           triggerDriverId: request.triggerDriverId,
           podiumProb: probabilities,
+          isFallback: false,
           reasoningSummary: summary,
           modelLatencyMs: Date.now() - startedAt,
           timestampMs: Date.now()

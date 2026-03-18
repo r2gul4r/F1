@@ -28,6 +28,7 @@ export const aiPredictionSchema = z.object({
   lap: z.number().int().nonnegative(),
   triggerDriverId: z.string().min(1),
   podiumProb: z.array(z.number().min(0).max(1)).length(3),
+  isFallback: z.boolean(),
   reasoningSummary: z.string().min(1).max(500),
   modelLatencyMs: z.number().int().nonnegative(),
   timestampMs: z.number().int().positive()

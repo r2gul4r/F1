@@ -81,6 +81,7 @@ const createPreviewPrediction = (): AiPrediction => ({
   lap: 18,
   triggerDriverId: "NOR",
   podiumProb: [0.74, 0.19, 0.07],
+  isFallback: false,
   reasoningSummary: "프로토타입 미리보기용 예측 카드",
   modelLatencyMs: 240,
   timestampMs: Date.now() - 800

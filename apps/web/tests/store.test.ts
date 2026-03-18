@@ -48,6 +48,7 @@ describe("race store", () => {
       lap: 3,
       triggerDriverId: "VER",
       podiumProb: [0.6, 0.3, 0.1],
+      isFallback: false,
       reasoningSummary: "속도 우세",
       modelLatencyMs: 800,
       timestampMs: Date.now()
@@ -80,6 +81,7 @@ describe("race store", () => {
       lap: 3,
       triggerDriverId: "VER",
       podiumProb: [0.6, 0.3, 0.1],
+      isFallback: true,
       reasoningSummary: "속도 우세",
       modelLatencyMs: 800,
       timestampMs: Date.now()

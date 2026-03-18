@@ -27,6 +27,7 @@ describe("wsEventSchema", () => {
         lap: 2,
         triggerDriverId: "NOR",
         podiumProb: [0.3, 0.4],
+        isFallback: false,
         reasoningSummary: "x",
         modelLatencyMs: 100,
         timestampMs: Date.now()

@@ -34,6 +34,7 @@ export const buildMockPredictions = (input: {
       lap,
       triggerDriverId: triggerDriver?.id ?? "UNKNOWN",
       podiumProb,
+      isFallback: false,
       reasoningSummary: `Lap ${lap} mock prediction anchored to local deterministic context`,
       modelLatencyMs: 120 + index * 35,
       timestampMs: input.timestampMs - (recentLaps.length - index - 1) * 14_000

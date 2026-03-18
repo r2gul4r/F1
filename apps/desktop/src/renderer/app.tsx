@@ -231,7 +231,7 @@ export const App = () => {
               </article>
               <article>
                 <span className="muted-label">Prediction</span>
-                <strong>{runtime.aiProvider}</strong>
+                <strong>{aiProviderLabel}</strong>
               </article>
             </div>
           </section>
@@ -243,6 +243,9 @@ export const App = () => {
                 <div className="hud-chip-row" style={{ marginTop: 12 }}>
                   <span className="hud-chip">Provider {aiProviderLabel}</span>
                   <span className="hud-chip">Context {predictionContextLabel}</span>
+                  <span className="hud-chip">
+                    {predictionViewModel.context.visiblePrediction.isFallback ? "Fallback" : "Primary"}
+                  </span>
                 </div>
                 <div className="stat-grid">
                   <article>

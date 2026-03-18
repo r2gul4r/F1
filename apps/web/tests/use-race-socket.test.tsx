@@ -227,6 +227,7 @@ describe("useRaceSocket", () => {
             lap: 9,
             triggerDriverId: "VER",
             podiumProb: [0.6, 0.3, 0.1],
+            isFallback: false,
             reasoningSummary: "old session",
             modelLatencyMs: 100,
             timestampMs: 1000
@@ -340,6 +341,7 @@ describe("useRaceSocket", () => {
             lap: 9,
             triggerDriverId: "VER",
             podiumProb: [0.6, 0.3, 0.1],
+            isFallback: false,
             reasoningSummary: "old session",
             modelLatencyMs: 100,
             timestampMs: 1000
@@ -452,6 +454,7 @@ describe("useRaceSocket", () => {
             lap: 9,
             triggerDriverId: "VER",
             podiumProb: [0.6, 0.3, 0.1],
+            isFallback: false,
             reasoningSummary: "old session",
             modelLatencyMs: 100,
             timestampMs: 1000

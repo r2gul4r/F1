@@ -38,6 +38,7 @@ describe("prediction card", () => {
       lap: 12,
       triggerDriverId: "NOR",
       podiumProb: [0.61, 0.27, 0.12],
+      isFallback: false,
       reasoningSummary: "Norris pace advantage",
       modelLatencyMs: 812,
       timestampMs: new Date("2026-03-12T10:00:00.000Z").getTime()
@@ -53,6 +54,7 @@ describe("prediction card", () => {
     expect(screen.getByText("12%")).toBeTruthy();
     expect(screen.getByText("812 ms")).toBeTruthy();
     expect(screen.getByText("선택 드라이버 관련 예측")).toBeTruthy();
+    expect(screen.getByText("Primary prediction")).toBeTruthy();
     expect(screen.getByText("Norris pace advantage")).toBeTruthy();
     expect(screen.getByText(/생성 시각 .*15초 전/)).toBeTruthy();
     expect(screen.queryByText(/최신 전체 예측보다 .*초 이전 데이터/)).toBeNull();
@@ -70,6 +72,7 @@ describe("prediction card", () => {
       lap: 12,
       triggerDriverId: "NOR",
       podiumProb: [0.61, 0.27, 0.12],
+      isFallback: false,
       reasoningSummary: "Norris pace advantage",
       modelLatencyMs: 812,
       timestampMs: new Date("2026-03-12T10:00:00.000Z").getTime()
@@ -88,6 +91,7 @@ describe("prediction card", () => {
       lap: 11,
       triggerDriverId: "NOR",
       podiumProb: [0.58, 0.28, 0.14],
+      isFallback: true,
       reasoningSummary: "Norris selected-driver view",
       modelLatencyMs: 790,
       timestampMs: new Date("2026-03-12T09:59:45.000Z").getTime()
@@ -97,6 +101,7 @@ describe("prediction card", () => {
       lap: 12,
       triggerDriverId: "VER",
       podiumProb: [0.52, 0.31, 0.17],
+      isFallback: false,
       reasoningSummary: "Verstappen latest overall",
       modelLatencyMs: 760,
       timestampMs: new Date("2026-03-12T10:00:00.000Z").getTime()
@@ -106,6 +111,7 @@ describe("prediction card", () => {
 
     expect(screen.getByText("선택 드라이버 관련 예측")).toBeTruthy();
     expect(screen.getByText("Norris selected-driver view")).toBeTruthy();
+    expect(screen.getByText("Fallback prediction")).toBeTruthy();
     expect(screen.getByText(/최신 전체 예측보다 15초 이전 데이터/)).toBeTruthy();
     expect(screen.getByText(/생성 시각 .*30초 전/)).toBeTruthy();
     expect(screen.queryByText("Verstappen latest overall")).toBeNull();
@@ -118,6 +124,7 @@ describe("prediction card", () => {
       lap: 11,
       triggerDriverId: "VER",
       podiumProb: [0.58, 0.28, 0.14],
+      isFallback: false,
       reasoningSummary: "Verstappen older prediction",
       modelLatencyMs: 790,
       timestampMs: new Date("2026-03-12T09:59:45.000Z").getTime()
@@ -127,6 +134,7 @@ describe("prediction card", () => {
       lap: 12,
       triggerDriverId: "NOR",
       podiumProb: [0.52, 0.31, 0.17],
+      isFallback: false,
       reasoningSummary: "Norris latest overall",
       modelLatencyMs: 760,
       timestampMs: new Date("2026-03-12T10:00:00.000Z").getTime()
@@ -149,6 +157,7 @@ describe("prediction card", () => {
       lap: 12,
       triggerDriverId: "NOR",
       podiumProb: [0.61, 0.27, 0.12],
+      isFallback: false,
       reasoningSummary: "Norris pace advantage",
       modelLatencyMs: 812,
       timestampMs: new Date("2026-03-12T10:00:00.000Z").getTime()

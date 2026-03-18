@@ -55,6 +55,7 @@ describe("ai service", () => {
     expect(prediction.podiumProb[0]).toBeCloseTo(0.525, 6);
     expect(prediction.podiumProb[1]).toBeCloseTo(0.3125, 6);
     expect(prediction.podiumProb[2]).toBeCloseTo(0.1625, 6);
+    expect(prediction.isFallback).toBe(true);
   });
 
   it("fallback 확률은 고속 입력에서도 합계 1을 유지함", async () => {
@@ -112,6 +113,7 @@ describe("ai service", () => {
     expect(result.status).toBe("fallback");
     expect(result.reason).toBe("http_error");
     expect(prediction.reasoningSummary).toBe("모델 응답 실패로 보수적 추정 사용");
+    expect(prediction.isFallback).toBe(true);
   });
 
   it("확률 파싱이 불가능하면 invalid_payload reason으로 fallback함", async () => {
@@ -192,6 +194,7 @@ describe("ai service", () => {
     expect(prediction.podiumProb[0]).toBeCloseTo(0.6, 6);
     expect(prediction.podiumProb[1]).toBeCloseTo(0.3, 6);
     expect(prediction.podiumProb[2]).toBeCloseTo(0.1, 6);
+    expect(prediction.isFallback).toBe(false);
   });
 
   it("예외가 발생하면 exception reason으로 fallback함", async () => {
@@ -247,6 +250,7 @@ describe("ai service", () => {
     expect(result.status).toBe("fallback");
     expect(result.reason).toBe("disabled_provider");
     expect(result.prediction.reasoningSummary).toBe("모델 응답 실패로 보수적 추정 사용");
+    expect(result.prediction.isFallback).toBe(true);
   });
 
   it("requestTimeoutMs override를 setTimeout에 반영함", async () => {
