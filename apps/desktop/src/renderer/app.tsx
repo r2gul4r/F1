@@ -3,6 +3,7 @@ import React, { useDeferredValue, useEffect, useMemo, useState } from "react";
 import { useDesktopSession } from "./desktop-session";
 import { buildDriverRailItems } from "./driver-rail";
 import { getNextSelectedDriverId, isFocusToggleKey } from "./keyboard-controls";
+import { buildPredictionHistory } from "./prediction-history";
 import { toAiProviderLabel, toPredictionContextLabel } from "./prediction-status";
 import { buildPodiumStripItems } from "./podium-strip";
 import { buildSelectedDriverDetails } from "./selected-driver-details";
@@ -106,6 +107,7 @@ export const App = () => {
     () => toPredictionViewModel(resolvePredictionContext(deferredSnapshot.predictions, selectedDriverId), Date.now()),
     [deferredSnapshot.predictions, selectedDriverId]
   );
+  const predictionHistory = useMemo(() => buildPredictionHistory(deferredSnapshot.predictions), [deferredSnapshot.predictions]);
   const selectedDriverDetails = useMemo(
     () => buildSelectedDriverDetails(selectedDriver, selectedTick),
     [selectedDriver, selectedTick]
@@ -350,6 +352,15 @@ export const App = () => {
             {predictionViewModel.context.selectedPredictionStale ? (
               <div className="info-note">
                 Selected driver prediction is {predictionViewModel.context.staleGapSeconds}s behind the latest overall update.
+              </div>
+            ) : null}
+            {predictionHistory.length > 0 ? (
+              <div className="hud-chip-row" style={{ marginTop: 12 }}>
+                {predictionHistory.map((item) => (
+                  <span className="hud-chip" key={`${item.lap}-${item.triggerDriverId}`}>
+                    Lap {item.lap} · {item.triggerDriverId} · {item.isFallback ? `fallback${item.fallbackReason ? `:${item.fallbackReason}` : ""}` : "primary"}
+                  </span>
+                ))}
               </div>
             ) : null}
           </section>

@@ -319,3 +319,4 @@
 - docs: close the slice-3 deployment/public-channel epic after preview, history, replay, install, and smoke paths were aligned
 - fix: rebase replay-demo timestamps against the current clock so replay telemetry and predictions do not look permanently stale
 - docs: close the slice-4 board MVP epic and advance the slice-4 desktop AI epic as the current task
+- feat: add a recent prediction history strip to the desktop AI panel so lap-to-lap AI changes are readable at a glance
