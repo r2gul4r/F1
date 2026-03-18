@@ -304,3 +304,4 @@
 - docs: close the slice-2 shell/contracts epic and advance the slice-2 board MVP epic as the current task
 - docs: close the deployment/install/public-channel epic now that download, smoke, preview, and replay entry paths are in place
 - feat: keep focus camera closer to the previous selected-driver target when selected telemetry momentarily disappears
+- docs: close the slice-2 board MVP epic and advance the slice-2 desktop AI epic as the current task
