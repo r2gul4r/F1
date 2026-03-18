@@ -253,7 +253,7 @@ body {
 
 .driver-pill {
   display: grid;
-  grid-template-columns: 40px 1fr auto;
+  grid-template-columns: 40px 1fr auto auto;
   align-items: center;
   gap: 10px;
   border: 1px solid rgba(148, 163, 184, 0.18);
@@ -273,6 +273,15 @@ body {
 
 .driver-pill-rank {
   color: #cbd5e1;
+}
+
+.driver-pill-leader {
+  border-radius: 999px;
+  padding: 4px 8px;
+  background: rgba(250, 204, 21, 0.14);
+  color: #facc15;
+  font-size: 0.72rem;
+  font-weight: 700;
 }
 
 .info-note {

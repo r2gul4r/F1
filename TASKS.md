@@ -193,6 +193,7 @@
 [x] plan-driven task: desktop runtime contract를 main, preload, renderer 경계에서 타입으로 고정한다 [slice 72]
 [x] plan-driven task: desktop session source adapter를 runtime contract에 연결한다 [slice 73]
 [x] plan-driven task: desktop board keyboard controls를 추가해 선택 드라이버와 focus mode 전환을 빠르게 만든다 [slice 74]
+[x] plan-driven task: desktop driver rail을 live rank 기준으로 정렬해 보드 판독성을 높인다 [slice 75]
 
 [x] plan-driven task: 로컬 앱 전환에 필요한 셸, 계약, 코어 분리 경계를 고정한다 [slice 1]
 [ ] plan-driven task: 2.5D 레이스 보드 MVP 를 완성한다 [slice 1]

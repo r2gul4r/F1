@@ -1,6 +1,7 @@
 import { resolveFreshnessSummary } from "@f1/core";
 import React, { useDeferredValue, useEffect, useMemo, useState } from "react";
 import { useDesktopSession } from "./desktop-session";
+import { buildDriverRailItems } from "./driver-rail";
 import { getNextSelectedDriverId, isFocusToggleKey } from "./keyboard-controls";
 import { RaceBoard } from "./race-board";
 import { SelectedDriverHud } from "./selected-driver-hud";
@@ -58,7 +59,8 @@ export const App = () => {
     setFocusModeEnabled
   } = session;
   const deferredSnapshot = useDeferredValue(snapshot);
-  const orderedDriverIds = useMemo(() => deferredSnapshot.drivers.map((driver) => driver.id), [deferredSnapshot.drivers]);
+  const driverRailItems = useMemo(() => buildDriverRailItems(deferredSnapshot), [deferredSnapshot]);
+  const orderedDriverIds = useMemo(() => driverRailItems.map((item) => item.driver.id), [driverRailItems]);
   const selectedTick = useMemo(
     () => (selectedDriver ? deferredSnapshot.latestTicksByDriver[selectedDriver.id] : undefined),
     [deferredSnapshot.latestTicksByDriver, selectedDriver]
@@ -183,8 +185,7 @@ export const App = () => {
           <section className="info-card">
             <div className="muted-label">Driver Rail</div>
             <div className="driver-pill-list">
-              {deferredSnapshot.drivers.map((driver) => {
-                const tick = deferredSnapshot.latestTicksByDriver[driver.id];
+              {driverRailItems.map(({ driver, tick, isLeader }) => {
                 const isSelected = driver.id === selectedDriverId;
                 return (
                   <button
@@ -196,6 +197,7 @@ export const App = () => {
                     <span>{driver.number}</span>
                     <span>{driver.id}</span>
                     <span className="driver-pill-rank">{tick ? `P${tick.rank}` : "P-"}</span>
+                    {isLeader ? <span className="driver-pill-leader">Leader</span> : null}
                   </button>
                 );
               })}
