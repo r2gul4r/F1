@@ -13,6 +13,7 @@ const FRESHNESS_LABEL = {
 
 export const App = () => {
   const [fps, setFps] = useState(0);
+  const runtime = window.desktopShell;
   const {
     snapshot,
     selectedDriver,
@@ -38,8 +39,9 @@ export const App = () => {
         <div className="eyebrow">F1 Pulse Desktop</div>
         <h1>2.5D race board MVP</h1>
         <p className="lead">
-          계약을 잠근 뒤 첫 번째 renderer MVP를 올렸다. 지금은 mock 세션으로 서킷과 차량 보간 레이어를 검증하고,
-          다음 슬라이스에서 HUD 와 정보 패널을 본격적으로 붙인다.
+          로컬 앱 경계는 preload runtime contract를 기준으로 고정되어 있다. 현재 `{runtime.mode}` 모드에서
+          `{runtime.sessionSource}` 소스로 서킷과 차량 보간 레이어를 검증 중이며, public web relay는
+          `{runtime.publicWebRelay ? "enabled" : "disabled"}` 상태다.
         </p>
       </section>
 
@@ -48,7 +50,9 @@ export const App = () => {
           <div className="stage-toolbar">
             <div>
               <div className="muted-label">Desktop Race Board</div>
-              <strong>{focusModeEnabled ? "Focus camera on selected driver" : "Overview orbit with live HUD"}</strong>
+              <strong>
+                {focusModeEnabled ? "Focus camera on selected driver" : "Overview orbit with live HUD"} · {runtime.mode}
+              </strong>
             </div>
             <button className="mode-toggle" onClick={() => setFocusModeEnabled((value) => !value)} type="button">
               {focusModeEnabled ? "집중 모드 끄기" : "집중 모드 켜기"}
@@ -146,11 +150,11 @@ export const App = () => {
               </article>
               <article>
                 <span className="muted-label">Update Mode</span>
-                <strong>90ms mock cadence</strong>
+                <strong>{runtime.sessionSource}</strong>
               </article>
               <article>
                 <span className="muted-label">Prediction</span>
-                <strong>slice 67 arm</strong>
+                <strong>{runtime.aiProvider}</strong>
               </article>
             </div>
           </section>
@@ -160,19 +164,27 @@ export const App = () => {
             <dl className="meta">
               <div>
                 <dt>Platform</dt>
-                <dd>{window.desktopShell.platform}</dd>
+                <dd>{runtime.platform}</dd>
               </div>
               <div>
                 <dt>Electron</dt>
-                <dd>{window.desktopShell.versions.electron}</dd>
+                <dd>{runtime.versions.electron}</dd>
               </div>
               <div>
                 <dt>Chrome</dt>
-                <dd>{window.desktopShell.versions.chrome}</dd>
+                <dd>{runtime.versions.chrome}</dd>
               </div>
               <div>
                 <dt>Node</dt>
-                <dd>{window.desktopShell.versions.node}</dd>
+                <dd>{runtime.versions.node}</dd>
+              </div>
+              <div>
+                <dt>Data Source</dt>
+                <dd>{runtime.dataSource}</dd>
+              </div>
+              <div>
+                <dt>Public Relay</dt>
+                <dd>{runtime.publicWebRelay ? "enabled" : "disabled"}</dd>
               </div>
             </dl>
           </section>

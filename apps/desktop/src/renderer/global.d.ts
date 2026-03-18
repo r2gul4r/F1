@@ -1,14 +1,9 @@
+import type { DesktopRuntimeContext } from "../runtime/runtime-context.js";
+
 export {};
 
 declare global {
   interface Window {
-    desktopShell: {
-      platform: string;
-      versions: {
-        chrome: string;
-        electron: string;
-        node: string;
-      };
-    };
+    desktopShell: DesktopRuntimeContext;
   }
 }

@@ -285,3 +285,4 @@
 - docs: update download entry and task board state for slice 70 completion
 - fix: align deployment smoke-check default web target with preview-only boundary (`/watch/preview`)
 - fix: resolve web typecheck blockers in oauth and watch-session-cookie test assertions
+- feat: freeze a typed desktop runtime contract across main/preload/renderer with mode, source, AI, and relay boundary metadata
