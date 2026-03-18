@@ -2,6 +2,7 @@ import { resolveFreshnessSummary, resolvePredictionContext, toPredictionViewMode
 import React, { useDeferredValue, useEffect, useMemo, useState } from "react";
 import { useDesktopSession } from "./desktop-session";
 import { buildDriverRailItems } from "./driver-rail";
+import { DriverRailList } from "./driver-rail-list";
 import { getNextSelectedDriverId, isFocusToggleKey } from "./keyboard-controls";
 import { buildPredictionHistory } from "./prediction-history";
 import { toAiProviderLabel, toPredictionContextLabel } from "./prediction-status";
@@ -287,27 +288,11 @@ export const App = () => {
 
           <section className="info-card">
             <div className="muted-label">Driver Rail</div>
-            <div className="driver-pill-list">
-              {driverRailItems.map(({ driver, tick, isLeader, freshness, freshnessLabel }) => {
-                const isSelected = driver.id === selectedDriverId;
-                return (
-                  <button
-                    className={isSelected ? "driver-pill active" : "driver-pill"}
-                    key={driver.id}
-                    onClick={() => setSelectedDriverId(driver.id)}
-                    type="button"
-                  >
-                    <span>{driver.number}</span>
-                    <span>{driver.id}</span>
-                    <span className={`driver-pill-freshness driver-pill-freshness-${freshness.replace(/\s+/g, "-")}`}>
-                      {freshnessLabel}
-                    </span>
-                    <span className="driver-pill-rank">{tick ? `P${tick.rank}` : "P-"}</span>
-                    {isLeader ? <span className="driver-pill-leader">Leader</span> : null}
-                  </button>
-                );
-              })}
-            </div>
+            <DriverRailList
+              items={driverRailItems}
+              onSelectDriver={setSelectedDriverId}
+              selectedDriverId={selectedDriverId}
+            />
           </section>
 
           <section className="info-card">
