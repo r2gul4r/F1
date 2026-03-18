@@ -253,7 +253,7 @@ body {
 
 .driver-pill {
   display: grid;
-  grid-template-columns: 40px 1fr auto auto;
+  grid-template-columns: 40px 1fr auto auto auto;
   align-items: center;
   gap: 10px;
   border: 1px solid rgba(148, 163, 184, 0.18);
@@ -273,6 +273,26 @@ body {
 
 .driver-pill-rank {
   color: #cbd5e1;
+}
+
+.driver-pill-freshness {
+  border-radius: 999px;
+  padding: 4px 8px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: rgba(30, 41, 59, 0.9);
+}
+
+.driver-pill-freshness-fresh {
+  color: #4ade80;
+}
+
+.driver-pill-freshness-stale {
+  color: #facc15;
+}
+
+.driver-pill-freshness-no-telemetry {
+  color: #94a3b8;
 }
 
 .driver-pill-leader {

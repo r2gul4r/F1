@@ -39,18 +39,40 @@ const createSnapshot = (): SessionSnapshot => ({
 
 describe("driver rail", () => {
   it("orders drivers by live rank before static number", () => {
-    const items = buildDriverRailItems(createSnapshot());
+    const items = buildDriverRailItems(createSnapshot(), {
+      nowMs: 1_500,
+      telemetryStaleMs: 15_000
+    });
 
     expect(items.map((item) => item.driver.id)).toEqual(["NOR", "VER", "LEC"]);
     expect(items[0]?.isLeader).toBe(true);
+    expect(items[0]?.freshness).toBe("fresh");
+    expect(items[0]?.freshnessLabel).toBe("정상");
   });
 
   it("falls back to driver number when telemetry rank is missing", () => {
     const snapshot = createSnapshot();
     snapshot.latestTicksByDriver = {};
 
-    const items = buildDriverRailItems(snapshot);
+    const items = buildDriverRailItems(snapshot, {
+      nowMs: 1_500,
+      telemetryStaleMs: 15_000
+    });
     expect(items.map((item) => item.driver.id)).toEqual(["VER", "NOR", "LEC"]);
     expect(items.every((item) => item.isLeader === false)).toBe(true);
+    expect(items[0]?.freshness).toBe("no telemetry");
+    expect(items[0]?.freshnessLabel).toBe("미수신");
+  });
+
+  it("exposes stale freshness when telemetry age crosses the configured threshold", () => {
+    const items = buildDriverRailItems(createSnapshot(), {
+      nowMs: 20_000,
+      telemetryStaleMs: 15_000
+    });
+
+    expect(items.find((item) => item.driver.id === "NOR")).toMatchObject({
+      freshness: "stale",
+      freshnessLabel: "지연"
+    });
   });
 });

@@ -217,6 +217,7 @@
 [x] plan-driven task: realtime telemetry trigger를 lap boundary semantics로 고정하고 legacy P5 helper contract를 보존한다 [slice 96]
 [x] plan-driven task: public entry pages의 approved link set과 boundary copy를 직접 테스트로 고정한다 [slice 97]
 [x] plan-driven task: desktop runtime contract에 session source option metadata와 disabled reason을 고정한다 [slice 98]
+[x] plan-driven task: desktop driver rail에 드라이버별 telemetry freshness badge를 추가한다 [slice 99]
 
 [x] plan-driven task: 로컬 앱 전환에 필요한 셸, 계약, 코어 분리 경계를 고정한다 [slice 1]
 [x] plan-driven task: 2.5D 레이스 보드 MVP 를 완성한다 [slice 1]

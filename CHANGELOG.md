@@ -337,3 +337,5 @@
 - feat: freeze session-source option metadata and disabled reasons inside the desktop runtime contract
 - fix: make the desktop session adapter and unavailable guidance honor contract-disabled sources before fallback dispatch
 - docs: close the slice-6 shell/contracts epic and advance the slice-6 board MVP epic as the current task
+- feat: surface per-driver telemetry freshness badges directly in the desktop driver rail
+- test: pin fresh, stale, and no-telemetry driver-rail freshness states in desktop renderer helpers

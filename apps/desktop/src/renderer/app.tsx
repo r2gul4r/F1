@@ -24,6 +24,7 @@ const FRESHNESS_LABEL = {
 } as const;
 
 export const App = () => {
+  const renderNowMs = Date.now();
   const [fps, setFps] = useState(0);
   const [sessionSourceOverride, setSessionSourceOverride] = useState<typeof window.desktopShell.sessionSource | null>(() =>
     resolveInitialSessionSourceOverride(() => window.localStorage.getItem(DESKTOP_SESSION_SOURCE_STORAGE_KEY))
@@ -110,7 +111,14 @@ export const App = () => {
     setFocusModeEnabled
   } = session;
   const deferredSnapshot = useDeferredValue(snapshot);
-  const driverRailItems = useMemo(() => buildDriverRailItems(deferredSnapshot), [deferredSnapshot]);
+  const driverRailItems = useMemo(
+    () =>
+      buildDriverRailItems(deferredSnapshot, {
+        nowMs: renderNowMs,
+        telemetryStaleMs: TELEMETRY_STALE_MS
+      }),
+    [deferredSnapshot, renderNowMs]
+  );
   const podiumStripItems = useMemo(() => buildPodiumStripItems(driverRailItems), [driverRailItems]);
   const orderedDriverIds = useMemo(() => driverRailItems.map((item) => item.driver.id), [driverRailItems]);
   const selectedTick = useMemo(
@@ -280,7 +288,7 @@ export const App = () => {
           <section className="info-card">
             <div className="muted-label">Driver Rail</div>
             <div className="driver-pill-list">
-              {driverRailItems.map(({ driver, tick, isLeader }) => {
+              {driverRailItems.map(({ driver, tick, isLeader, freshness, freshnessLabel }) => {
                 const isSelected = driver.id === selectedDriverId;
                 return (
                   <button
@@ -291,6 +299,9 @@ export const App = () => {
                   >
                     <span>{driver.number}</span>
                     <span>{driver.id}</span>
+                    <span className={`driver-pill-freshness driver-pill-freshness-${freshness.replace(/\s+/g, "-")}`}>
+                      {freshnessLabel}
+                    </span>
                     <span className="driver-pill-rank">{tick ? `P${tick.rank}` : "P-"}</span>
                     {isLeader ? <span className="driver-pill-leader">Leader</span> : null}
                   </button>
