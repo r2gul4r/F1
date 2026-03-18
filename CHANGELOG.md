@@ -291,3 +291,4 @@
 - feat: add keyboard shortcuts for driver cycling and focus-mode toggling in the desktop race board shell
 - feat: sort the desktop driver rail by live rank and mark the current leader for faster board reading
 - feat: overlay leader and focused-driver labels directly on the desktop race board canvas
+- docs: close the 2.5D race board MVP epic and advance the lap-based desktop AI epic as the current task
