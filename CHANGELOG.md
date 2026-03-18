@@ -321,3 +321,4 @@
 - docs: close the slice-4 board MVP epic and advance the slice-4 desktop AI epic as the current task
 - feat: add a recent prediction history strip to the desktop AI panel so lap-to-lap AI changes are readable at a glance
 - docs: close the slice-4 desktop AI epic and advance the slice-4 deployment/public-channel epic as the current task
+- docs: close the slice-4 deployment/public-channel epic after preview, history, replay, install, and smoke paths were aligned
