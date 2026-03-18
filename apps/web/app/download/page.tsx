@@ -12,6 +12,16 @@ export default function DownloadPage() {
         </p>
         <div style={{ display: "grid", gap: 8 }}>
           <div className="panel" style={{ padding: 12 }}>
+            <strong>Release tracks</strong>
+            <div className="muted" style={{ marginTop: 6, lineHeight: 1.6 }}>
+              Windows: `F1-Pulse-Desktop-win-x64.zip`
+              <br />
+              macOS: `F1-Pulse-Desktop-macos-universal.zip`
+              <br />
+              Linux: `F1-Pulse-Desktop-linux-x64.tar.gz`
+            </div>
+          </div>
+          <div className="panel" style={{ padding: 12 }}>
             <strong>Desktop 빌드</strong>
             <div className="muted" style={{ marginTop: 6 }}>
               `pnpm build:desktop`
@@ -27,6 +37,16 @@ export default function DownloadPage() {
             <strong>로컬 smoke check</strong>
             <div className="muted" style={{ marginTop: 6, lineHeight: 1.6 }}>
               Electron 창에서 race board, 차량 보간 이동, 선택 드라이버 HUD, focus 토글 동작 확인
+            </div>
+          </div>
+          <div className="panel" style={{ padding: 12 }}>
+            <strong>First-run checklist</strong>
+            <div className="muted" style={{ marginTop: 6, lineHeight: 1.6 }}>
+              1. mock session으로 desktop 창이 뜨는지 확인
+              <br />
+              2. `/watch/preview`와 `/history`에서 public web demo entry만 노출되는지 확인
+              <br />
+              3. replay demo package는 다음 슬라이스에서 이 entry에 연결
             </div>
           </div>
           <div className="panel" style={{ padding: 12 }}>

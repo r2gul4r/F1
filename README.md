@@ -46,6 +46,12 @@
 5. 웹은 `http://localhost:3000/watch/preview`만 확인하고 non-preview watch 경로가 비활성화 상태인지 확인
 6. `http://localhost:3000/history`에서 preview/demo entry와 replay demo placeholder가 보이는지 확인
 
+배포 아티팩트 기준 이름
+
+- Windows: `F1-Pulse-Desktop-win-x64.zip`
+- macOS: `F1-Pulse-Desktop-macos-universal.zip`
+- Linux: `F1-Pulse-Desktop-linux-x64.tar.gz`
+
 참고
 
 - 기본 제품 경로는 `desktop + realtime + shared (+ core)` 이다
