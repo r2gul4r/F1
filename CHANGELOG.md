@@ -260,3 +260,7 @@
 - docs: replace remaining web 2D queue slices with desktop shell, renderer-core, non-relay, and local smoke-check tasks
 - feat: add initial Electron desktop shell workspace with typed main, preload, and renderer bootstrap
 - docs: retarget the web home page toward desktop download and preview-only landing flow
+
+## 2026-03-18
+- docs: extract reusable core-logic candidates from current web and realtime for the upcoming `packages/core` split
+- chore: add `STATE.md` and pin slice 64 renderer-core contract freeze as the next active task
