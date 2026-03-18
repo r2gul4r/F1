@@ -331,3 +331,6 @@
 - feat: trigger the realtime telemetry AI path on lap boundaries even when rank does not change
 - test: pin same-lap rank-only telemetry as a no-trigger path and retain the legacy `detectP5Trigger` contract
 - docs: close the slice-5 desktop AI epic and advance the slice-5 deployment/public-channel epic as the current task
+- test: pin the exact approved public entry href sets and reject deprecated public watch/watch-session links
+- fix: align the landing-page public web boundary copy with the routes actually exposed
+- docs: close the slice-5 deployment/public-channel epic and seed the slice-6 queue

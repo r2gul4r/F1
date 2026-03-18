@@ -1,3 +1,4 @@
+import React from "react";
 import Link from "next/link";
 
 export default function HomePage() {
@@ -8,7 +9,7 @@ export default function HomePage() {
           <div className="muted">F1 Pulse</div>
           <h1 style={{ margin: 0 }}>실시간 본체는 데스크톱 앱으로 전환 중</h1>
           <p className="muted" style={{ margin: 0, lineHeight: 1.7 }}>
-            공개 웹은 랜딩, 다운로드, 문서, 히스토리컬 데모만 맡는다. 실시간 2.5D 레이스 보드와 HUD 본체는
+            공개 웹은 랜딩, 다운로드, 히스토리컬 데모만 맡는다. 실시간 2.5D 레이스 보드와 HUD 본체는
             로컬 데스크톱 앱으로 옮기는 중이다.
           </p>
         </div>
