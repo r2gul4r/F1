@@ -156,11 +156,24 @@ describe("renderer frame", () => {
 
   it("stale selected car stays focused while freshness dims its visuals", () => {
     const snapshot = toSnapshot();
+    const refreshedSnapshot = reduceSessionSnapshot(snapshot, {
+      type: "telemetry.upsert",
+      tick: {
+        sessionId,
+        driverId: "VER",
+        position: { x: 100, y: 20, z: 0 },
+        speedKph: 310,
+        lap: 4,
+        rank: 1,
+        timestampMs: 20_000
+      }
+    });
+
     const freshFrame = buildRendererFrame({
-      nowMs: 1_500,
+      nowMs: 20_000,
       telemetryStaleMs: 15_000,
       selectedDriverId: "VER",
-      snapshot,
+      snapshot: refreshedSnapshot,
       previousCarsByDriver: {},
       camera: { x: 0, y: 0, focusModeEnabled: true },
       track: {
@@ -191,6 +204,8 @@ describe("renderer frame", () => {
     expect(staleSelected?.visual.selected).toBe(true);
     expect(staleSelected?.visual.focus).toBe(true);
     expect(staleSelected?.visual.haloOpacity ?? 0).toBeGreaterThan(0);
+    expect(staleSelected?.visual.haloOpacity ?? 0).toBeLessThan(freshSelected?.visual.haloOpacity ?? 1);
+    expect(staleSelected?.visual.haloScale ?? 0).toBeLessThan(freshSelected?.visual.haloScale ?? 1);
     expect(staleSelected?.visual.opacity ?? 0).toBeLessThan(freshSelected?.visual.opacity ?? 1);
   });
 
@@ -242,7 +257,7 @@ describe("renderer frame", () => {
     expect(movedCar?.smoothedPosition?.x).toBeLessThan(130);
   });
 
-  it("focus camera keeps the previous selected position when the selected tick is temporarily missing", () => {
+  it("focus camera falls back to the previous selected position when the selected driver drops out of the snapshot", () => {
     const snapshot = toSnapshot();
     const firstFrame = buildRendererFrame({
       nowMs: 1_500,
@@ -258,12 +273,82 @@ describe("renderer frame", () => {
       }
     });
 
+    const snapshotWithoutSelectedDriver = reduceSessionSnapshot(createSessionSnapshot(sessionId), {
+      type: "drivers.set",
+      drivers: drivers.filter((driver) => driver.id !== "VER")
+    });
+
+    const secondFrame = buildRendererFrame({
+      nowMs: 1_650,
+      telemetryStaleMs: 15_000,
+      selectedDriverId: "VER",
+      snapshot: snapshotWithoutSelectedDriver,
+      previousCarsByDriver: firstFrame.carsByDriver,
+      camera: firstFrame.camera,
+      track: {
+        center: { x: 0, y: 0 },
+        halfHeight: 160,
+        points: []
+      }
+    });
+
+    const previousSelected = firstFrame.cars.find((car) => car.driverId === "VER");
+    const expectedCameraX =
+      (firstFrame.camera.x ?? 0) + (((previousSelected?.smoothedPosition?.x ?? 0) - (firstFrame.camera.x ?? 0)) * 0.08);
+
+    expect(secondFrame.camera.x).toBeCloseTo(expectedCameraX, 4);
+    expect(secondFrame.cars.find((car) => car.driverId === "VER")).toBeUndefined();
+  });
+
+  it("no-telemetry selected car keeps focus and halo while dimming against a same-pulse fresh reference", () => {
+    const snapshot = toSnapshot();
+    const firstFrame = buildRendererFrame({
+      nowMs: 1_500,
+      telemetryStaleMs: 15_000,
+      selectedDriverId: "VER",
+      snapshot,
+      previousCarsByDriver: {},
+      camera: { x: 0, y: 0, focusModeEnabled: true },
+      track: {
+        center: { x: 0, y: 0 },
+        halfHeight: 160,
+        points: []
+      }
+    });
+
+    const freshReferenceSnapshot = reduceSessionSnapshot(snapshot, {
+      type: "telemetry.upsert",
+      tick: {
+        sessionId,
+        driverId: "VER",
+        position: { x: 100, y: 20, z: 0 },
+        speedKph: 310,
+        lap: 4,
+        rank: 1,
+        timestampMs: 1_650
+      }
+    });
+
+    const freshReferenceFrame = buildRendererFrame({
+      nowMs: 1_650,
+      telemetryStaleMs: 15_000,
+      selectedDriverId: "VER",
+      snapshot: freshReferenceSnapshot,
+      previousCarsByDriver: firstFrame.carsByDriver,
+      camera: firstFrame.camera,
+      track: {
+        center: { x: 0, y: 0 },
+        halfHeight: 160,
+        points: []
+      }
+    });
+
     const snapshotWithoutSelectedTick = reduceSessionSnapshot(createSessionSnapshot(sessionId), {
       type: "drivers.set",
       drivers
     });
 
-    const secondFrame = buildRendererFrame({
+    const noTelemetryFrame = buildRendererFrame({
       nowMs: 1_650,
       telemetryStaleMs: 15_000,
       selectedDriverId: "VER",
@@ -277,14 +362,15 @@ describe("renderer frame", () => {
       }
     });
 
-    const firstSelected = firstFrame.cars.find((car) => car.driverId === "VER");
-    const secondSelected = secondFrame.cars.find((car) => car.driverId === "VER");
+    const freshSelected = freshReferenceFrame.cars.find((car) => car.driverId === "VER");
+    const noTelemetrySelected = noTelemetryFrame.cars.find((car) => car.driverId === "VER");
 
-    expect(secondFrame.camera.x).toBeGreaterThan(0);
-    expect(secondSelected?.freshness).toBe("no telemetry");
-    expect(secondSelected?.visual.selected).toBe(true);
-    expect(secondSelected?.visual.focus).toBe(true);
-    expect(secondSelected?.visual.haloOpacity ?? 0).toBeGreaterThan(0);
-    expect(secondSelected?.visual.opacity ?? 0).toBeLessThan(firstSelected?.visual.opacity ?? 1);
+    expect(noTelemetrySelected?.freshness).toBe("no telemetry");
+    expect(noTelemetrySelected?.visual.selected).toBe(true);
+    expect(noTelemetrySelected?.visual.focus).toBe(true);
+    expect(noTelemetrySelected?.visual.haloOpacity ?? 0).toBeGreaterThan(0);
+    expect(noTelemetrySelected?.visual.haloOpacity ?? 0).toBeLessThan(freshSelected?.visual.haloOpacity ?? 1);
+    expect(noTelemetrySelected?.visual.haloScale ?? 0).toBeLessThan(freshSelected?.visual.haloScale ?? 1);
+    expect(noTelemetrySelected?.visual.opacity ?? 0).toBeLessThan(freshSelected?.visual.opacity ?? 1);
   });
 });
