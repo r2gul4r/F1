@@ -19,7 +19,7 @@ import {
 describe("watch session cookie helper", () => {
   afterEach(() => {
     cookiesMock.mockReset();
-    Reflect.deleteProperty(process.env, "NODE_ENV");
+    vi.unstubAllEnvs();
   });
 
   it("cookie value를 trim하고 비어 있으면 null을 반환함", async () => {
@@ -53,7 +53,7 @@ describe("watch session cookie helper", () => {
   });
 
   it("setWatchSessionCookie는 production에서 secure 쿠키를 저장함", () => {
-    process.env.NODE_ENV = "production";
+    vi.stubEnv("NODE_ENV", "production");
     const response = NextResponse.json({ ok: true });
 
     setWatchSessionCookie(response, "watch-token", 120);
@@ -67,7 +67,7 @@ describe("watch session cookie helper", () => {
   });
 
   it("clearWatchSessionCookie는 production에서 secure 삭제 쿠키를 저장함", () => {
-    process.env.NODE_ENV = "production";
+    vi.stubEnv("NODE_ENV", "production");
     const response = NextResponse.json({ ok: true });
 
     clearWatchSessionCookie(response);

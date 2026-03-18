@@ -16,9 +16,9 @@ describe("oauth login helper", () => {
         providerUserId: "123",
         displayName: "Ray"
       })
-    ).rejects.toMatchObject<Partial<OAuthLoginBridgeError>>({
+    ).rejects.toMatchObject({
       status: 503
-    });
+    } as Partial<OAuthLoginBridgeError>);
 
     expect(fetchMock).not.toHaveBeenCalled();
   });
@@ -27,9 +27,9 @@ describe("oauth login helper", () => {
     const fetchMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock);
 
-    await expect(requestAuthSession("watch-token")).rejects.toMatchObject<Partial<OAuthLoginBridgeError>>({
+    await expect(requestAuthSession("watch-token")).rejects.toMatchObject({
       status: 503
-    });
+    } as Partial<OAuthLoginBridgeError>);
 
     expect(fetchMock).not.toHaveBeenCalled();
   });
