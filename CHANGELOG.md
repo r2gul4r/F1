@@ -299,3 +299,4 @@
 - docs: close the desktop lap-based AI epic and advance the deployment/install/public-channel epic as the current task
 - feat: add a public-web historical demo entry page and wire landing/download links to the preview vs replay boundary
 - docs: add platform release-track naming and first-run checklist guidance to the download entry and README
+- feat: add a fixed public replay demo route so the historical demo can be opened directly from landing and download surfaces

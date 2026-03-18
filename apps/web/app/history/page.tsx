@@ -23,7 +23,10 @@ export default function HistoryPage() {
           <article className="panel" style={{ padding: 14 }}>
             <strong>Replay Demo</strong>
             <div className="muted" style={{ marginTop: 6 }}>
-              다음 공개 채널 슬라이스에서 mock/replay 기준의 고정 데모 패키지를 이 자리에 연결한다.
+              mock/replay 기준의 고정 demo entry. public web relay 없이 board와 prediction 흐름을 historical view로 연다.
+            </div>
+            <div style={{ marginTop: 8 }}>
+              <Link href="/history/replay">/history/replay 열기</Link>
             </div>
           </article>
         </div>

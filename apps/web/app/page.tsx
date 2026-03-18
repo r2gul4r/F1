@@ -28,6 +28,7 @@ export default function HomePage() {
             <div style={{ display: "grid", gap: 6 }}>
               <Link href="/watch/preview">프로토타입 미리보기</Link>
               <Link href="/history">히스토리컬 데모 진입점</Link>
+              <Link href="/history/replay">리플레이 데모 열기</Link>
             </div>
           </article>
         </div>
