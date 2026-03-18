@@ -85,6 +85,9 @@ export const PredictionCard = () => {
       <p className="muted">Lap {visiblePrediction.lap} · Driver {visiblePrediction.triggerDriverId}</p>
       <p className="muted">{selectedDriverContext}</p>
       <p className="muted">{visiblePrediction.isFallback ? "Fallback prediction" : "Primary prediction"}</p>
+      {visiblePrediction.isFallback && visiblePrediction.fallbackReason ? (
+        <p className="muted">Reason {visiblePrediction.fallbackReason}</p>
+      ) : null}
       {isSelectedPredictionStale ? (
         <p className="prediction-stale-alert">
           선택 드라이버 예측 우선 표시 중 · 최신 전체 예측보다 {staleGapSeconds}초 이전 데이터

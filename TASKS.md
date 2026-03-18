@@ -198,6 +198,7 @@
 [x] plan-driven task: desktop shell에 lap-based prediction context 카드를 붙여 AI 상태를 바로 읽게 만든다 [slice 77]
 [x] plan-driven task: desktop AI context 카드에 provider, selected/latest 상태, reasoning summary를 직접 노출한다 [slice 78]
 [x] plan-driven task: prediction 계약에 fallback 여부를 추가하고 realtime, web, desktop 경로에 반영한다 [slice 79]
+[x] plan-driven task: prediction fallback reason을 계약과 desktop/web 표시 경로에 반영한다 [slice 80]
 
 [x] plan-driven task: 로컬 앱 전환에 필요한 셸, 계약, 코어 분리 경계를 고정한다 [slice 1]
 [x] plan-driven task: 2.5D 레이스 보드 MVP 를 완성한다 [slice 1]

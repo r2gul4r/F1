@@ -29,6 +29,7 @@ export const aiPredictionSchema = z.object({
   triggerDriverId: z.string().min(1),
   podiumProb: z.array(z.number().min(0).max(1)).length(3),
   isFallback: z.boolean(),
+  fallbackReason: z.enum(["http_error", "invalid_payload", "exception", "disabled_provider", "timeout"]).optional(),
   reasoningSummary: z.string().min(1).max(500),
   modelLatencyMs: z.number().int().nonnegative(),
   timestampMs: z.number().int().positive()

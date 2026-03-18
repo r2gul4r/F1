@@ -9,7 +9,7 @@
     "build": "pnpm exec next build",
     "start": "pnpm exec next start -p 3000",
     "test": "pnpm exec vitest run",
-    "typecheck": "pnpm exec tsc -p tsconfig.json --noEmit"
+    "typecheck": "pnpm exec tsc -p tsconfig.json --noEmit --incremental false"
   },
   "dependencies": {
     "@f1/shared": "workspace:*",

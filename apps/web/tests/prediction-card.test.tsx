@@ -92,6 +92,7 @@ describe("prediction card", () => {
       triggerDriverId: "NOR",
       podiumProb: [0.58, 0.28, 0.14],
       isFallback: true,
+      fallbackReason: "timeout",
       reasoningSummary: "Norris selected-driver view",
       modelLatencyMs: 790,
       timestampMs: new Date("2026-03-12T09:59:45.000Z").getTime()
@@ -112,6 +113,7 @@ describe("prediction card", () => {
     expect(screen.getByText("선택 드라이버 관련 예측")).toBeTruthy();
     expect(screen.getByText("Norris selected-driver view")).toBeTruthy();
     expect(screen.getByText("Fallback prediction")).toBeTruthy();
+    expect(screen.getByText("Reason timeout")).toBeTruthy();
     expect(screen.getByText(/최신 전체 예측보다 15초 이전 데이터/)).toBeTruthy();
     expect(screen.getByText(/생성 시각 .*30초 전/)).toBeTruthy();
     expect(screen.queryByText("Verstappen latest overall")).toBeNull();

@@ -66,6 +66,7 @@ const fallbackPrediction = (request: AiPredictRequest, latencyMs: number): AiPre
     triggerDriverId: request.triggerDriverId,
     podiumProb: [normalized[0] ?? 0, normalized[1] ?? 0, normalized[2] ?? 0],
     isFallback: true,
+    fallbackReason: "http_error",
     reasoningSummary: sanitizeUserHtml("모델 응답 실패로 보수적 추정 사용"),
     modelLatencyMs: latencyMs,
     timestampMs: Date.now()
@@ -138,7 +139,10 @@ export class AiService {
 
     if (this.config.provider === "disabled") {
       return {
-        prediction: fallbackPrediction(request, Date.now() - startedAt),
+        prediction: {
+          ...fallbackPrediction(request, Date.now() - startedAt),
+          fallbackReason: "disabled_provider"
+        },
         status: "fallback",
         reason: "disabled_provider"
       };
@@ -184,7 +188,10 @@ export class AiService {
 
       if (!response.ok) {
         return {
-          prediction: fallbackPrediction(request, Date.now() - startedAt),
+          prediction: {
+            ...fallbackPrediction(request, Date.now() - startedAt),
+            fallbackReason: "http_error"
+          },
           status: "fallback",
           reason: "http_error"
         };
@@ -202,7 +209,10 @@ export class AiService {
 
       if (!probabilities) {
         return {
-          prediction: fallbackPrediction(request, Date.now() - startedAt),
+          prediction: {
+            ...fallbackPrediction(request, Date.now() - startedAt),
+            fallbackReason: "invalid_payload"
+          },
           status: "fallback",
           reason: "invalid_payload"
         };
@@ -215,6 +225,7 @@ export class AiService {
           triggerDriverId: request.triggerDriverId,
           podiumProb: probabilities,
           isFallback: false,
+          fallbackReason: undefined,
           reasoningSummary: summary,
           modelLatencyMs: Date.now() - startedAt,
           timestampMs: Date.now()
@@ -228,6 +239,7 @@ export class AiService {
       return {
         prediction: {
           ...fallbackPrediction(request, Date.now() - startedAt),
+          fallbackReason: timedOut ? "timeout" : "exception",
           reasoningSummary: sanitizeUserHtml(timedOut ? timeoutFallbackSummary : opaque.publicMessage)
         },
         status: "fallback",

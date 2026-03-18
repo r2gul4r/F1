@@ -295,3 +295,4 @@
 - feat: surface lap-based mock prediction context directly inside the desktop shell so AI trigger state is visible
 - feat: expose desktop AI provider mode, selected/latest prediction context, and reasoning summary directly in the shell panel
 - feat: add `isFallback` metadata to prediction contracts and reflect it through realtime, web, and desktop AI surfaces
+- fix: disable incremental caching in web typecheck so shared prediction-schema updates do not leave stale diagnostics behind

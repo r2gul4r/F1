@@ -246,6 +246,9 @@ export const App = () => {
                   <span className="hud-chip">
                     {predictionViewModel.context.visiblePrediction.isFallback ? "Fallback" : "Primary"}
                   </span>
+                  {predictionViewModel.context.visiblePrediction.fallbackReason ? (
+                    <span className="hud-chip">Reason {predictionViewModel.context.visiblePrediction.fallbackReason}</span>
+                  ) : null}
                 </div>
                 <div className="stat-grid">
                   <article>
