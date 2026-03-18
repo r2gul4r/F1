@@ -325,6 +325,33 @@ describe("renderer frame", () => {
     expect(frame.cars.find((car) => car.driverId === "VER")).toBeUndefined();
   });
 
+  it("focus camera also falls back to track center when the selected driver remains in snapshot but has no position", () => {
+    const snapshotWithoutSelectedTick = reduceSessionSnapshot(createSessionSnapshot(sessionId), {
+      type: "drivers.set",
+      drivers
+    });
+
+    const frame = buildRendererFrame({
+      nowMs: 1_650,
+      telemetryStaleMs: 15_000,
+      selectedDriverId: "VER",
+      snapshot: snapshotWithoutSelectedTick,
+      previousCarsByDriver: {},
+      camera: { x: -32, y: 18, focusModeEnabled: true },
+      track: {
+        center: { x: 6, y: -12 },
+        halfHeight: 160,
+        points: []
+      }
+    });
+
+    const selectedCar = frame.cars.find((car) => car.driverId === "VER");
+    expect(selectedCar?.freshness).toBe("no telemetry");
+    expect(selectedCar?.smoothedPosition).toBeNull();
+    expect(frame.camera.x).toBeCloseTo(-32 + (6 - -32) * 0.08, 4);
+    expect(frame.camera.y).toBeCloseTo(18 + (-12 - 18) * 0.08, 4);
+  });
+
   it("no-telemetry selected car keeps focus and halo while dimming against a same-pulse fresh reference", () => {
     const snapshot = toSnapshot();
     const firstFrame = buildRendererFrame({
