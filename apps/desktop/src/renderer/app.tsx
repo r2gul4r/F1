@@ -1,6 +1,7 @@
 import { resolveFreshnessSummary } from "@f1/core";
-import React, { useDeferredValue, useMemo, useState } from "react";
+import React, { useDeferredValue, useEffect, useMemo, useState } from "react";
 import { useDesktopSession } from "./desktop-session";
+import { getNextSelectedDriverId, isFocusToggleKey } from "./keyboard-controls";
 import { RaceBoard } from "./race-board";
 import { SelectedDriverHud } from "./selected-driver-hud";
 
@@ -57,6 +58,7 @@ export const App = () => {
     setFocusModeEnabled
   } = session;
   const deferredSnapshot = useDeferredValue(snapshot);
+  const orderedDriverIds = useMemo(() => deferredSnapshot.drivers.map((driver) => driver.id), [deferredSnapshot.drivers]);
   const selectedTick = useMemo(
     () => (selectedDriver ? deferredSnapshot.latestTicksByDriver[selectedDriver.id] : undefined),
     [deferredSnapshot.latestTicksByDriver, selectedDriver]
@@ -66,6 +68,32 @@ export const App = () => {
   const flagLabel = deferredSnapshot.flag?.sector
     ? `${deferredSnapshot.flag.flagType} · ${deferredSnapshot.flag.sector}`
     : deferredSnapshot.flag?.flagType ?? "GREEN";
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "ArrowUp") {
+        event.preventDefault();
+        setSelectedDriverId(getNextSelectedDriverId(orderedDriverIds, selectedDriverId, "previous"));
+        return;
+      }
+
+      if (event.key === "ArrowDown") {
+        event.preventDefault();
+        setSelectedDriverId(getNextSelectedDriverId(orderedDriverIds, selectedDriverId, "next"));
+        return;
+      }
+
+      if (isFocusToggleKey(event.key)) {
+        event.preventDefault();
+        setFocusModeEnabled((value) => !value);
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [orderedDriverIds, selectedDriverId, setFocusModeEnabled, setSelectedDriverId]);
 
   return (
     <main className="shell">
@@ -87,6 +115,9 @@ export const App = () => {
               <strong>
                 {focusModeEnabled ? "Focus camera on selected driver" : "Overview orbit with live HUD"} · {runtime.mode}
               </strong>
+              <div className="muted-label" style={{ marginTop: 6 }}>
+                Controls: `F` focus toggle, `ArrowUp/ArrowDown` driver cycle
+              </div>
             </div>
             <button className="mode-toggle" onClick={() => setFocusModeEnabled((value) => !value)} type="button">
               {focusModeEnabled ? "집중 모드 끄기" : "집중 모드 켜기"}
