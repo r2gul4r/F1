@@ -204,6 +204,7 @@
 [x] plan-driven task: public web에 fixed replay demo entry를 추가해 historical demo를 바로 열 수 있게 만든다 [slice 83]
 [x] plan-driven task: desktop replay-buffer session source를 fixed replay session으로 연결한다 [slice 84]
 [x] plan-driven task: focus mode camera가 선택 드라이버 telemetry 공백에서 덜 튀게 이전 target을 잠시 유지한다 [slice 85]
+[x] plan-driven task: desktop replay-buffer와 web replay route가 같은 fixed replay fixture를 공유하게 만든다 [slice 86]
 
 [x] plan-driven task: 로컬 앱 전환에 필요한 셸, 계약, 코어 분리 경계를 고정한다 [slice 1]
 [x] plan-driven task: 2.5D 레이스 보드 MVP 를 완성한다 [slice 1]

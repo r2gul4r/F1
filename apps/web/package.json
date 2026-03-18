@@ -12,6 +12,7 @@
     "typecheck": "pnpm exec tsc -p tsconfig.json --noEmit --incremental false"
   },
   "dependencies": {
+    "@f1/core": "workspace:*",
     "@f1/shared": "workspace:*",
     "next": "15.2.2",
     "react": "19.0.0",

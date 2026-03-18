@@ -26,5 +26,6 @@ export { createSessionSnapshot, initializeSelectionState, reconcileSelectionStat
 export { resolvePredictionContext, toPredictionViewModel } from "./prediction-context.js";
 export { buildPredictionFeatureSnapshot, toPredictionFeatureNote } from "./prediction-feature.js";
 export type { BuildPredictionFeatureSnapshotInput } from "./prediction-feature.js";
+export { buildReplayDemoSnapshot, REPLAY_DEMO_SESSION_ID, REPLAY_DEMO_TIMESTAMP_MS, replayDemoDrivers } from "./replay-demo.js";
 export { buildRendererFrame, resolveCarVisualState, resolveFreshnessSummary } from "./renderer-frame.js";
 export type { RendererFrameState } from "./renderer-frame.js";

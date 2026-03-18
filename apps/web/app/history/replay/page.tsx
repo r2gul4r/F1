@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { WatchPreviewClient } from "@/src/components/watch-preview-client";
+import { WatchReplayClient } from "@/src/components/watch-replay-client";
 
 export default function ReplayDemoPage() {
   return (
@@ -16,7 +16,7 @@ export default function ReplayDemoPage() {
           <Link href="/download">다운로드 안내</Link>
         </div>
       </section>
-      <WatchPreviewClient />
+      <WatchReplayClient />
     </main>
   );
 }

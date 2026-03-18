@@ -308,3 +308,4 @@
 - docs: close the slice-2 desktop AI epic and advance the slice-2 deployment/public-channel epic as the current task
 - docs: close the slice-2 deployment/public-channel epic after landing, download, preview, history, and replay paths were aligned
 - docs: align the state board with the newly seeded slice-3 queue
+- feat: unify desktop replay-buffer and public replay route on the same fixed replay fixture

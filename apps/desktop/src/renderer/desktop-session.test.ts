@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildReplaySnapshot } from "./replay-session.js";
+import { buildReplayDemoSnapshot } from "@f1/core";
 import { resolveDesktopSessionAvailability } from "./desktop-session.js";
 
 describe("desktop session adapter", () => {
@@ -46,7 +46,7 @@ describe("desktop session adapter", () => {
   });
 
   it("replay session snapshot is fixed and carries prediction history", () => {
-    const snapshot = buildReplaySnapshot();
+    const snapshot = buildReplayDemoSnapshot();
 
     expect(snapshot.sessionId).toBe("desktop-replay-session");
     expect(snapshot.drivers).toHaveLength(4);
