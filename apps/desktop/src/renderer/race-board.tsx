@@ -2,6 +2,7 @@
 
 import { buildRendererFrame, type CameraState, type CarState, type SessionSnapshot, type TrackModel } from "@f1/core";
 import React, { useEffect, useMemo, useRef } from "react";
+import { buildCarLabels } from "./car-labels";
 
 const TRACK_WIDTH = 34;
 const TELEMETRY_STALE_MS = 15_000;
@@ -131,6 +132,32 @@ const drawCars = (context: CanvasRenderingContext2D, cars: CarState[]) => {
   });
 };
 
+const drawCarLabels = (context: CanvasRenderingContext2D, cars: CarState[]) => {
+  const labels = buildCarLabels(cars);
+
+  labels.forEach((label) => {
+    const car = cars.find((item) => item.driverId === label.driverId);
+    if (!car?.smoothedPosition) {
+      return;
+    }
+
+    const projected = projectPoint(car.smoothedPosition.x, car.smoothedPosition.y, car.smoothedPosition.z);
+    const textWidth = label.text.length * 5.8 + 22;
+    const y = projected.y - 20;
+    context.save();
+    context.fillStyle = label.tone === "leader" ? "rgba(250, 204, 21, 0.92)" : "rgba(34, 211, 238, 0.92)";
+    context.beginPath();
+    context.roundRect(projected.x - textWidth / 2, y - 8, textWidth, 16, 8);
+    context.fill();
+    context.fillStyle = "#08111f";
+    context.font = "700 7px 'Space Grotesk', sans-serif";
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+    context.fillText(label.text, projected.x, y);
+    context.restore();
+  });
+};
+
 type RaceBoardProps = {
   focusModeEnabled: boolean;
   onFpsChange: (fps: number) => void;
@@ -254,6 +281,7 @@ export const RaceBoard = ({ focusModeEnabled, onFpsChange, selectedDriverId, sna
       context.restore();
 
       drawCars(context, frame.cars);
+      drawCarLabels(context, frame.cars);
       rafId = window.requestAnimationFrame(render);
     };
 
