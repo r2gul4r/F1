@@ -7,6 +7,11 @@ import { toAiProviderLabel, toPredictionContextLabel } from "./prediction-status
 import { buildPodiumStripItems } from "./podium-strip";
 import { buildSelectedDriverDetails } from "./selected-driver-details";
 import { getSupportedLocalSessionSources } from "./session-source-controls";
+import {
+  DESKTOP_SESSION_SOURCE_STORAGE_KEY,
+  resolveInitialSessionSourceOverride,
+  shouldPersistSessionSourceOverride
+} from "./session-source-preference";
 import { RaceBoard } from "./race-board";
 import { SelectedDriverHud } from "./selected-driver-hud";
 
@@ -19,7 +24,9 @@ const FRESHNESS_LABEL = {
 
 export const App = () => {
   const [fps, setFps] = useState(0);
-  const [sessionSourceOverride, setSessionSourceOverride] = useState<typeof window.desktopShell.sessionSource | null>(null);
+  const [sessionSourceOverride, setSessionSourceOverride] = useState<typeof window.desktopShell.sessionSource | null>(() =>
+    resolveInitialSessionSourceOverride(() => window.localStorage.getItem(DESKTOP_SESSION_SOURCE_STORAGE_KEY))
+  );
   const runtime = window.desktopShell;
   const effectiveRuntime = sessionSourceOverride
     ? { ...runtime, sessionSource: sessionSourceOverride }
@@ -52,6 +59,9 @@ export const App = () => {
                 <h2>{session.message}</h2>
                 <p className="team-name">Switch `DESKTOP_SESSION_SOURCE=mock-session` or `replay-buffer`, or wire the next session adapter slice.</p>
                 <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 12 }}>
+                  <button className="mode-toggle" onClick={() => setSessionSourceOverride(null)} type="button">
+                    Runtime default
+                  </button>
                   {sessionSourceOptions.map((option) => (
                     <button
                       className="mode-toggle"
@@ -131,6 +141,15 @@ export const App = () => {
       window.removeEventListener("keydown", onKeyDown);
     };
   }, [orderedDriverIds, selectedDriverId, setFocusModeEnabled, setSelectedDriverId]);
+
+  useEffect(() => {
+    if (!shouldPersistSessionSourceOverride(sessionSourceOverride)) {
+      window.localStorage.removeItem(DESKTOP_SESSION_SOURCE_STORAGE_KEY);
+      return;
+    }
+
+    window.localStorage.setItem(DESKTOP_SESSION_SOURCE_STORAGE_KEY, sessionSourceOverride);
+  }, [sessionSourceOverride]);
 
   return (
     <main className="shell">
@@ -273,6 +292,9 @@ export const App = () => {
               </article>
             </div>
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 12 }}>
+              <button className="mode-toggle" onClick={() => setSessionSourceOverride(null)} type="button">
+                Runtime default
+              </button>
               {sessionSourceOptions.map((option) => (
                 <button
                   className="mode-toggle"
