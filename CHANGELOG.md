@@ -328,3 +328,6 @@
 - docs: close the slice-4 deployment/public-channel epic after preview, history, replay, install, and smoke paths were aligned
 - docs: close the slice-5 shell/contracts epic and advance the slice-5 board MVP epic as the current task
 - docs: close the slice-5 board MVP epic and advance the slice-5 desktop AI epic as the current task
+- feat: trigger the realtime telemetry AI path on lap boundaries even when rank does not change
+- test: pin same-lap rank-only telemetry as a no-trigger path and retain the legacy `detectP5Trigger` contract
+- docs: close the slice-5 desktop AI epic and advance the slice-5 deployment/public-channel epic as the current task

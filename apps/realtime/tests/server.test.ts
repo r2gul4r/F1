@@ -1268,8 +1268,8 @@ describe("realtime api", () => {
         driverId: "NOR",
         position: { x: 2, y: 3, z: 0 },
         speedKph: 314,
-        lap: 8,
-        rank: 5,
+        lap: 9,
+        rank: 6,
         timestampMs: 1100
       }
     });
@@ -1277,7 +1277,75 @@ describe("realtime api", () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
 
     const promptBody = JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body)) as { prompt?: string };
-    expect(promptBody.prompt).toContain("note=rank 6 -&gt; 5 | ticks=2 | avg=313.0 | top=314.0 | min=312.0");
+    expect(promptBody.prompt).toContain("note=rank 6 -&gt; 6 | ticks=2 | avg=313.0 | top=314.0 | min=312.0");
+  });
+
+  it("telemetry trigger는 같은 lap의 순위 상승만으로는 AI를 호출하지 않음", async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+
+    const repository = new MemoryRepository();
+    const { app } = await buildServer({
+      repository,
+      oauthUserRepository,
+      internalApiToken,
+      oauthProxyToken,
+      watchTokenSecret,
+      watchTokenTtlSec: 3600,
+      allowedOrigins: ["http://localhost:3000"],
+      wsBufferSize: 100,
+      ollamaBaseUrl: "http://localhost:11434",
+      ollamaModel: "gemma3:12b"
+    });
+
+    const firstTick = await app.inject({
+      method: "POST",
+      url: "/internal/events/telemetry",
+      headers: {
+        "x-internal-token": internalApiToken
+      },
+      payload: {
+        sessionId: "session-same-lap-rank-only",
+        driverId: "NOR",
+        position: { x: 1, y: 2, z: 0 },
+        speedKph: 312,
+        lap: 8,
+        rank: 6,
+        timestampMs: 1000
+      }
+    });
+    expect(firstTick.statusCode).toBe(202);
+
+    const sameLapRankGain = await app.inject({
+      method: "POST",
+      url: "/internal/events/telemetry",
+      headers: {
+        "x-internal-token": internalApiToken
+      },
+      payload: {
+        sessionId: "session-same-lap-rank-only",
+        driverId: "NOR",
+        position: { x: 2, y: 3, z: 0 },
+        speedKph: 314,
+        lap: 8,
+        rank: 5,
+        timestampMs: 1100
+      }
+    });
+    expect(sameLapRankGain.statusCode).toBe(202);
+    expect(fetchMock).not.toHaveBeenCalled();
+
+    const metrics = await app.inject({
+      method: "GET",
+      url: "/metrics",
+      headers: {
+        "x-internal-token": internalApiToken
+      }
+    });
+
+    expect(metrics.statusCode).toBe(200);
+    expect(metrics.body).not.toContain("ai_inference_ms_count{status=\"ok\",provider=\"ollama\"}");
+    expect(metrics.body).not.toContain("ai_inference_ms_count{status=\"fallback\",provider=\"ollama\"}");
   });
 
   it("metrics는 telemetry trigger 경로의 ai fallback inference에 provider 라벨을 포함함", async () => {
@@ -1333,8 +1401,8 @@ describe("realtime api", () => {
         driverId: "NOR",
         position: { x: 2, y: 3, z: 0 },
         speedKph: 314,
-        lap: 8,
-        rank: 5,
+        lap: 9,
+        rank: 6,
         timestampMs: 1100
       }
     });
@@ -1401,8 +1469,8 @@ describe("realtime api", () => {
         driverId: "NOR",
         position: { x: 2, y: 3, z: 0 },
         speedKph: 314,
-        lap: 8,
-        rank: 5,
+        lap: 9,
+        rank: 6,
         timestampMs: 1100
       }
     });
@@ -1469,8 +1537,8 @@ describe("realtime api", () => {
         driverId: "NOR",
         position: { x: 2, y: 3, z: 0 },
         speedKph: 314,
-        lap: 8,
-        rank: 5,
+        lap: 9,
+        rank: 6,
         timestampMs: 1100
       }
     });
