@@ -46,7 +46,7 @@ export default function DownloadPage() {
               <br />
               2. `/watch/preview`와 `/history`에서 public web demo entry만 노출되는지 확인
               <br />
-              3. replay demo package는 다음 슬라이스에서 이 entry에 연결
+              3. `/history/replay`에서 fixed replay demo가 바로 열리는지 확인
             </div>
           </div>
           <div className="panel" style={{ padding: 12 }}>

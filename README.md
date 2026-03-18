@@ -45,8 +45,8 @@
 3. Electron 창에서 2.5D race board, 차량 보간 이동, 선택 드라이버 HUD가 보이는지 확인
 4. 집중 모드 토글과 드라이버 선택 전환이 동작하는지 확인
 5. 웹은 `http://localhost:3000/watch/preview`만 확인하고 non-preview watch 경로가 비활성화 상태인지 확인
-6. `http://localhost:3000/history`에서 preview/demo entry와 replay demo placeholder가 보이는지 확인
-7. `http://localhost:3000/history/replay`에서 fixed replay demo board가 열리는지 확인
+6. `http://localhost:3000/history`에서 preview/demo entry와 replay demo 링크가 보이는지 확인
+7. `http://localhost:3000/history/replay`에서 fixed replay demo board가 실제로 열리는지 확인
 
 배포 아티팩트 기준 이름
 
