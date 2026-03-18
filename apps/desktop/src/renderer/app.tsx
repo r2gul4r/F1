@@ -1,4 +1,4 @@
-import { resolveFreshnessSummary } from "@f1/core";
+import { resolveFreshnessSummary, resolvePredictionContext, toPredictionViewModel } from "@f1/core";
 import React, { useDeferredValue, useEffect, useMemo, useState } from "react";
 import { useDesktopSession } from "./desktop-session";
 import { buildDriverRailItems } from "./driver-rail";
@@ -70,6 +70,10 @@ export const App = () => {
   const flagLabel = deferredSnapshot.flag?.sector
     ? `${deferredSnapshot.flag.flagType} · ${deferredSnapshot.flag.sector}`
     : deferredSnapshot.flag?.flagType ?? "GREEN";
+  const predictionViewModel = useMemo(
+    () => toPredictionViewModel(resolvePredictionContext(deferredSnapshot.predictions, selectedDriverId), Date.now()),
+    [deferredSnapshot.predictions, selectedDriverId]
+  );
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -224,6 +228,39 @@ export const App = () => {
                 <strong>{runtime.aiProvider}</strong>
               </article>
             </div>
+          </section>
+
+          <section className="info-card">
+            <div className="muted-label">Lap AI Context</div>
+            {predictionViewModel.context.visiblePrediction ? (
+              <div className="stat-grid">
+                <article>
+                  <span className="muted-label">Lap</span>
+                  <strong>{predictionViewModel.context.visiblePrediction.lap}</strong>
+                </article>
+                <article>
+                  <span className="muted-label">Trigger</span>
+                  <strong>{predictionViewModel.context.visiblePrediction.triggerDriverId}</strong>
+                </article>
+                <article>
+                  <span className="muted-label">P1</span>
+                  <strong>{Math.round(predictionViewModel.context.visiblePrediction.podiumProb[0] * 100)}%</strong>
+                </article>
+                <article>
+                  <span className="muted-label">Age</span>
+                  <strong>
+                    {predictionViewModel.elapsedSeconds === null ? "-" : `${predictionViewModel.elapsedSeconds}s`}
+                  </strong>
+                </article>
+              </div>
+            ) : (
+              <div className="info-note">Lap-boundary prediction is waiting for the next deterministic update.</div>
+            )}
+            {predictionViewModel.context.selectedPredictionStale ? (
+              <div className="info-note">
+                Selected driver prediction is {predictionViewModel.context.staleGapSeconds}s behind the latest overall update.
+              </div>
+            ) : null}
           </section>
 
           <section className="info-card runtime-card">

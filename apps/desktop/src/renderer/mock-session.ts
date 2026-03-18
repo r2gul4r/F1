@@ -1,5 +1,6 @@
 import { Driver, RaceFlag, SessionSnapshot, createSessionSnapshot, reduceSessionSnapshot } from "@f1/core";
 import { startTransition, useEffect, useMemo, useState } from "react";
+import { updateMockPredictionHistory } from "./mock-predictions";
 
 const SESSION_ID = "desktop-mock-session";
 const TICK_INTERVAL_MS = 90;
@@ -37,7 +38,7 @@ const buildFlag = (tickCount: number, timestampMs: number): RaceFlag => ({
   timestampMs
 });
 
-const buildSnapshot = (tickCount: number): SessionSnapshot => {
+const buildSnapshot = (tickCount: number, previousPredictions: SessionSnapshot["predictions"] = []): SessionSnapshot => {
   const timestampMs = Date.now();
   let snapshot = reduceSessionSnapshot(createSessionSnapshot(SESSION_ID), {
     type: "drivers.set",
@@ -68,6 +69,19 @@ const buildSnapshot = (tickCount: number): SessionSnapshot => {
     });
   });
 
+  updateMockPredictionHistory({
+    sessionId: SESSION_ID,
+    lap,
+    drivers: ordered.map(({ driver }) => driver),
+    timestampMs,
+    previousPredictions
+  }).forEach((prediction) => {
+    snapshot = reduceSessionSnapshot(snapshot, {
+      type: "prediction.add",
+      prediction
+    });
+  });
+
   return reduceSessionSnapshot(snapshot, {
     type: "flag.set",
     flag: buildFlag(tickCount, timestampMs)
@@ -88,7 +102,7 @@ export const useMockSession = (enabled = true) => {
     const timer = window.setInterval(() => {
       tickCount += 1;
       startTransition(() => {
-        setSnapshot(buildSnapshot(tickCount));
+        setSnapshot((previousSnapshot) => buildSnapshot(tickCount, previousSnapshot.predictions));
       });
     }, TICK_INTERVAL_MS);
 
