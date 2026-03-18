@@ -1,7 +1,7 @@
 import { resolveFreshnessSummary } from "@f1/core";
 import React, { useDeferredValue, useMemo, useState } from "react";
+import { useDesktopSession } from "./desktop-session";
 import { RaceBoard } from "./race-board";
-import { useMockSession } from "./mock-session";
 import { SelectedDriverHud } from "./selected-driver-hud";
 
 const TELEMETRY_STALE_MS = 15_000;
@@ -14,6 +14,40 @@ const FRESHNESS_LABEL = {
 export const App = () => {
   const [fps, setFps] = useState(0);
   const runtime = window.desktopShell;
+  const session = useDesktopSession(runtime);
+
+  if (session.kind === "unavailable") {
+    return (
+      <main className="shell">
+        <section className="hero">
+          <div className="eyebrow">F1 Pulse Desktop</div>
+          <h1>Desktop session source unavailable</h1>
+          <p className="lead">
+            Runtime contract is pinned, but `{runtime.sessionSource}` is not wired to a local session adapter yet.
+            Public web relay remains `{runtime.publicWebRelay ? "enabled" : "disabled"}`.
+          </p>
+        </section>
+        <section className="desktop-board">
+          <article className="board-panel board-stage">
+            <div className="stage-toolbar">
+              <div>
+                <div className="muted-label">Desktop Shell Boundary</div>
+                <strong>{runtime.mode} · {runtime.sessionSource}</strong>
+              </div>
+            </div>
+            <div className="stage-view" style={{ display: "grid", placeItems: "center", minHeight: 520 }}>
+              <div className="info-card" style={{ maxWidth: 420 }}>
+                <div className="muted-label">Unavailable</div>
+                <h2>{session.message}</h2>
+                <p className="team-name">Switch `DESKTOP_SESSION_SOURCE=mock-session` or wire the next session adapter slice.</p>
+              </div>
+            </div>
+          </article>
+        </section>
+      </main>
+    );
+  }
+
   const {
     snapshot,
     selectedDriver,
@@ -21,7 +55,7 @@ export const App = () => {
     setSelectedDriverId,
     focusModeEnabled,
     setFocusModeEnabled
-  } = useMockSession();
+  } = session;
   const deferredSnapshot = useDeferredValue(snapshot);
   const selectedTick = useMemo(
     () => (selectedDriver ? deferredSnapshot.latestTicksByDriver[selectedDriver.id] : undefined),

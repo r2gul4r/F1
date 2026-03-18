@@ -74,12 +74,16 @@ const buildSnapshot = (tickCount: number): SessionSnapshot => {
   });
 };
 
-export const useMockSession = () => {
+export const useMockSession = (enabled = true) => {
   const [snapshot, setSnapshot] = useState<SessionSnapshot>(() => buildSnapshot(0));
   const [selectedDriverId, setSelectedDriverId] = useState<string | null>(drivers[0]?.id ?? null);
   const [focusModeEnabled, setFocusModeEnabled] = useState(false);
 
   useEffect(() => {
+    if (!enabled) {
+      return;
+    }
+
     let tickCount = 0;
     const timer = window.setInterval(() => {
       tickCount += 1;
@@ -91,7 +95,7 @@ export const useMockSession = () => {
     return () => {
       window.clearInterval(timer);
     };
-  }, []);
+  }, [enabled]);
 
   const selectedDriver = useMemo(
     () => snapshot.drivers.find((driver) => driver.id === selectedDriverId) ?? null,
