@@ -154,6 +154,46 @@ describe("renderer frame", () => {
     expect(staleOther?.visual.scale ?? 0).toBeLessThan(freshOther?.visual.scale ?? 1);
   });
 
+  it("stale selected car stays focused while freshness dims its visuals", () => {
+    const snapshot = toSnapshot();
+    const freshFrame = buildRendererFrame({
+      nowMs: 1_500,
+      telemetryStaleMs: 15_000,
+      selectedDriverId: "VER",
+      snapshot,
+      previousCarsByDriver: {},
+      camera: { x: 0, y: 0, focusModeEnabled: true },
+      track: {
+        center: { x: 0, y: 0 },
+        halfHeight: 160,
+        points: []
+      }
+    });
+
+    const staleFrame = buildRendererFrame({
+      nowMs: 20_000,
+      telemetryStaleMs: 15_000,
+      selectedDriverId: "VER",
+      snapshot,
+      previousCarsByDriver: freshFrame.carsByDriver,
+      camera: freshFrame.camera,
+      track: {
+        center: { x: 0, y: 0 },
+        halfHeight: 160,
+        points: []
+      }
+    });
+
+    const freshSelected = freshFrame.cars.find((car) => car.driverId === "VER");
+    const staleSelected = staleFrame.cars.find((car) => car.driverId === "VER");
+
+    expect(staleSelected?.freshness).toBe("stale");
+    expect(staleSelected?.visual.selected).toBe(true);
+    expect(staleSelected?.visual.focus).toBe(true);
+    expect(staleSelected?.visual.haloOpacity ?? 0).toBeGreaterThan(0);
+    expect(staleSelected?.visual.opacity ?? 0).toBeLessThan(freshSelected?.visual.opacity ?? 1);
+  });
+
   it("smoothed position lerps from the previous rendered frame", () => {
     const snapshot = toSnapshot();
     const firstFrame = buildRendererFrame({
@@ -242,6 +282,9 @@ describe("renderer frame", () => {
 
     expect(secondFrame.camera.x).toBeGreaterThan(0);
     expect(secondSelected?.freshness).toBe("no telemetry");
+    expect(secondSelected?.visual.selected).toBe(true);
+    expect(secondSelected?.visual.focus).toBe(true);
+    expect(secondSelected?.visual.haloOpacity ?? 0).toBeGreaterThan(0);
     expect(secondSelected?.visual.opacity ?? 0).toBeLessThan(firstSelected?.visual.opacity ?? 1);
   });
 });

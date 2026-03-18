@@ -343,3 +343,4 @@
 - test: pin desktop driver rail button click wiring so selection forwarding survives the rail extraction
 - feat: make renderer-frame dim stale and no-telemetry cars directly through visual opacity and scale
 - test: pin stale and missing-telemetry car visual degradation in core renderer-frame tests
+- test: pin selected stale and no-telemetry cars so focus and halo survive freshness-based dimming
