@@ -226,7 +226,7 @@ export const App = () => {
               ))}
             </div>
             <div className="info-note">
-              이 레일은 다음 슬라이스에서 tire, gap, interval, RPM, gear 카드로 확장된다.
+              이 레일은 gap, interval, gear, RPM, tire까지 포함한 selected-driver detail view를 즉시 읽도록 정리돼 있다.
             </div>
           </section>
 
